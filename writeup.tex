@@ -1,9 +1,87 @@
-\input{prelude.tex}
+\documentclass{reedthesis}
+% \usepackage[parfill]{parskip} % Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{amsfonts, amscd, amssymb, amsthm, amsmath}
+\usepackage{mathtools} %xmapsto etc
+\usepackage{pdfsync} %leaves makers for tex searching
+\usepackage{enumerate}
+\usepackage{booktabs}
+\usepackage{complexity}
+
+\usepackage{hyperref}
 
 \usepackage[linesnumbered]{algorithm2e}
 \usepackage{biblatex}
 \usepackage{imakeidx}
 \usepackage{microtype}
+
+%%% Theorems %%%---------------------------------------------------------
+\theoremstyle{plain}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{lemma}[thm]{Lemma}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{cor}[thm]{Corollary}
+\theoremstyle{definition}
+\newtheorem*{def*}{Definition}
+\newtheorem{defn}[thm]{Definition}
+\newtheorem{topic}[thm]{Topic}
+\theoremstyle{remark}
+\newtheorem{example}{Example}[thm]
+\newtheorem{remark}[thm]{Remark}
+\newtheorem{subrem}[example]{Remark}
+
+
+\DeclareMathOperator{\ad}{ad}
+\DeclareMathOperator{\Aut}{Aut}
+\DeclareMathOperator{\ch}{ch}
+\DeclareMathOperator{\col}{col}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\dimn}{dim}
+\DeclareMathOperator{\End}{End}
+\DeclareMathOperator{\ev}{ev}
+\def\f{\varphi}
+\def\half{\hbox{$\frac12$}}
+\DeclareMathOperator{\Hom}{Hom}
+\DeclareMathOperator{\img}{img}
+\DeclareMathOperator{\Inn}{Inn}
+\DeclareMathOperator{\id}{id}
+\DeclareMathOperator{\mdeg}{mdeg}
+\DeclareMathOperator{\rad}{rad}
+\DeclareMathOperator{\Rep}{Rep}
+\DeclareMathOperator{\row}{row}
+\DeclareMathOperator{\rk}{rank}
+\def\normeq{\trianglelefteq}
+\DeclareMathOperator{\nul}{nullity}
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\spn}{span}
+\DeclareMathOperator{\supp}{supp}
+\DeclareMathOperator{\Syl}{Syl}
+\DeclareMathOperator{\Sym}{Sym}
+\DeclareMathOperator{\tr}{tr}
+\def\vep{\varepsilon}
+\DeclareMathOperator{\lcm}{lcm}
+
+\DeclarePairedDelimiter{\norm}{\lVert}{\rVert}
+\DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
+\DeclarePairedDelimiter{\ang}{\langle}{\rangle}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
+\newcommand{\middlemid}{%
+	\ensuremath{\;\middle\vert\;}
+}
+
+\newcommand{\dblang}[1]{%
+	\ensuremath{\left\langle\!\left\langle#1\right\rangle\!\right\rangle}
+}
+
+\newcommand{\comment}[1]{%
+	\text{\phantom{(#1)}} \tag{#1}%
+}
+
+\newcommand{\commath}[1]{%
+	\phantom{(#1)} \tag{#1}%
+}
+
 
 \addbibresource{bibliography.bib}
 
@@ -14,20 +92,31 @@
 \title{Thesis Draft: Algebrization}
 \author{Patrick Norton}
 
+\approvedforthe{Committee}
+\thedivisionof{The Established Interdisciplinary Committee for \\}
+\division{Mathematics and Computer Science}
+\department{Mathematics and Computer Science}
+\advisor{Zajj Daugherty}
+\altadvisor{Adam Groce}
+
 \begin{document}
 
 \maketitle
 
-\section{Introduction}
+\tableofcontents
+
+% TODO: Abstract
+
+\chapter*{Introduction}
 
 The $\P$ vs $\NP$ problem is perhaps the most important open problem in
 complexity theory.
 
-\section{Preliminaries}
+\chapter{Preliminaries}
 
 % TODO: Do we need Hamming distance? I can't find them actually using it in CFGS22
 
-\subsection{Turing machines}
+\section{Turing machines}
 
 % TODO: Do we even need to formally define a TM?
 
@@ -80,13 +169,13 @@ must exist.
 
 % TODO: Nondeterministic TM
 
-\subsection{Complexity classes}
+\section{Complexity classes}
 
 % TODO: P, NP, PSPACE, NPSPACE at least
 % Also PSPACE-complete and probably NP-complete
 % Should I define a complexity class?
 
-\subsection{Polynomials}
+\section{Polynomials}
 
 Much of our work will deal with multivariate polynomials. For a given field
 $\mathbb{F}$, we will denote the set of $m$-variable polynomials over
@@ -234,7 +323,7 @@ use to us than just being simpler.
 This is a particularly useful basis because it allows us to reason about
 multilinear polynomials in terms of their outcomes on the Boolean cube.
 
-\section{Relativization}
+\chapter{Relativization}
 
 An important prerequisite to understanding algebrization is the similar, but
 simpler, concept of \emph{relativization}, also called \emph{oracle separation}.
@@ -274,7 +363,7 @@ oracle.
 
 % TODO: Define what it means to relativize (and why this is a barrier)
 
-\subsection{Query complexity}\label{sec:query-complexity}
+\section{Query complexity}\label{sec:query-complexity}
 
 The goal of query complexity is to ask questions about some Boolean function
 $A: \{0, 1\}^{n} \rightarrow \{0, 1\}$ by querying $A$. For this, we will interchangeably
@@ -323,7 +412,7 @@ computers.
 \end{defn}
 % TODO: Deterministic & nondeterministic query complexity
 
-\subsection{Relativization of $\P$ vs.\ $\NP$}\label{sec:rel-p-np}
+\section{Relativization of $\P$ vs.\ $\NP$}\label{sec:rel-p-np}
 
 An important example of relativization is that of $\P$ and $\NP$. The similarity
 of relativization to algebrization means that the structure of these proofs will
@@ -436,7 +525,7 @@ the $\P$ and $\NP$ machine the same oracle, they have the same power.
   % TODO: Explain algorithm
 \end{proof}
 
-\section{Algebrization}\label{sec:algebrization}
+\chapter{Algebrization}\label{chap:algebrization}
 
 Algebrization, originally described by Aaronson and Wigderson~\cite{AW09}, is an
 extension of relativization. While relativization deals with oracles that are
@@ -471,7 +560,7 @@ polynomials over finite fields.
 
 % TODO: Define algebrization
 
-\subsection{Algebraic query complexity}
+\section{Algebraic query complexity}
 
 Similarly to how we defined query complexity in
 Section~\ref{sec:query-complexity}, our notion of algebrization requires a
@@ -508,7 +597,7 @@ multidegree 2, which is enough to get the results we want.
 % use the JKRS proofs instead of the AW proofs if they're cleaner?
 % Ok yeah, having read it, I definitely want JKRS09 Thm 3 b/c it's so slick
 
-\subsection{Algebrization of $\P$ vs.\ $\NP$}\label{sec:alg-p-np}
+\section{Algebrization of $\P$ vs.\ $\NP$}\label{sec:alg-p-np}
 
 As with relativization, an important application of algebrization is in regards
 to the $\P$ vs.\ $\NP$ problem.
