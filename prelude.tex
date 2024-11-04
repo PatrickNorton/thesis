@@ -1,0 +1,285 @@
+\documentclass[11pt, reqno]{amsart}
+\usepackage[margin=1in]{geometry}
+\geometry{letterpaper}
+%\geometry{landscape} % Activate for for rotated page geometry
+\usepackage[parfill]{parskip} % Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{amsfonts, amscd, amssymb, amsthm, amsmath}
+\usepackage{mathtools} %xmapsto etc
+\usepackage{pdfsync} %leaves makers for tex searching
+\usepackage{enumerate}
+\usepackage{booktabs}
+\usepackage{complexity}
+
+
+%%% Color %%%---------------------------------------------------------
+\usepackage{color}
+\usepackage[dvipsnames]{xcolor}
+\definecolor{dred}{HTML}{C30101}
+\definecolor{dorange}{rgb}{.9,.3,0}
+\definecolor{dgrey}{rgb}{.4,.4,.4}
+\definecolor{plumb}{HTML}{8105C1}\definecolor{alert}{HTML}{8105C1}
+\definecolor{pumpkin}{HTML}{E47604}
+\definecolor{rose}{HTML}{C10091}
+\definecolor{dgreen}{HTML}{25A75B}
+\definecolor{dblue}{HTML}{0066FF}
+\definecolor{cornflower}{HTML}{3256C3}
+\definecolor{viridian}{HTML}{099A97}
+\definecolor{alert}{HTML}{3256C3}
+
+
+
+\usepackage{hyperref} %[pdftex,bookmarks]
+% \hypersetup{
+%     colorlinks=true,
+%     linkcolor=viridian,
+%     filecolor=viridian,
+%     citecolor=viridian,
+%     urlcolor=viridian,
+%     pdftitle={Overleaf Example},
+%     pdfpagemode=FullScreen,
+%     }
+
+%%% Theorems %%%---------------------------------------------------------
+\theoremstyle{plain}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{lemma}[thm]{Lemma}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{cor}[thm]{Corollary}
+\theoremstyle{definition}
+\newtheorem*{def*}{Definition}
+\newtheorem{defn}[thm]{Definition}
+\newtheorem{topic}[thm]{Topic}
+\theoremstyle{remark}
+\newtheorem{example}{Example}[thm]
+\newtheorem{remark}[thm]{Remark}
+\newtheorem{subrem}[example]{Remark}
+
+
+%%% Environments %%%---------------------------------------------------------
+\newenvironment{pf}{\color{black}\medskip \paragraph*{\emph{Proof}.}}{\hfill \qedsymbol \medskip }
+\newenvironment{ans}{\medskip \color{black} \paragraph*{\emph{Answer}.}}{\hfill \break $~\!\!$ \dotfill \medskip }
+\newenvironment{sketch}{\medskip \paragraph*{\emph{Proof sketch}.}}{ \medskip }
+\newenvironment{summary}{\medskip \paragraph*{\emph{Summary}.}}{ \hfill \break \rule{1.5cm}{0.4pt} \medskip }
+\newcommand\Ans[1]{$ $\hfill {\color{black}\emph{Answer:} {#1}}}
+\newcommand{\Hint}[1]{\hfill{\small [\emph{Hint:} {#1}]}}
+
+
+%%% Color %%%---------------------------------------------------------
+\usepackage{color}
+\usepackage[dvipsnames]{xcolor}
+\definecolor{dred}{HTML}{C30101}
+\definecolor{dorange}{rgb}{.9,.3,0}
+\definecolor{dgrey}{rgb}{.4,.4,.4}
+\definecolor{plumb}{HTML}{8105C1}\definecolor{alert}{HTML}{8105C1}
+\definecolor{pumpkin}{HTML}{E47604}
+\definecolor{rose}{HTML}{C10091}
+\definecolor{dgreen}{HTML}{25A75B}
+\definecolor{dblue}{HTML}{0066FF}
+\definecolor{cornflower}{HTML}{3256C3}
+\definecolor{viridian}{HTML}{099A97}
+\definecolor{alert}{HTML}{3256C3}
+
+
+\newcommand\plumb[1]{{\color{plumb}#1}}
+\newcommand\cornfl[1]{{\color{cornflower}#1}}
+\newcommand\dgreen[1]{{\color{dgreen}#1}}
+\newcommand\viridian[1]{{\color{viridian}#1}}
+\newcommand\dblue[1]{{\color{dblue}#1}}
+\newcommand\dred[1]{{\color{dred}#1}}
+\newcommand\gray[1]{{\color{black!40}#1}}
+\newcommand\black[1]{{\color{black}#1}}
+\newcommand\pumpk[1]{{\color{pumpkin}#1}}
+\newcommand\rose[1]{{\color{rose}#1}}
+
+
+
+\newcommand{\NOTE}[1]{{\color{cornflower}#1}}
+\newcommand{\blue}[1]{{\color{blue}#1}}
+\newcommand{\red}[1]{{\color{red}#1}}
+\newcommand{\alert}[1]{{\color{alert}#1}}
+\newcommand{\Alert}[1]{\emph{\color{alert}#1}}
+
+
+\usepackage{hyperref} %[pdftex,bookmarks]
+% \hypersetup{
+%     colorlinks=true,
+%     linkcolor=viridian,
+%     filecolor=viridian,
+%     citecolor=viridian,
+%     urlcolor=viridian,
+%     pdftitle={Overleaf Example},
+%     pdfpagemode=FullScreen,
+%     }
+
+
+
+
+
+%%% Pictures %%%---------------------------------------------------------
+%%% If you need to draw pictures, tikzpicture is one good option. Here are some basic things I always use:
+\usepackage{tikz}
+\usetikzlibrary{scopes}
+\usetikzlibrary{positioning}
+\usepgflibrary{shapes}
+\tikzstyle{V}=[draw, fill =black, circle, inner sep=0pt, minimum size=2pt]
+\tikzstyle{bV}=[draw, fill =black, circle, inner sep=0pt, minimum size=4pt]
+\tikzstyle{over}=[draw=white,double=black,line width=3pt]
+\tikzstyle{C}=[draw, thick, fill =white, circle, inner sep=0pt, minimum size=6pt]
+
+
+\newcommand\TikZ[1]{\begin{matrix}\begin{tikzpicture}#1\end{tikzpicture}\end{matrix}}
+
+\newcounter{r}
+\newcommand\Part[1]{
+	\setcounter{r}{1}
+	\foreach \x in {#1}{
+			{\ifnum\value{r}=1
+						\draw (0,\value{r}-1)--(\x,\value{r}-1);
+					\fi}
+			\draw (0,\value{r}) to (\x,\value{r});
+			\foreach \y in {0, ..., \x} {\draw (\y,\value{r})--(\y,\value{r}-1);}
+			\addtocounter{r}{1}
+		}}
+\def\PartUNIT{.175}
+%Self-contained tikz images for \Part above.
+\newcommand{\PART}[1]{
+	\begin{matrix}
+		\begin{tikzpicture}[xscale=\PartUNIT, yscale=-\PartUNIT]
+			\Part{#1}
+		\end{tikzpicture}
+	\end{matrix}
+}
+
+
+
+
+
+
+%%% Alphabets %%%---------------------------------------------------------
+%%% Some shortcuts for my commonly used special alphabets and characters.
+\def\cA{\mathcal{A}}\def\cB{\mathcal{B}}\def\cC{\mathcal{C}}\def\cD{\mathcal{D}}\def\cE{\mathcal{E}}\def\cF{\mathcal{F}}\def\cG{\mathcal{G}}\def\cH{\mathcal{H}}\def\cI{\mathcal{I}}\def\cJ{\mathcal{J}}\def\cK{\mathcal{K}}\def\cL{\mathcal{L}}\def\cM{\mathcal{M}}\def\cN{\mathcal{N}}\def\cO{\mathcal{O}}\def\cP{\mathcal{P}}\def\cQ{\mathcal{Q}}\def\cR{\mathcal{R}}\def\cS{\mathcal{S}}\def\cT{\mathcal{T}}\def\cU{\mathcal{U}}\def\cV{\mathcal{V}}\def\cW{\mathcal{W}}\def\cX{\mathcal{X}}\def\cY{\mathcal{Y}}\def\cZ{\mathcal{Z}}
+
+\def\AA{\mathbb{A}} \def\BB{\mathbb{B}} \def\CC{\mathbb{C}} \def\DD{\mathbb{D}} \def\EE{\mathbb{E}} \def\FF{\mathbb{F}} \def\GG{\mathbb{G}} \def\HH{\mathbb{H}} \def\II{\mathbb{I}} \def\JJ{\mathbb{J}} \def\KK{\mathbb{K}} \def\LL{\mathbb{L}} \def\MM{\mathbb{M}} \def\NN{\mathbb{N}} \def\OO{\mathbb{O}} \def\PP{\mathbb{P}} \def\QQ{\mathbb{Q}} \def\RR{\mathbb{R}} \def\SS{\mathbb{S}} \def\TT{\mathbb{T}} \def\UU{\mathbb{U}} \def\VV{\mathbb{V}} \def\WW{\mathbb{W}} \def\XX{\mathbb{X}} \def\YY{\mathbb{Y}} \def\ZZ{\mathbb{Z}}
+
+\def\fa{\mathfrak{a}} \def\fb{\mathfrak{b}} \def\fc{\mathfrak{c}} \def\fd{\mathfrak{d}} \def\fe{\mathfrak{e}} \def\ff{\mathfrak{f}} \def\fg{\mathfrak{g}} \def\fh{\mathfrak{h}} \def\fj{\mathfrak{j}} \def\fk{\mathfrak{k}} \def\fl{\mathfrak{l}} \def\fm{\mathfrak{m}} \def\fn{\mathfrak{n}} \def\fo{\mathfrak{o}} \def\fp{\mathfrak{p}} \def\fq{\mathfrak{q}} \def\fr{\mathfrak{r}} \def\fs{\mathfrak{s}} \def\ft{\mathfrak{t}} \def\fu{\mathfrak{u}} \def\fv{\mathfrak{v}} \def\fw{\mathfrak{w}} \def\fx{\mathfrak{x}} \def\fy{\mathfrak{y}} \def\fz{\mathfrak{z}}
+\def\fgl{\mathfrak{gl}}  \def\fsl{\mathfrak{sl}}  \def\fso{\mathfrak{so}}  \def\fsp{\mathfrak{sp}}
+\def\fN{\mathfrak{N}}
+% \DeclareMathOperator{\GL}{GL}
+% \DeclareMathOperator{\SL}{SL}
+% \DeclareMathOperator{\SP}{SP}
+% \DeclareMathOperator{\OG}{O}
+
+\def\aa{\mathbf{a}} \def\bb{\mathbf{b}} \def\cc{\mathbf{c}} \def\dd{\mathbf{d}} \def\ee{\mathbf{e}} \def\ff{\mathbf{f}}
+%\def\gg{\mathbf{g}}
+\def\hh{\mathbf{h}} \def\ii{\mathbf{i}} \def\jj{\mathbf{j}} \def\kk{\mathbf{k}}
+%\def\ll{\mathbf{l}}
+\def\mm{\mathbf{m}} \def\nn{\mathbf{n}} \def\oo{\mathbf{o}} \def\pp{\mathbf{p}} \def\qq{\mathbf{q}} \def\rr{\mathbf{r}} \def\ss{\mathbf{s}} \def\tt{\mathbf{t}} \def\uu{\mathbf{u}} \def\vv{\mathbf{v}} \def\ww{\mathbf{w}} \def\xx{\mathbf{x}} \def\yy{\mathbf{y}} \def\zz{\mathbf{z}}
+\def\zzero{\mathbf{0}}
+
+\def\<{\langle} \def\>{\rangle}
+\DeclareMathOperator{\ad}{ad}
+\DeclareMathOperator{\Aut}{Aut}
+\DeclareMathOperator{\ch}{ch}
+\DeclareMathOperator{\col}{col}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\dimn}{dim}
+\DeclareMathOperator{\End}{End}
+\DeclareMathOperator{\ev}{ev}
+\def\f{\varphi}
+\def\half{\hbox{$\frac12$}}
+\DeclareMathOperator{\Hom}{Hom}
+\DeclareMathOperator{\img}{img}
+\DeclareMathOperator{\Inn}{Inn}
+\DeclareMathOperator{\id}{id}
+\DeclareMathOperator{\mdeg}{mdeg}
+\DeclareMathOperator{\rad}{rad}
+\DeclareMathOperator{\Rep}{Rep}
+\DeclareMathOperator{\row}{row}
+\DeclareMathOperator{\rk}{rank}
+\def\normeq{\trianglelefteq}
+\DeclareMathOperator{\nul}{nullity}
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\spn}{span}
+\DeclareMathOperator{\supp}{supp}
+\DeclareMathOperator{\Syl}{Syl}
+\DeclareMathOperator{\Sym}{Sym}
+\DeclareMathOperator{\tr}{tr}
+\def\vep{\varepsilon}
+\DeclareMathOperator{\lcm}{lcm}
+
+\def\ol{\overline}
+\newcommand{\Wedge}[1]{\hbox{$\bigwedge\nolimits^{\! #1}$}}
+
+
+\def\Hfill{$ $\hfill}
+
+
+% Arrows:
+\newcommand\xdhrightarrow[2][]{%
+	\mathrel{\ooalign{$\xrightarrow[#1\mkern4mu]{#2\mkern4mu}$\cr%
+			\hidewidth$\rightarrow\mkern4mu$}}
+}
+%\newcommand\dhrightarrow{%
+% \mathrel{\ooalign{$\rightarrow$\cr%
+% $\mkern3.5mu\rightarrow$}}
+%}
+\def\dhrightarrow{\twoheadrightarrow}
+\def\dhleftarrow{\twoheadleftarrow}
+
+\usepackage{mathabx}
+\def\acts{\lefttorightarrow} %group action
+
+\usepackage{wasysym}
+
+% Arrays:
+\newcommand\Pmatrix[1]{\begin{pmatrix}#1\end{pmatrix}}
+\newcommand\smatrix[1]{\text{\small$\begin{pmatrix}#1\end{pmatrix}$}}
+\newcommand\fmatrix[1]{\text{\footnotesize$\begin{pmatrix}#1\end{pmatrix}$}}
+\newcommand\tmatrix[1]{\text{\tiny$\begin{pmatrix}#1\end{pmatrix}$}}
+
+\DeclarePairedDelimiter{\norm}{\lVert}{\rVert}
+\DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
+\DeclarePairedDelimiter{\ang}{\langle}{\rangle}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
+\newcommand{\middlemid}{%
+	\ensuremath{\;\middle\vert\;}
+}
+
+\newcommand{\dblang}[1]{%
+	\ensuremath{\left\langle\!\left\langle#1\right\rangle\!\right\rangle}
+}
+
+\newcommand{\comment}[1]{%
+	\text{\phantom{(#1)}} \tag{#1}%
+}
+
+\newcommand{\commath}[1]{%
+	\phantom{(#1)} \tag{#1}%
+}
+
+\def\FOUR{4}\def\ONE{1}\def\FIVE{5}\def\EIGHT{8}\def\THREE{3}\def\TWO{2}\def\SIX{6}\def\SEVEN{7}
+
+\newcommand{\chareq}{%
+	\mathrel{\mathpalette\chRAW\relax}%
+}
+
+
+\makeatletter
+\newcommand{\chRAW}[2]{%
+	\sbox\z@{$#1\LHD$}%
+	\sbox\tw@{$#1\leqslant$}%
+	\dimen@=\ht\tw@
+	\advance\dimen@-\ht\z@
+	\advance\dimen@ .3pt
+	\ifx#1\displaystyle
+		\advance\dimen@ .2pt
+	\else
+		\ifx#1\textstyle
+			\advance\dimen@ .2pt
+		\fi
+	\fi
+	\ooalign{\raisebox{\dimen@}{$\m@th#1\LHD$}\cr$\m@th#1\leqslant$\cr}%
+}
+\makeatother

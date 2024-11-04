@@ -1,0 +1,548 @@
+\input{prelude.tex}
+
+\usepackage[linesnumbered]{algorithm2e}
+\usepackage{biblatex}
+\usepackage{imakeidx}
+\usepackage{microtype}
+
+\addbibresource{bibliography.bib}
+
+\numberwithin{equation}{section}
+
+\makeindex
+
+\title{Thesis Draft: Algebrization}
+\author{Patrick Norton}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+The $\P$ vs $\NP$ problem is perhaps the most important open problem in
+complexity theory.
+
+\section{Preliminaries}
+
+% TODO: Do we need Hamming distance? I can't find them actually using it in CFGS22
+
+\subsection{Turing machines}
+
+% TODO: Do we even need to formally define a TM?
+
+Central to our definitions of complexity is that of a Turing machine. This is
+the most common mathematical model of a computer, and is the jumping-off point
+for mant variants. There are many ways to think of a Turing machine, but the
+most common is that of a small machine that can read and write to an
+arbitrarily-long ``tape'' according to some finite set of rules. We give a more
+formal definition below, and then we will attempt to take this definition into a
+more manageable form.
+\begin{defn}[{\cite[Def.\ 3.1]{Sip97}}]\label{def:TM}\index{Turing machine}
+  A \emph{Turing machine} is a 7-tuple $(Q, \Sigma, \Gamma, \delta, q_{0}, q_{a}, q_{r})$ where
+  $Q$, $\Sigma$, and $\Gamma$ are all finite sets and
+  % TODO: Rephrase to separate out terminology and definitions?
+  \begin{enumerate}
+    \item $Q$ is the set of \emph{states},
+    \item $\Sigma$ is the \emph{input alphabet},
+    \item $\Gamma$ is the \emph{tape alphabet},
+    \item $\delta: Q \times \Gamma \rightarrow Q \times \Gamma \times \{L, R\}$ is the \emph{transition function},
+    \item $q_{0} \in Q$ is the \emph{start state},
+    \item $q_{a} \in Q$ is the \emph{accept state},
+    \item $q_{r} \in Q$ is the \emph{reject state}, with $q_{a} \ne q_{r}$.
+  \end{enumerate}
+\end{defn}
+
+While we have this formalism here as a useful reference, even here we will most
+frequently refer to Turing machines in a more intuitionisitc form. There are
+several ways we will think about Turing machines.
+
+The first way to think about a Turing machine is as a little computing box with
+a tape. We let the box read and write to the tape, and each step it can move the
+tape one space in either direction. At some point, the machine can decide it is
+done, in which case we say it ``halts''; however it does not necessarily need to
+halt. For this paper, we will only think about machines that \emph{do} halt, and
+in particular we will care about how many it takes us to get there. Further, we
+will use this informalism as a base from which we can define our Turing machine
+variants intuitively, without needing to deal with the (potentially extremely
+convoluted) formalism.
+
+% TODO: Cite Church-Turing
+Another way we think about a Turing machine is as an algorithm. Perhaps the
+foundational paper of modern computer science theory, the \emph{Church-Turing
+  thesis}, states that any actually-computable algorithm has an equivalent
+Turing machine, and vice versa. We will use this fact liberally; in many cases
+we will simply describe an algorithm and not deal with putting it into the
+context of a Turing machine. If we have explained the algorithm well enough that
+a reader can execute it (as we endeavor to do), then we know a Turing machine
+must exist.
+% TODO: Is any of this really necessary?
+
+% TODO: Nondeterministic TM
+
+\subsection{Complexity classes}
+
+% TODO: P, NP, PSPACE, NPSPACE at least
+% Also PSPACE-complete and probably NP-complete
+% Should I define a complexity class?
+
+\subsection{Polynomials}
+
+Much of our work will deal with multivariate polynomials. For a given field
+$\mathbb{F}$, we will denote the set of $m$-variable polynomials over
+$\mathbb{F}$ with $\mathbb{F}[x_{1, \ldots, m}]$.
+
+\begin{defn}[{\cite[8]{AW09}}]\label{def:mdeg}\index{multidegree}
+  The \emph{multidegree} of a multivariate polynomial $p$, written $\mdeg(d)$,
+  is the maximum degree of any variable $x_{i}$ of $p$.
+\end{defn}
+
+It is worth noting that for monovariate polynomials, multidegree and degree
+coincide. The difference between multidegree and degree is subtle, but
+important. We shall illustrate the difference with a simple example.
+
+\begin{example}
+  Consider the polynomial $x_{1}^{2}x_{2} + x_{2}^{2}$. The multidegree of this
+  polynomial is 2, while its degree is 3.
+\end{example}
+
+We denote by $\mathbb{F}[x_{1, \ldots, m}^{\le d}]$ the subset of
+$\mathbb{F}[x_{1, \ldots, m}]$ of polynomials with multidegree at most $d$. We also
+need two special cases of these polynomials, which we will want to quickly be
+able to reference throughout the paper.
+
+\begin{defn}[{\cite[8]{AW09}}]\label{def:mlin}\index{multilinear}\index{multiquadratic}
+  A polynomial is \emph{multilinear} if it has multidegree at most 1. Similarly,
+  a polynomial is \emph{multiquadratic} if it has multidegree at most 2.
+\end{defn}
+
+From here, we need to define the notion of an \emph{extension polynomial}. This
+gives the ability to take an arbitrary multivariate function defined on a subset
+of a field and extend it to be a multivariate polynomial over the \emph{whole}
+field.
+
+\begin{defn}[{\cite[8]{AW09}}]\label{def:ext-poly}\index{extension polynomial}
+  Let $\mathbb{F}$ be a finite field, $H \subseteq \mathbb{F}$, $m \in \mathbb{N}$ a number, and
+  $f: H^{m} \rightarrow \mathbb{F}$ be a function. An \emph{extension polynomial} of $f$
+  is any polynomial $f' \in \mathbb{F}[x_{1, \ldots, m}]$ such that $f(h) = f'(h)$ for
+  all $h \in H$.
+\end{defn}
+
+It turns out that this polynomial needs only to be of a surprisingly low
+multidegree. Since polynomials of lower degree are generally easier to compute,
+we would like to have some measure of what a ``small'' polynomial actually is in
+this context.
+
+% TODO: Rewrite \hat{f} as \tilde{f} to agree with AW09
+\begin{defn}[{\cite[\defaultS 5.1]{CFGS22}}]\label{def:low-deg-ext}\index{low-degree extension}
+  Let $\mathbb{F}$ be a finite field, $H \subseteq \mathbb{F}$, $m \in \mathbb{N}$ a number, and
+  $f: H^{m} \rightarrow \mathbb{F}$ be a function. A \emph{low-degree extension} $\hat{f}$
+  of $f$ is an extension of $f$ with multidegree at most $\abs{H} - 1$.
+\end{defn}
+
+% TODO: Cite these statements
+It turns out that this is the minimum possible degree of any extension
+polynomial. Further, it turns out that for any $f$, there is a \emph{unique}
+low-degree extension. Neither of these statements are particularly important for
+our further work, so we will not endeavor to prove them here. Something of
+practical use to us is an explicit formula for the low-degree extension, which
+we shall now calculate.
+
+\begin{thm}[{\cite[\defaultS 5.1]{CFGS22}}]
+  Let $\mathbb{F}$ be a finite field, $H \subseteq \mathbb{F}$, $m \in \mathbb{N}$ a number, and
+  $f: H^{m} \rightarrow \mathbb{F}$. Then a low-degree extension $\hat{f}$ of $f$ is the
+  function
+  \begin{equation}
+    \hat{f}(x) = \sum_{\beta \in H^{m}}\delta_{\beta}(x)f(\beta),
+  \end{equation}
+  where $\delta$ is the polynomial
+  % TODO? Flip x and y here
+  \begin{equation}\label{eqn:delta-poly}
+    \delta_{x}(y) = \prod_{i = 1}^{m}\left(\sum_{\omega \in H}\left(
+        \prod_{\gamma \in H \setminus \{\omega\}}\frac{(x_{i} - \gamma)(y_{i} - \gamma)}{(\omega - \gamma)^{2}}
+      \right)\right).
+  \end{equation}
+\end{thm}
+
+\begin{proof}
+  First, we must show $\hat{f}$ has multidegree $\abs{H} - 1$. First, note that
+  $\hat{f}$ is a linear combination of some $\delta_{x}$es; hence asking about the
+  multidegree of $\hat{f}$ is really just asking about the multidegree of
+  $\delta_{x}$. Looking at $\delta_{x}$, the innermost product has $\abs{H} - 1$ terms,
+  each with the same $y_{i}$; thus those terms have multidegree $\abs{H} - 1$.
+  Summing terms preserves their multidegree, and the outer product iterates over
+  the variables, thus it preserves multidegree as well. Thus, $\delta_{x}$ has
+  multidegree $\abs{H} - 1$.
+
+  % TODO: Turn this into a lemma?
+  To understand why $\hat{f}(x)$ agrees with $f(x)$ on $H$, we first should look
+  at $\delta_{\beta}(x)$. In particular, for all $x, y \in H^{m}$,
+  \begin{equation*}
+    \delta_{y}(x) = \begin{cases}
+      1 & x = y \\
+      0 & x \ne y.
+    \end{cases}
+  \end{equation*}
+  This can be shown through some straightforward but tedious algebra which we
+  have omitted here. The equivalence above is the reason we have chosen our
+  notation here to be reminiscent of the Kronecker delta function.
+
+  Taking the above statement, we get that for all $x \in H^{m}$, the only nonzero
+  term of $\hat{f}(x)$ is the term where $\beta = x$; thus $\hat{f}(x) = f(x)$.
+  Hence, $\hat{f}$ is a low-degree extension of $f$.
+  % TODO: Does this even need a proof or can we leave it as a claim?
+\end{proof}
+
+Of particular interest to us will be the case of low-degree extensions where
+$H = \{0, 1\}$. Since every field contains both $0$ and $1$, this will allow us
+to construct a set consisting of an extension for \emph{every} field. Further,
+since $\abs{H} = 2$ here, it means our low-degree extensions will be
+multilinear. Not only do we thus constrain our polynomial to have a very low
+multidegree, the $\delta$ function also dramatically simplifies in this case, which
+makes it much easier to reason about.
+
+\begin{cor}[{\cite[\defaultS 4.1]{AW09}}]
+  Let $\mathbb{F}$ be a finite field, $m \in \mathbb{N}$ a number, and
+  $f: \{0, 1\}^{m} \rightarrow \mathbb{F}$. Then
+  \begin{equation}
+    \hat{f}(x) = \sum_{\beta \in \{0, 1\}^{m}}\delta_{\beta}(x)f(\beta)
+  \end{equation}
+  is a low-degree extension of $f$, where $\delta$ is the polynomial
+  \begin{equation}\label{eqn:delta-poly-small}
+    \delta_{x}(y) = \left(\prod_{i:x_{i}=1}y_{i}\right)\left(\prod_{i:x_{i}=0}(1 - y_{i})\right).
+  \end{equation}
+\end{cor}
+Note that in the product bound $i:x_{i} = 1$, we mean the product over all
+numbers $i$ such that $x_{i} = 1$.
+% TODO: Prove?
+
+As we can see, the form of $\delta$ in Equation~\eqref{eqn:delta-poly-small} is much
+more manageable than the form in Equation~\eqref{eqn:delta-poly}, and it is
+perhaps more immediately apparent here why $\delta$ has the property it does.
+
+The form of $\delta_{x}$ defined in Equation~\eqref{eqn:delta-poly-small} has further
+use to us than just being simpler.
+
+% TODO: Find better statement of this theorem
+\begin{thm}[{\cite[\defaultS 4.1]{AW09}}]
+  For any field $\mathbb{F}$, the set $\{\delta_{x} \mid x \in \{0, 1\}^{n}\}$ forms a
+  basis for the vector space of multilinear polynomials
+  $\mathbb{F}^{n} \rightarrow \mathbb{F}$.
+\end{thm}
+
+% TODO: I should probably define the Boolean cube somewhere
+This is a particularly useful basis because it allows us to reason about
+multilinear polynomials in terms of their outcomes on the Boolean cube.
+
+\section{Relativization}
+
+An important prerequisite to understanding algebrization is the similar, but
+simpler, concept of \emph{relativization}, also called \emph{oracle separation}.
+To do this, we first must define an \emph{oracle}.
+\begin{defn}[{\cite[Def.\ 2.1]{AW09}}]\label{def:oracle}\index{oracle}
+  An \emph{oracle} $A$ is a collection of Boolean functions
+  $A_{m}: \{0, 1\}^{m} \rightarrow \{0, 1\}$, one for each natural number $m$.
+\end{defn}
+There are several ways to think of an oracle; this will extend the most
+naturally when it comes time to define an extension oracle in
+Definition~\ref{def:ext-oracle}. Another way to think of an oracle is as a
+subset $A \subseteq \{0, 1\}^{*}$. This allows us to think of $A$ as a language. Since
+we can do this, it gives us the ability to think of the complexity of the
+oracle. If we want to think about the subset in terms of our functions, we can
+write $A$ as
+\begin{equation}
+  A = \bigcup_{m \in \mathbb{N}}\left\{x \in \{0, 1\}^{m} \mid A_{m}(x) = 1\right\}.
+\end{equation}
+
+An oracle is not particularly interesting mathematical object on its own; its
+utility comes from when it interacts with a Turing machine.
+\begin{defn}\label{def:tm-oracle}\index{Turing machine!with oracle}
+  A \emph{Turing machine with an oracle} is % TODO
+\end{defn}
+Of course, the question now becomes how we can effectively use an oracle in an
+algorithm. The previously-mentioned conception of an oracle as a set of strings
+is useful here. If we consider the set of strings as being a \emph{language} in
+its own right, then querying the oracle is the same as determining whether a
+string is in the langauge, just in one step. If the language is computationally
+hard, this means our machine can get a significant power boost from the right
+oracle.
+\begin{defn}[{\cite[Def.\ 2.1]{AW09}}]\label{def:oracle-class}
+  For any complexity class $\mathcal{C}$, the complexity class $\mathcal{C}^{A}$ is the class of all
+  languages determinable by a Turing machine with access to $A$ in the number of
+  steps defined for $\mathcal{C}$.
+\end{defn}
+
+% TODO: Define what it means to relativize (and why this is a barrier)
+
+\subsection{Query complexity}\label{sec:query-complexity}
+
+The goal of query complexity is to ask questions about some Boolean function
+$A: \{0, 1\}^{n} \rightarrow \{0, 1\}$ by querying $A$. For this, we will interchangeably
+think of $A$ as a \emph{function} as well as a bit string of length $N = 2^{n}$,
+where each string element is $A$ applied to the $i$th string of length $n$,
+arranged in some lexicographical order. % TODO: Better way to phrase this
+We can further think of the property itself as being a Boolean function; a
+function that takes as input the bit-string representation of $A$ and outputs
+whether or not $A$ has the given property. We will call the function
+representing the property $f$. When viewed like this, $f$ is a function from
+$\{0, 1\}^{N}$ to $\{0, 1\}$. We define three types of query complexity for
+three of the most common types of computing paradigms: deterministic,
+randomized, and quantum. Nondeterministic query complexity is interesting, but
+it is outside the scope of this paper.
+% TODO: Why on earth does this paper not define nondeterministic query complexity?
+
+% TODO: Find better source for these definitions
+% Perhaps rephrase in the style of AW09 Def. 4.1?
+\begin{defn}[{\cite[17]{AW09}}]\label{def:det-qc}\index{query complexity!deterministic}
+  Let $f: \{0, 1\}^{N} \rightarrow \{0, 1\}$ be a Boolean function. Then the
+  \emph{deterministic query complexity} of $f$, which we write $D(f)$, is the
+  minimum number of queries made by any deterministic algorithm with access to
+  an oracle $A$ that determines the value of $f(A)$.
+  % TODO: I don't quite understand the phrasing here; perhaps rephrase
+\end{defn}
+
+For the next two definitions, since their Turing machines include some element
+of randomness, we only require that they succeed with a $2/3$ probability. This
+is in line with most definitions of complexity classes involving random
+computers.
+
+\begin{defn}[{\cite[17]{AW09}}]\label{def:rand-qc}\index{query complexity!randomized}
+  Let $f: \{0, 1\}^{N} \rightarrow \{0, 1\}$ be a Boolean function. Then the
+  \emph{randomized query complexity} of $f$, which we write $D(f)$, is the
+  minimum number of queries made by any randomized algorithm with access to an
+  oracle $A$ that evaluates $f(A)$ with probability at least $2/3$.
+\end{defn}
+
+% TODO: Talk about how quantum oracles are weird?
+
+\begin{defn}[{\cite[17]{AW09}}]\label{def:quant-qc}\index{query complexity!quantum}
+  Let $f: \{0, 1\}^{N} \rightarrow \{0, 1\}$ be a Boolean function. Then the
+  \emph{quantum query complexity} of $f$, which we write $D(f)$, is the
+  minimum number of queries made by any quantum algorithm with access to an
+  oracle $A$ that evaluates $f(A)$ with probability at least $2/3$.
+\end{defn}
+% TODO: Deterministic & nondeterministic query complexity
+
+\subsection{Relativization of $\P$ vs.\ $\NP$}\label{sec:rel-p-np}
+
+An important example of relativization is that of $\P$ and $\NP$. The similarity
+of relativization to algebrization means that the structure of these proofs will
+return in Section~\ref{sec:alg-p-np} when we show the algebrization of $\P$ and
+$\NP$.
+
+% TODO: Show P^A \subseteq NP^A always
+\begin{lemma}
+  For any oracle $A$, $\P^{A} \subseteq \NP^{A}$.
+\end{lemma}
+
+\begin{proof}
+  Since any deterministic Turing machine is also a nondeterministic machine, it
+  follows that a machine that solves a $\P^{A}$ problem is also an $\NP^{A}$
+  machine. Hence, $\P^{A} \subseteq \NP^{A}$.
+\end{proof}
+
+\begin{lemma} % TODO: Cite (BFL90 somewhere)
+  The multilinear extension of any $\PSPACE$-complete language is also in
+  $\PSPACE$.
+\end{lemma}
+
+\begin{proof}
+  % TODO
+\end{proof}
+
+\begin{thm}[{\cite[Theorem 2]{BGS75}}]\label{thm:p-np-rel}
+  There exists an oracle $A$ such that $\P^{A} = \NP^{A}$.
+\end{thm}
+
+\begin{proof}
+  For this, we can let $A$ be any $\PSPACE$-complete language. By letting our
+  machine in $\P$ be the reducer from $A$ to any other language in $\PSPACE$, we
+  therefore get that $\PSPACE \subseteq \P^{A}$. Similarly, if we have a problem in
+  $\NP^{A}$, we can verify it in polynomial space without talking to $A$ at all
+  (by having our machine include a determiner for $A$). Hence, we have that
+  $\NP^{A} \subseteq \NPSPACE$. Further, a celebrated result of Savitch~\cite{Sav70} is
+  that $\PSPACE = \NPSPACE$. Combining all these results, we get the chain
+  \begin{equation}
+    \NP^{A} \subseteq \NPSPACE = \PSPACE \subseteq \P^{A} \subseteq \NP^{A}.
+  \end{equation}
+  This is a circular chain of subset relations, which means everything in the
+  chain must be equal. Hence, $\P^{A} = \NP^{A} = \PSPACE$.
+\end{proof}
+
+For a slightly more intuitive view of what this proof is doing, what we have
+done is found an oracle that is so powerful that it dwarfs any amount of
+computation our actual Turing machine can do. Hence, the power of our machine is
+really just the same as the power of our oracle, and since we have given both
+the $\P$ and $\NP$ machine the same oracle, they have the same power.
+
+\begin{defn}[{\cite[436]{BGS75}}]\label{def:l(x)}\index{L(X)@$L(X)$}
+  Let $X$ be an oracle. The language $L(X)$ is the set
+  \begin{equation*}
+    L(X) = \{x \mid \text{there is } y \in X \text{ such that } \abs{y} = \abs{x}\}.
+  \end{equation*}
+\end{defn}
+
+\begin{lemma}[{\cite[436]{BGS75}}]
+  For any oracle $X$, $L(X) \in \NP^{X}$.
+\end{lemma}
+
+\begin{proof}
+  % TODO
+\end{proof}
+
+% TODO: Going to need BGS75 Lemma 2 here
+\begin{lemma}[{\cite[Lemma 2]{BGS75}}]
+  % TODO
+\end{lemma}
+
+\begin{thm}[{\cite[Theorem 3]{BGS75}}]\label{thm:p-np-nrel}
+  There exists an oracle $A$ such that $\P^{A} \ne \NP^{A}$.
+\end{thm}
+
+\begin{proof}
+  Our goal is to construct a set $B$ such that $L(B) \notin \P^{B}$. We wish to
+  construct $B$ iteratively. We give the following algorithm to construct $B$:
+
+  % TODO: Rewrite to be more like AW09 (which presents this better imo)
+  \begin{algorithm}[H]
+    % TODO: Define p_i(n)
+    $B(0) \leftarrow \emptyset$\;
+    $n_{0} \leftarrow 0$\;
+    \For{$i$ starting at $1$}{
+      Let $n > n_{i}$ be large enough that
+      $p_{i}(n) < 2^{n}$\nllabel{line:def-n}\;
+      Run $P_{i}^{B(i)}$ on input $0^{n}$\nllabel{line:computation}\;
+      \If{$P_{i}^{B(i)}$ rejects $0^{n}$}{
+        Let $x$ be a string of length $n$ not queried during the above
+        computation\nllabel{line:not-queried}\;
+        $B(i) \leftarrow B(i-1) \sqcup \{x\}$\;
+      }
+      $n_{i+1} \leftarrow 2^{n}$\;
+    }
+    $B \leftarrow \bigcup_{i}B(i)$\;
+    \caption{An algorithm for constructing $B$}\label{alg:construct-b}
+  \end{algorithm}
+
+  Now that we have presented the algorithm, let us demonstrate its soundness.
+  First, note that since $P_{i}$ runs in polynomial time, there will always
+  exist an $n$ as defined in line~\ref{line:def-n}. Next, since there are
+  $2^{n}$ strings of length $n$ and since $p_{i}(n) < 2^{n}$, we know that there
+  must be some $x$ to make line~\ref{line:not-queried} well-defined. While our
+  algorithm allows $x$ to be any string, if it is necessary to be explicit in
+  which we choose, then picking $x$ to be the smallest string in lexicographic
+  order is a standard choice.
+
+  Next, we demonstrate that $L(B) \notin \P^{B}$.
+  % TODO: Explain algorithm
+\end{proof}
+
+\section{Algebrization}\label{sec:algebrization}
+
+Algebrization, originally described by Aaronson and Wigderson~\cite{AW09}, is an
+extension of relativization. While relativization deals with oracles that are
+Boolean functions, algebrization extends oracles to be a collection of
+polynomials over finite fields.
+
+\begin{defn}[{\cite[Def.\ 2.2]{AW09}}]\label{def:ext-oracle}\index{extension oracle}
+  % TODO: Reuse definition of extension polynomial from earlier
+  Let $A_{m}: \{0, 1\}^{m} \rightarrow \{0, 1\}$ be a Boolean function and let
+  $\mathbb{F}$ be a finite field. Then an \emph{extension} of $A_{m}$
+  over $\mathbb{F}$ is a polynomial
+  $\tilde{A}_{m,\mathbb{F}}: \mathbb{F}^{m} \rightarrow \mathbb{F}$ such that
+  $\tilde{A}_{m,\mathbb{F}}(x) = A_{m}(x)$ whevever $x \in \{0, 1\}^{m}$. Also,
+  given an oracle $A = (A_{m})$, an extension $\tilde{A}$ of $A$ is a
+  collection of polynomials
+  $\tilde{A}_{m,\mathbb{F}}: \mathbb{F}^{m} \rightarrow \mathbb{F}$, one for each positive
+  integer $m$ and finite field $\mathbb{F}$, such that
+  \begin{enumerate}
+    \item $\tilde{A}_{m,\mathbb{F}}$ is an extension of $A_{m}$ for all
+          $m,\mathbb{F}$, and
+    \item there exists a constant $c$ such that
+          $\mdeg(\tilde{A}_{m,\mathbb{F}}) \le c$ for all $m, \mathbb{F}$.
+          % TODO: Rephrase point 2 in terms of F[x_{1,...,n}^{<= c}]
+  \end{enumerate}
+\end{defn}
+
+\begin{defn}[{\cite[Def.\ 2.2]{AW09}}]\label{def:ext-oracle-class}
+  For any complexity class $\mathcal{C}$ and extension oracle $\tilde{A}$, the complexity
+  class $\mathcal{C}^{\tilde{A}}$ is the class of all languages determinable by a Turing
+  machine with access to $\tilde{A}$ with the requirements for $\mathcal{C}$.
+\end{defn}
+
+% TODO: Define algebrization
+
+\subsection{Algebraic query complexity}
+
+Similarly to how we defined query complexity in
+Section~\ref{sec:query-complexity}, our notion of algebrization requires a
+definition of \emph{algebraic} query complexity. % TODO: More
+
+\begin{defn}[{\cite[Def. 4.1]{AW09}}]\label{def:aqc}\index{query complexity!algebraic}
+  Let $f: \{0, 1\}^{N} \rightarrow \{0, 1\}$ be a Boolean function, $\mathbb{F}$ be a
+  field, and $c$ be a positive integer. Also, let $\mathbb{M}$ be the set of
+  deterministic algorithms $M$ such that $M^{\tilde{A}}$ outputs $f(A)$ for
+  every oracle $A: \{0, 1\}^{n} \rightarrow \{0, 1\}$ and every finite field extension
+  $\tilde{A}: \mathbb{F}^{n} \rightarrow \mathbb{F}$ of $A$ with $\mdeg(\tilde{A}) \le c$.
+  Then, the deterministic algebraic query complexity of $f$ over $\mathbb{F}$ is
+  defined as
+  \begin{equation}
+    \tilde{D}_{\mathbb{F}, c}(f) = \min_{M \in \mathcal{M}}\left(
+      \max_{A, \tilde{A}: \mdeg(\tilde{A}) \le c}T_{M}(\tilde{A})
+    \right),
+  \end{equation}
+  where $T_{M}(\tilde{A})$ is the number of queries to $\tilde{A}$ made by
+  $M^{\tilde{A}}$.
+  % TODO: Can this be made more intelligible?
+\end{defn}
+
+Our goal here is to find the \emph{worst}-case scenario for the \emph{best}
+algorithm that calculates the property $f$. The difference between this and
+Definition~\ref{def:det-qc} is twofold: first, our algorithm $M$ has access to
+an extension oracle of $A$, and second, that we can limit our $\tilde{A}$ in
+its maximum multidegree. For the most part, we will focus on equations with
+multidegree 2, which is enough to get the results we want.
+
+% TODO: Deterministic & nondeterministic AQC
+% TODO: Work through the result of Juma et al. (JKRS09) that the OR problem can
+% be solved with 1 query for multilinear polynomials? More generally, perhaps
+% use the JKRS proofs instead of the AW proofs if they're cleaner?
+% Ok yeah, having read it, I definitely want JKRS09 Thm 3 b/c it's so slick
+
+\subsection{Algebrization of $\P$ vs.\ $\NP$}\label{sec:alg-p-np}
+
+As with relativization, an important application of algebrization is in regards
+to the $\P$ vs.\ $\NP$ problem.
+
+\begin{thm}[{\cite[Theorem 5.1]{AW09}}]\label{thm:p-np-alg}
+  There exist $A$, $\tilde{A}$ such that $\NP^{A} = \P^{\tilde{A}}$.
+\end{thm}
+
+\begin{proof}
+  % TODO: Pull the lemma from BFL into this paper
+  For this theorem, we use the same technique we did in our proof of
+  Theorem~\ref{thm:p-np-rel}: find a $\PSPACE$-complete language $A$ and work
+  from there. If we let $\tilde{A}$ be the unique multilinear extension of $A$,
+  Babai, Fortnow, and Lund~\cite{BFL90} have observed that the multilinear
+  extension of any $\PSPACE$ language is also in $\PSPACE$. Hence, reusing our
+  argument from Theorem~\ref{thm:p-np-rel}, we have
+  \begin{equation}
+    \NP^{\tilde{A}} = \NP^{\PSPACE} = \PSPACE = \P^{A}.
+  \end{equation}
+  % TODO
+  % NOTE: This uses BFL90 which introduces concepts of MIP & such; how do we
+  % work that in with the MIP work later in the thesis?
+\end{proof}
+
+\begin{thm}[{\cite[Theorem 5.3]{AW09}}]\label{thm:p-np-nalg}
+  There exist $A$, $\tilde{A}$ such that $\NP^{A} \ne \P^{\tilde{A}}$.
+\end{thm}
+
+\begin{proof}
+  % TODO
+\end{proof}
+
+\printbibliography{}
+
+\printindex{}
+
+\end{document}
