@@ -1,5 +1,4 @@
 \documentclass{reedthesis}
-% \usepackage[parfill]{parskip} % Activate to begin paragraphs with an empty line rather than an indent
 \usepackage{amsfonts, amscd, amssymb, amsthm, amsmath}
 \usepackage{mathtools} %xmapsto etc
 \usepackage{pdfsync} %leaves makers for tex searching
@@ -67,19 +66,19 @@
 \DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
 
 \newcommand{\middlemid}{%
-	\ensuremath{\;\middle\vert\;}
+  \ensuremath{\;\middle\vert\;}
 }
 
 \newcommand{\dblang}[1]{%
-	\ensuremath{\left\langle\!\left\langle#1\right\rangle\!\right\rangle}
+  \ensuremath{\left\langle\!\left\langle#1\right\rangle\!\right\rangle}
 }
 
 \newcommand{\comment}[1]{%
-	\text{\phantom{(#1)}} \tag{#1}%
+  \text{\phantom{(#1)}} \tag{#1}%
 }
 
 \newcommand{\commath}[1]{%
-	\phantom{(#1)} \tag{#1}%
+  \phantom{(#1)} \tag{#1}%
 }
 
 
@@ -171,9 +170,37 @@ must exist.
 
 \section{Complexity classes}
 
+Complexity classes are the main way we think about the hardness of problems in
+computer science. A complexity class\index{complexity class} is a collection of
+languages that all share a common level of difficulty.
+
 % TODO: P, NP, PSPACE, NPSPACE at least
 % Also PSPACE-complete and probably NP-complete
 % Should I define a complexity class?
+\begin{defn}\label{def:p}\index{P@$\P$}
+  The complexity class $\P$ is
+\end{defn}
+
+\begin{defn}\label{def:np}\index{NP@$\NP$}
+  The complexity class $\NP$ is
+  % TODO: Also talk about verifiers
+\end{defn}
+
+\begin{defn}\label{def:pspace}\index{PSPACE@$\PSPACE$}
+  The complexity class $\PSPACE$ is
+\end{defn}
+
+\begin{defn}\label{def:npspace}\index{NPSPACE@$\NPSPACE$}
+  The complexity class $\NPSPACE$ is
+\end{defn}
+
+\begin{defn}\label{def:pspace-complete}\index{PSPACE-complete@$\PSPACE$-complete}
+  A language is $\PSPACE$-complete if
+\end{defn}
+
+\begin{defn}\label{def:npspace-complete}\index{NPSPACE-complete@$\NPSPACE$-complete}
+  A language is $\NPSPACE$-complete if
+\end{defn}
 
 \section{Polynomials}
 
@@ -419,7 +446,6 @@ of relativization to algebrization means that the structure of these proofs will
 return in Section~\ref{sec:alg-p-np} when we show the algebrization of $\P$ and
 $\NP$.
 
-% TODO: Show P^A \subseteq NP^A always
 \begin{lemma}
   For any oracle $A$, $\P^{A} \subseteq \NP^{A}$.
 \end{lemma}
@@ -430,14 +456,9 @@ $\NP$.
   machine. Hence, $\P^{A} \subseteq \NP^{A}$.
 \end{proof}
 
-\begin{lemma} % TODO: Cite (BFL90 somewhere)
-  The multilinear extension of any $\PSPACE$-complete language is also in
-  $\PSPACE$.
-\end{lemma}
-
-\begin{proof}
-  % TODO
-\end{proof}
+This is a relatively straightforward result; we put it here to ``cover all our
+bases'', so to speak. From this, we can gather that our relativization results
+will be differentiating cases where $\P^{A} = \NP^{A}$ and $\P^{A} \subsetneq \NP^{A}$.
 
 \begin{thm}[{\cite[Theorem 2]{BGS75}}]\label{thm:p-np-rel}
   There exists an oracle $A$ such that $\P^{A} = \NP^{A}$.
@@ -471,12 +492,15 @@ the $\P$ and $\NP$ machine the same oracle, they have the same power.
   \end{equation*}
 \end{defn}
 
-\begin{lemma}[{\cite[436]{BGS75}}]
+\begin{lemma}[{\cite[436]{BGS75}}]\label{lem:l(x)-in--np}
   For any oracle $X$, $L(X) \in \NP^{X}$.
 \end{lemma}
 
 \begin{proof}
-  % TODO
+  Let $S$ be a string of length $n$. If $S \in L(X)$, then a witness for $S$ is
+  any string $S'$ such that $\abs{S} = \abs{S'}$ and $S' \in X$. Since a machine
+  with query access to $X$ can query whether $S'$ is in $X$ in one step, it
+  follows that we can verify that $S \in L(X)$ in polynomial time.
 \end{proof}
 
 % TODO: Going to need BGS75 Lemma 2 here
@@ -490,18 +514,23 @@ the $\P$ and $\NP$ machine the same oracle, they have the same power.
 
 \begin{proof}
   Our goal is to construct a set $B$ such that $L(B) \notin \P^{B}$. We wish to
-  construct $B$ iteratively. We give the following algorithm to construct $B$:
+  construct $B$ iteratively. We shall do this by taking a sequence of machines
+  in $\P^{A}$, and then constructing $B$ such that no machine could possibly
+  recognize $L(B)$. We give the following algorithm to construct $B$:
 
   % TODO: Rewrite to be more like AW09 (which presents this better imo)
   \begin{algorithm}[H]
+    % FIXME: Do the P_i need to be P machines? Everybody is unclear on this
+    \KwIn{A sequence of $\P$ oracle machines $\{P_{i}\}_{i=1}^{\infty}$}
+    \KwOut{A set $B$ such that $L(B) \notin \P^{B}$}
     % TODO: Define p_i(n)
     $B(0) \leftarrow \emptyset$\;
     $n_{0} \leftarrow 0$\;
     \For{$i$ starting at $1$}{
       Let $n > n_{i}$ be large enough that
       $p_{i}(n) < 2^{n}$\nllabel{line:def-n}\;
-      Run $P_{i}^{B(i)}$ on input $0^{n}$\nllabel{line:computation}\;
-      \If{$P_{i}^{B(i)}$ rejects $0^{n}$}{
+      Run $P_{i}^{B(i-1)}$ on input $0^{n}$\nllabel{line:computation}\;
+      \If{$P_{i}^{B(i-1)}$ rejects $0^{n}$}{
         Let $x$ be a string of length $n$ not queried during the above
         computation\nllabel{line:not-queried}\;
         $B(i) \leftarrow B(i-1) \sqcup \{x\}$\;
@@ -513,16 +542,43 @@ the $\P$ and $\NP$ machine the same oracle, they have the same power.
   \end{algorithm}
 
   Now that we have presented the algorithm, let us demonstrate its soundness.
-  First, note that since $P_{i}$ runs in polynomial time, there will always
-  exist an $n$ as defined in line~\ref{line:def-n}. Next, since there are
-  $2^{n}$ strings of length $n$ and since $p_{i}(n) < 2^{n}$, we know that there
-  must be some $x$ to make line~\ref{line:not-queried} well-defined. While our
-  algorithm allows $x$ to be any string, if it is necessary to be explicit in
-  which we choose, then picking $x$ to be the smallest string in lexicographic
-  order is a standard choice.
+  First, note that since $P_{i}$ runs in polynomial time, $p_{i}(n)$ is bounded
+  above by a polynomial, and hence there will always exist an $n$ as defined in
+  line~\ref{line:def-n}. Next, since there are $2^{n}$ strings of length $n$ and
+  since $p_{i}(n) < 2^{n}$, we know that there must be some $x$ to make
+  line~\ref{line:not-queried} well-defined. While our algorithm allows $x$ to be
+  any string, if it is necessary to be explicit in which we choose, then picking
+  $x$ to be the smallest string in lexicographic order is a standard choice.
 
-  Next, we demonstrate that $L(B) \notin \P^{B}$.
-  % TODO: Explain algorithm
+  % FIXME: Should this "end goal" section be moved to before the algorithm?
+  Next, we demonstrate that $L(B) \notin \P^{B}$. The end goal of our instruction is
+  a set $B$ such that if $P_{i}^{B}$ accepts $0^{n}$ then there are no strings
+  of length $n$ in $B$, and if $P_{i}^{B}$ rejects, then there is a string of
+  length $n$ in $B$. This means that no $P_{i}$ accepts $L(B)$, and hence
+  $L(B) \notin \NP^{B}$.
+
+  The central conceit behind the proper functioning of our algorithm is that
+  adding strings to our oracle \emph{cannot change the output if they are not
+    queried}. This is what we do in line~\ref{line:def-n}: we need our input
+  length to be long enough to guarantee that a non-queried string exists. Since
+  the number of queried strings is no greater than $p_{i}(n)$, and there are
+  $2^{n}$ strings of length $n$, there must be some string not queried.
+
+  Next, we run $P_{i}^{B(i-1)}$ on all the strings we have already added. If it
+  accepts, then we want to make sure that no string of length $n$ is in $B$;
+  that is, $0^{n}$ is not in $L(B)$. Hence, in this particular loop we add
+  nothing to $B(i)$. If $P_{i}^{B(i-1)}$ rejects, we then need to make sure that
+  $0^{n} \in L(B)$ but in a way that does not affect the output of
+  $P_{i}^{B(i-1)}$. Hence, we find a string that $P_{i}^{B(i-1)}$ did not query
+  (and thus will not affect the result) and add it to $B(i)$.
+
+  % TODO: More explanation of why this works
+  Having done this, we then set $n_{i+1}$ to be $2^{n}$. This ensures that no
+  already-seen machine $P_{i}$ queries any strings we might add in the next
+  iteration, which preserves the soundness of our algorithm. Hence, we have a
+  set $L(B)$ such that no machine in $\P^{B}$ accepts it, which tells us
+  $L(B) \notin \P^{B}$. But, Lemma~\ref{lem:l(x)-in--np} already told us
+  $L(B) \in \NP^{B}$. Hence, $\P^{B} \ne \NP^{B}$.
 \end{proof}
 
 \chapter{Algebrization}\label{chap:algebrization}
@@ -559,6 +615,21 @@ polynomials over finite fields.
 \end{defn}
 
 % TODO: Define algebrization
+\begin{defn}[{\cite[Def.\ 2.3]{AW09}}]\label{def:algebrization}\index{algebrization}
+  Let $\mathcal{C}$ and $\mathcal{D}$ be complexity classes such that $\mathcal{C} \subseteq \mathcal{D}$. We say the result
+  $\mathcal{C} \subseteq \mathcal{D}$ \emph{algebrizes} if $\mathcal{C}^{A} \subseteq \mathcal{D}^{\tilde{A}}$ for all oracles $A$ and
+  finite field extensions $\tilde{A}$ of $A$. Conversely, if there exists $A$
+  and $\tilde{A}$ such that $\mathcal{C} \nsubseteq \mathcal{D}$, we say that the result $\mathcal{C} \subseteq \mathcal{D}$ \emph{does
+    not algebrize}.
+\end{defn}
+
+\begin{defn}[{\cite[Def.\ 2.3]{AW09}}]\label{def:algebrization-neq}
+  Let $\mathcal{C}$ and $\mathcal{D}$ be complexity classes such that $\mathcal{C} \nsubseteq \mathcal{D}$. We say the result
+  $\mathcal{C} \nsubseteq \mathcal{D}$ \emph{algebrizes} if $\mathcal{C}^{A} \nsubseteq \mathcal{D}^{\tilde{A}}$ for all oracles $A$ and
+  finite field extensions $\tilde{A}$ of $A$. Conversely, if there exists $A$
+  and $\tilde{A}$ such that $\mathcal{C} \subseteq \mathcal{D}$, we say that the result $\mathcal{C} \nsubseteq \mathcal{D}$ \emph{does
+    not algebrize}.
+\end{defn}
 
 \section{Algebraic query complexity}
 
@@ -602,6 +673,20 @@ multidegree 2, which is enough to get the results we want.
 As with relativization, an important application of algebrization is in regards
 to the $\P$ vs.\ $\NP$ problem.
 
+\begin{lemma} % TODO: Cite (BFL90 somewhere)
+  The multilinear extension of any $\PSPACE$-complete language is also in
+  $\PSPACE$.
+\end{lemma}
+
+\begin{proof}
+  % TODO
+\end{proof}
+
+This result is incredibly important in Theorem~\ref{thm:p-np-alg}: this tells us
+that $\PSPACE$-complete languages are not made any more powerful when extended
+to finite fields. This allows to reuse the same analysis we made earlier in
+Theorem~\ref{thm:p-np-rel} mostly as-is.
+
 \begin{thm}[{\cite[Theorem 5.1]{AW09}}]\label{thm:p-np-alg}
   There exist $A$, $\tilde{A}$ such that $\NP^{A} = \P^{\tilde{A}}$.
 \end{thm}
@@ -617,7 +702,7 @@ to the $\P$ vs.\ $\NP$ problem.
   \begin{equation}
     \NP^{\tilde{A}} = \NP^{\PSPACE} = \PSPACE = \P^{A}.
   \end{equation}
-  % TODO
+  % TODO: Don't just say "reusing our argument": actually spell it out
   % NOTE: This uses BFL90 which introduces concepts of MIP & such; how do we
   % work that in with the MIP work later in the thesis?
 \end{proof}
