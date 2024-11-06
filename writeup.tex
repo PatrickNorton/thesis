@@ -177,6 +177,7 @@ languages that all share a common level of difficulty.
 % TODO: P, NP, PSPACE, NPSPACE at least
 % Also PSPACE-complete and probably NP-complete
 % Should I define a complexity class?
+% Do we want DTIME/NTIME?
 \begin{defn}\label{def:p}\index{P@$\P$}
   The complexity class $\P$ is
 \end{defn}
@@ -352,6 +353,8 @@ multilinear polynomials in terms of their outcomes on the Boolean cube.
 
 \chapter{Relativization}
 
+% TODO: Examples
+
 An important prerequisite to understanding algebrization is the similar, but
 simpler, concept of \emph{relativization}, also called \emph{oracle separation}.
 To do this, we first must define an \emph{oracle}.
@@ -375,6 +378,7 @@ utility comes from when it interacts with a Turing machine.
 \begin{defn}\label{def:tm-oracle}\index{Turing machine!with oracle}
   A \emph{Turing machine with an oracle} is % TODO
 \end{defn}
+
 Of course, the question now becomes how we can effectively use an oracle in an
 algorithm. The previously-mentioned conception of an oracle as a set of strings
 is useful here. If we consider the set of strings as being a \emph{language} in
@@ -382,13 +386,71 @@ its own right, then querying the oracle is the same as determining whether a
 string is in the langauge, just in one step. If the language is computationally
 hard, this means our machine can get a significant power boost from the right
 oracle.
+
 \begin{defn}[{\cite[Def.\ 2.1]{AW09}}]\label{def:oracle-class}
   For any complexity class $\mathcal{C}$, the complexity class $\mathcal{C}^{A}$ is the class of all
   languages determinable by a Turing machine with access to $A$ in the number of
   steps defined for $\mathcal{C}$.
 \end{defn}
 
+We will be using this definition in many places, so we should take a moment to
+look at it in more depth. First, it is important to realize that $\mathcal{C}^{A}$ is a
+set of \emph{languages}, not \emph{machines}: despite the notation, augmenting
+$\mathcal{C}$ with an oracle does not modify any languages, it just adds new ones that are
+computable. Second, since a machine can always ignore its oracle, it follows
+that adding an oracle can only increase the number of languages in the class,
+never decrease it.
+
+\begin{lemma}\label{thm:relativizing-increases}
+  For any complexity class $\mathcal{C}$ and oracle $A$, $\mathcal{C} \subseteq \mathcal{C}^{A}$.
+\end{lemma}
+
+\begin{proof}
+  % TODO
+\end{proof}
+
+\section{Defining relativization}
+
+We are now ready to define what relativization is. First, note that
+relativization is a statement about a \emph{result}: we talk about inclusions
+algebrizing, not sets themselves.
+
 % TODO: Define what it means to relativize (and why this is a barrier)
+% TODO: Cite
+\begin{defn}\label{def:relativization}\index{relativization}
+  Let $\mathcal{C}$ and $\mathcal{D}$ be complexity classes such that $\mathcal{C} \subseteq \mathcal{D}$. We say the result
+  $\mathcal{C} \subseteq \mathcal{D}$ \emph{relativizes} if $\mathcal{C}^{A} \subseteq \mathcal{D}^{A}$ for all oracles $A$. Conversely,
+  if there exists $A$ such that $\mathcal{C} \nsubseteq \mathcal{D}$, we say that the result $\mathcal{C} \subseteq \mathcal{D}$
+  \emph{does not algebrize}.
+\end{defn}
+
+\begin{defn}\label{def:relativization-ne}
+  Let $\mathcal{C}$ and $\mathcal{D}$ be complexity classes such that $\mathcal{C} \nsubseteq \mathcal{D}$. We say the result
+  $\mathcal{C} \nsubseteq \mathcal{D}$ \emph{relativizes} if $\mathcal{C}^{A} \nsubseteq \mathcal{D}^{A}$ for all oracles $A$. Conversely,
+  if there exists $A$ such that $\mathcal{C} \subseteq \mathcal{D}$, we say that the result $\mathcal{C} \nsubseteq \mathcal{D}$
+  \emph{does not algebrize}.
+\end{defn}
+
+We start with a very straightforward example of a relativizing result.
+
+\begin{lemma}\label{lem:pa-subset-npa}
+  For any oracle $A$, $\P^{A} \subseteq \NP^{A}$. Equivalently, the result $\P \subseteq \NP$
+  relativizes.
+\end{lemma}
+
+\begin{proof}
+  Since any deterministic Turing machine is also a nondeterministic machine, it
+  follows that a machine that solves a $\P^{A}$ problem is also an $\NP^{A}$
+  machine. Hence, $\P^{A} \subseteq \NP^{A}$.
+\end{proof}
+
+This result tells us that not \emph{everything} is weird in the world of
+relativization: if we have a machine that can do more operations without an
+oracle, it can still do so with an oracle. Further, for the question of $\P$
+vs.\ $\NP$ that we will discuss in Section~\ref{sec:rel-p-np}, this means that
+the question we care about is whether $\NP \subseteq^{?} \P$ relativizes. As such, the
+question we are asking simplifies to determining where $\P^{A} = \NP^{A}$ and
+where $\P^{A} \subsetneq \NP^{A}$.
 
 \section{Query complexity}\label{sec:query-complexity}
 
@@ -441,24 +503,15 @@ computers.
 
 \section{Relativization of $\P$ vs.\ $\NP$}\label{sec:rel-p-np}
 
-An important example of relativization is that of $\P$ and $\NP$. The similarity
-of relativization to algebrization means that the structure of these proofs will
-return in Section~\ref{sec:alg-p-np} when we show the algebrization of $\P$ and
-$\NP$.
+% TODO? move to relativization section as an example?
+An important example of relativization is that of $\P$ and $\NP$. While the
+question of if $\P = \NP$ is still open, we aim to show that \emph{regardless of
+the answer}, the result does not algebrize. To do this, we show that there are
+some oracles $A$ where $\P^{A} = \NP^{A}$, and some where $\P^{A} \ne \NP^{A}$.
 
-\begin{lemma}
-  For any oracle $A$, $\P^{A} \subseteq \NP^{A}$.
-\end{lemma}
-
-\begin{proof}
-  Since any deterministic Turing machine is also a nondeterministic machine, it
-  follows that a machine that solves a $\P^{A}$ problem is also an $\NP^{A}$
-  machine. Hence, $\P^{A} \subseteq \NP^{A}$.
-\end{proof}
-
-This is a relatively straightforward result; we put it here to ``cover all our
-bases'', so to speak. From this, we can gather that our relativization results
-will be differentiating cases where $\P^{A} = \NP^{A}$ and $\P^{A} \subsetneq \NP^{A}$.
+Additionally, it should be noted that the similarity of relativization to
+algebrization means that the structure of these proofs will return in
+Section~\ref{sec:alg-p-np} when we show the algebrization of $\P$ and $\NP$.
 
 \begin{thm}[{\cite[Theorem 2]{BGS75}}]\label{thm:p-np-rel}
   There exists an oracle $A$ such that $\P^{A} = \NP^{A}$.
@@ -614,7 +667,8 @@ polynomials over finite fields.
   machine with access to $\tilde{A}$ with the requirements for $\mathcal{C}$.
 \end{defn}
 
-% TODO: Define algebrization
+Next, we need to formally define what algebrization is.
+
 \begin{defn}[{\cite[Def.\ 2.3]{AW09}}]\label{def:algebrization}\index{algebrization}
   Let $\mathcal{C}$ and $\mathcal{D}$ be complexity classes such that $\mathcal{C} \subseteq \mathcal{D}$. We say the result
   $\mathcal{C} \subseteq \mathcal{D}$ \emph{algebrizes} if $\mathcal{C}^{A} \subseteq \mathcal{D}^{\tilde{A}}$ for all oracles $A$ and
@@ -673,6 +727,7 @@ multidegree 2, which is enough to get the results we want.
 As with relativization, an important application of algebrization is in regards
 to the $\P$ vs.\ $\NP$ problem.
 
+% TODO: What do we mean by "the multilinear extension of"?
 \begin{lemma} % TODO: Cite (BFL90 somewhere)
   The multilinear extension of any $\PSPACE$-complete language is also in
   $\PSPACE$.
