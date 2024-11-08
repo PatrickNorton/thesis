@@ -203,6 +203,9 @@ languages that all share a common level of difficulty.
   A language is $\NPSPACE$-complete if
 \end{defn}
 
+% TODO: If/when we pull random/quantum stuff in here, probably worth defining
+% BPP and BQP (QMA might need its own section?)
+
 \section{Polynomials}
 
 Much of our work will deal with multivariate polynomials. For a given field
@@ -265,7 +268,7 @@ our further work, so we will not endeavor to prove them here. Something of
 practical use to us is an explicit formula for the low-degree extension, which
 we shall now calculate.
 
-\begin{thm}[{\cite[\defaultS 5.1]{CFGS22}}]
+\begin{thm}[{\cite[\defaultS 5.1]{CFGS22}}]\label{thm:low-deg-ext-exists}
   Let $\mathbb{F}$ be a finite field, $H \subseteq \mathbb{F}$, $m \in \mathbb{N}$ a number, and
   $f: H^{m} \rightarrow \mathbb{F}$. Then a low-degree extension $\hat{f}$ of $f$ is the
   function
@@ -350,6 +353,50 @@ use to us than just being simpler.
 % TODO: I should probably define the Boolean cube somewhere
 This is a particularly useful basis because it allows us to reason about
 multilinear polynomials in terms of their outcomes on the Boolean cube.
+
+\begin{thm}[{\cite[Theorem 4.3]{AW09}}]
+  Let $\mathbb{F}$ be a field and $Y \subseteq \mathbb{F}^{n}$ be a set of $t$ points
+  $y_{1}, \ldots, y_{t}$. Then for at least $2^{n} - t$ Boolean points
+  $w \in \{0, 1\}^{n}$, there exists a multiquadratic extension polynomial
+  $p: \mathbb{F}^{n} \rightarrow \mathbb{F}$ such that
+  \begin{enumerate}
+    \item $p(y_{i}) = 0$ for all $i \in [t]$,
+    \item $p(w) = 1$,
+    \item $p(z) = 0$ for all Boolean $z \ne w$.
+  \end{enumerate}
+\end{thm}
+
+\begin{proof}
+  % TODO
+  % NOTE: AW09 Lemma 4.2 is *almost* a corollary of our Theorem 1.3.5, except
+  % for the fact that not all our points are in \{0, 1\}^n
+\end{proof}
+
+% TODO: Do we want this here?
+% TODO: Add preceding lemmas
+% TODO: Come up with descriptive names for these things (adversary polynomials?)
+\begin{lemma}[{\cite[Lemma 4.5]{AW09}}]\label{lem:multiquad-adversary}
+  Let $\mathcal{F}$ be a collection of fields. Let $f: \{0, 1\}^{n} \rightarrow \{0, 1\}$ be a
+  Boolean function, and for every $\mathbb{F} \in \mathcal{F}$, let
+  $p_{\mathbb{F}}: \mathbb{F}^{n} \rightarrow \mathbb{F}$ be a multiquadratic polynomial
+  over $\mathbb{F}$ extending $f$. Also let $\mathcal{Y}_{\mathbb{F}} \in \mathbb{F}^{n}$
+  for each $\mathbb{F} \in \mathcal{F}$, and define
+  $t = \sum_{\mathbb{F} \in \mathcal{F}}\abs{\mathcal{Y}_{\mathbb{F}}}$.
+
+  Then, there exists a subset $B \subseteq \{0, 1\}^{n}$, with $\abs{B} \le t$, such that
+  for all Boolean functions $f': \{0, 1\}^{n} \rightarrow \{0, 1\}$ that agree with $f$ on
+  $B$, there exist multiquadratic polynomials
+  $p_{\mathbb{F}}':\mathbb{F}_{n} \rightarrow \mathbb{F}$ (one for each $\mathbb{F} \in \mathcal{F}$)
+  such that
+  \begin{enumerate}
+    \item $p_{\mathbb{F}}'$ extends $f'$, and
+    \item $p_{\mathbb{F}}'(y) = p_{\mathbb{F}}(y)$ for all $y \in \mathcal{Y}_{\mathbb{F}}$.
+  \end{enumerate}
+\end{lemma}
+
+\begin{proof}
+  % TODO
+\end{proof}
 
 \chapter{Relativization}
 
@@ -767,10 +814,54 @@ Theorem~\ref{thm:p-np-rel} mostly as-is.
 \end{thm}
 
 \begin{proof}
+  Like in Theorem~\ref{thm:p-np-nrel}, we aim to ``diagonalize'': iterate over
+  all $\P^{\tilde{A}}$ machines to construct a language that none of them can
+  recognize. Also like before, we will do this by constructing an oracle
+  extension $\tilde{A}$ such that $L(A) \notin \P^{\tilde{A}}$. Since we only give an
+  algebraic extension to $\P$ and not $\NP$, we can resuse the result from
+  Lemma~\ref{lem:l(x)-in--np} that $L(B) \in \NP^{A}$. We shall construct
+  $\tilde{A}$ using the following algorithm:
+  % FIXME: Mention that until set, A_{n,F} outputs 0
+  \begin{algorithm}[H]
+    % FIXME: Do the P_i need to be P machines? Everybody is unclear on this
+    \KwIn{A sequence of $\P$ oracle machines $\{P_{i}\}_{i=1}^{\infty}$}
+    \KwOut{An extension oracle $\tilde{A}$ such that $L(A) \notin \P^{\tilde{A}}$}
+    % TODO: Define p_i(n)
+    $\tilde{A} \leftarrow \varnothing$\;
+    $n_{0} \leftarrow 0$\;
+    \For{$i$ starting at $1$}{
+      Let $n > n_{i}$ be large enough that
+      $p_{i}(n) < 2^{n}$\;
+      % TODO: Think of this as a collection of oracles instead of indices?
+      $T_{j} \leftarrow \bigcup_{j < i}S_{j}$\;
+      Run $P_{i}^{\tilde{A}}$ on input $0^{n}$\;
+      \eIf{$P_{i}^{B(i-1)}$ rejects $0^{n}$}{
+        Let $\mathcal{Y}_{\mathbb{F}}$ be the set of all $y \in \mathbb{F}^{n_{i}}$ queried
+        during the above computation\;
+        \tcp{See Lemma~\ref{lem:multiquad-adversary} for why we can do this}
+        Let $w \in \{0, 1\}^{n}$ such that the following
+        works\nllabel{line:def-w}\;
+        \For{all $\mathbb{F}$}{
+          Set $\tilde{A}_{n_{i},\mathbb{F}}$ to be a multiquadratic polynomial
+          such that $\tilde{A}_{n_{i},\mathbb{F}}(w) = 1$ and
+          $\tilde{A}_{n_{i},\mathbb{F}}(y) = 0$ for all
+          $y \in \mathcal{Y}_{\mathbb{F}} \cup (\{0, 1\}^{n_{i}} \setminus \{w\})$\nllabel{line:set-a}\;
+          % FIXME: Be more clear about what this means
+        }
+      }{
+        Set $\tilde{A}_{n_{i},\mathbb{F}} = 0$ for all $\mathbb{F}$\;
+      }
+      $n_{i+1} \leftarrow 2^{n}$\;
+    }
+    $B \leftarrow \bigcup_{i}B(i)$\;
+    \caption{An algorithm for constructing $\tilde{A}$}\label{alg:construct-b}
+  \end{algorithm}
+  As before, we will start by demonstrating soundness and then move on to why
+  the constructed oracle provides the separation we seek.
   % TODO
 \end{proof}
 
-\printbibliography{}
+\printbibliography[heading=bibintoc]{}
 
 \printindex{}
 
