@@ -12,6 +12,7 @@
 \usepackage{biblatex}
 \usepackage{imakeidx}
 \usepackage{microtype}
+\usepackage{tikz}
 
 %%% Theorems %%%---------------------------------------------------------
 \theoremstyle{plain}
@@ -170,21 +171,37 @@ must exist.
 
 \section{Complexity classes}
 
+% TODO: Do I need to define big-O for this?
+
 Complexity classes are the main way we think about the hardness of problems in
 computer science. A complexity class\index{complexity class} is a collection of
 languages that all share a common level of difficulty.
+
+\begin{defn}[{\cite[Def.\ 1.19]{AB09}}]\label{def:dtime}\index{DTIME@$\DTIME$}
+  % FIXME: Reword to make more clear what $n$ is
+  Let $f: \mathbb{N} \rightarrow \mathbb{N}$ be a function. The class $\DTIME(f(n))$ is the class of all
+  problems computable by a deterministic Turing machine in $O(f(n))$ steps for
+  some constant $c > 0$.
+\end{defn}
 
 % TODO: P, NP, PSPACE, NPSPACE at least
 % Also PSPACE-complete and probably NP-complete
 % Should I define a complexity class?
 % Do we want DTIME/NTIME?
-\begin{defn}\label{def:p}\index{P@$\P$}
-  The complexity class $\P$ is
+\begin{defn}[{\cite[Def.\ 1.20]{AB09}}]\label{def:p}\index{P@$\P$}
+  The complexity class $\P$ is the class
+  \[
+    \P = \bigcup_{c > 0}\DTIME(n^{c}).
+  \]
 \end{defn}
 
 \begin{defn}\label{def:np}\index{NP@$\NP$}
   The complexity class $\NP$ is
   % TODO: Also talk about verifiers
+\end{defn}
+
+\begin{defn}\label{def:np-complete}\index{NP-complete@$\NP$-complete}
+  A language is $\NP$-complete if
 \end{defn}
 
 \begin{defn}\label{def:pspace}\index{PSPACE@$\PSPACE$}
@@ -560,6 +577,11 @@ Additionally, it should be noted that the similarity of relativization to
 algebrization means that the structure of these proofs will return in
 Section~\ref{sec:alg-p-np} when we show the algebrization of $\P$ and $\NP$.
 
+\subsection{Equality}
+
+The more straightforward of the two proofs is the oracle where
+$\P^{A} = \NP^{A}$, so we shall begin with that.
+
 \begin{thm}[{\cite[Theorem 2]{BGS75}}]\label{thm:p-np-rel}
   There exists an oracle $A$ such that $\P^{A} = \NP^{A}$.
 \end{thm}
@@ -585,12 +607,26 @@ computation our actual Turing machine can do. Hence, the power of our machine is
 really just the same as the power of our oracle, and since we have given both
 the $\P$ and $\NP$ machine the same oracle, they have the same power.
 
+\subsection{Inequality}
+
+Having shown that an oracle exists where $\P^{A} = \NP^{A}$, we now endeavor to
+find one where $\P^{A} \ne \NP^{A}$. This piece of the proof is less simple than
+the previous section, and it uses a diagonalization argument to construct the
+oracle. Before we dive in to the main proof, however, we need to define a few
+preliminaries.
+
 \begin{defn}[{\cite[436]{BGS75}}]\label{def:l(x)}\index{L(X)@$L(X)$}
   Let $X$ be an oracle. The language $L(X)$ is the set
   \begin{equation*}
     L(X) = \{x \mid \text{there is } y \in X \text{ such that } \abs{y} = \abs{x}\}.
   \end{equation*}
 \end{defn}
+
+Our eventual goal will be to construct a language $X$ such that
+$L(X) \in \NP^{X} \setminus \P^{X}$. Of particular note is that we can rather nicely put a
+upper bound on the complexity of $L(X)$ when given $X$ as an oracle, regardless
+of the value of $X$. This fact is what gives us the freedom to construct $X$ in
+such a way that $L(X)$ will not be in $\P^{X}$.
 
 \begin{lemma}[{\cite[436]{BGS75}}]\label{lem:l(x)-in--np}
   For any oracle $X$, $L(X) \in \NP^{X}$.
@@ -603,28 +639,31 @@ the $\P$ and $\NP$ machine the same oracle, they have the same power.
   follows that we can verify that $S \in L(X)$ in polynomial time.
 \end{proof}
 
-% TODO: Going to need BGS75 Lemma 2 here
-\begin{lemma}[{\cite[Lemma 2]{BGS75}}]
-  % TODO
-\end{lemma}
+With this lemma as a base, we can now move on to our main theorem.
 
 \begin{thm}[{\cite[Theorem 3]{BGS75}}]\label{thm:p-np-nrel}
   There exists an oracle $A$ such that $\P^{A} \ne \NP^{A}$.
 \end{thm}
 
 \begin{proof}
-  Our goal is to construct a set $B$ such that $L(B) \notin \P^{B}$. We wish to
-  construct $B$ iteratively. We shall do this by taking a sequence of machines
-  in $\P^{A}$, and then constructing $B$ such that no machine could possibly
-  recognize $L(B)$. We give the following algorithm to construct $B$:
+  Our goal is to construct a set $B$ such that $L(B) \notin \P^{B}$. We shall
+  construct $B$ in an interative manner. We do this by taking a sequence
+  $\{P_{i}\}$ of all machines that recongize some language in $\P^{A}$, and then
+  constructing $B$ such that for each machine in the sequence, there is some
+  part of $L(B)$ it cannot recognize. This technique is called
+  \emph{diagonalization}, and it is used in many places in computer science
+  theory.\footnote{This argument style is named after \emph{Cantor's diagonal
+      argument}, which was originally used to prove that the real numbers are
+    uncountable~\cite[Thm. 2.14]{Ru76}.} Additionally, we define $p_{i}(n)$ to
+  be the maximum running time of $P_{i}$ on an input of length $n$. We give the
+  following algorithm to construct $B$:
 
-  % TODO: Rewrite to be more like AW09 (which presents this better imo)
   \begin{algorithm}[H]
     % FIXME: Do the P_i need to be P machines? Everybody is unclear on this
     \KwIn{A sequence of $\P$ oracle machines $\{P_{i}\}_{i=1}^{\infty}$}
     \KwOut{A set $B$ such that $L(B) \notin \P^{B}$}
     % TODO: Define p_i(n)
-    $B(0) \leftarrow \emptyset$\;
+    $B(0) \leftarrow \varnothing$\;
     $n_{0} \leftarrow 0$\;
     \For{$i$ starting at $1$}{
       Let $n > n_{i}$ be large enough that
@@ -650,6 +689,13 @@ the $\P$ and $\NP$ machine the same oracle, they have the same power.
   any string, if it is necessary to be explicit in which we choose, then picking
   $x$ to be the smallest string in lexicographic order is a standard choice.
 
+  We should also briefly mention that this algorithm does not terminate. This is
+  okay because we are only using it to construct the set $B$, which does not
+  need to be bounded. If this were to be made practical, since the sequence of
+  $n_{i}$s is monotonically increasing, the set could be constructed ``lazily''
+  on each query by only running the algorithm until $n_{i}$ is greater than the
+  length of the query.
+
   % FIXME: Should this "end goal" section be moved to before the algorithm?
   Next, we demonstrate that $L(B) \notin \P^{B}$. The end goal of our instruction is
   a set $B$ such that if $P_{i}^{B}$ accepts $0^{n}$ then there are no strings
@@ -657,12 +703,12 @@ the $\P$ and $\NP$ machine the same oracle, they have the same power.
   length $n$ in $B$. This means that no $P_{i}$ accepts $L(B)$, and hence
   $L(B) \notin \NP^{B}$.
 
-  The central conceit behind the proper functioning of our algorithm is that
-  adding strings to our oracle \emph{cannot change the output if they are not
-    queried}. This is what we do in line~\ref{line:def-n}: we need our input
-  length to be long enough to guarantee that a non-queried string exists. Since
-  the number of queried strings is no greater than $p_{i}(n)$, and there are
-  $2^{n}$ strings of length $n$, there must be some string not queried.
+  The central idea behind the proper functioning of our algorithm is that adding
+  strings to our oracle \emph{cannot change the output if they are not queried}.
+  This is what we do in line~\ref{line:def-n}: we need our input length to be
+  long enough to guarantee that a non-queried string exists. Since the number of
+  queried strings is no greater than $p_{i}(n)$, and there are $2^{n}$ strings
+  of length $n$, there must be some string not queried.
 
   Next, we run $P_{i}^{B(i-1)}$ on all the strings we have already added. If it
   accepts, then we want to make sure that no string of length $n$ is in $B$;
@@ -672,13 +718,20 @@ the $\P$ and $\NP$ machine the same oracle, they have the same power.
   $P_{i}^{B(i-1)}$. Hence, we find a string that $P_{i}^{B(i-1)}$ did not query
   (and thus will not affect the result) and add it to $B(i)$.
 
-  % TODO: More explanation of why this works
-  Having done this, we then set $n_{i+1}$ to be $2^{n}$. This ensures that no
-  already-seen machine $P_{i}$ queries any strings we might add in the next
-  iteration, which preserves the soundness of our algorithm. Hence, we have a
-  set $L(B)$ such that no machine in $\P^{B}$ accepts it, which tells us
-  $L(B) \notin \P^{B}$. But, Lemma~\ref{lem:l(x)-in--np} already told us
-  $L(B) \in \NP^{B}$. Hence, $\P^{B} \ne \NP^{B}$.
+  Having done this, we then set $n_{i+1}$ to be $2^{n}$. Since
+  $p_{i}(n) < 2^{n}$, it follows that no previous machine could have queried any
+  strings of length $n_{i+1}$.\footnote{A word of caution: we only care about
+    what $P_{i}$ does on input $n_{i}$, \emph{not any other input}. This is
+    because we only need each machine to be incorrect for some $i$, not all
+    $i$.} This way, we ensure our previous machines do not accidentally have
+  their output change due to us adding a string they queried.
+
+  % TODO: Note about how it's fine that this doesn't actually halt b/c it's just
+  % in the construction of the set
+  Having run this over all polynomial-time Turing machines, we have a set $L(B)$
+  such that no machine in $\P^{B}$ accepts it, which tells us $L(B) \notin \P^{B}$.
+  But, Lemma~\ref{lem:l(x)-in--np} already told us $L(B) \in \NP^{B}$. Hence,
+  $\P^{B} \ne \NP^{B}$.
 \end{proof}
 
 \chapter{Algebrization}\label{chap:algebrization}
