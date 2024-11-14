@@ -547,6 +547,28 @@ multilinear polynomials in terms of their outcomes on the Boolean cube.
   % TODO
 \end{proof}
 
+% NOTE: JKRS09 is actually even stronger than this (we need it only to be linear
+% in at least one variable)
+\begin{lemma}[{\cite[Lemma 7]{JKRS09}}]\label{lem:monomial-sum}
+  Let $m(x_{1}, \ldots, x_{n})$ be a multilinear monomial. Over a field of
+  characteristic other than 2, we have
+  \begin{equation}
+    \sum_{b \in \{-1, 1\}}m(b) = 0.
+  \end{equation}
+\end{lemma}
+
+\begin{proof}
+  For some $x_{i}$, we can write $m = x_{i} \cdot m'$, where the degree of $x_{i}$
+  in $m'$ is 0. Then
+  \begin{align*}
+    \sum_{b \in \{1, -1\}^{n}}m(b)
+    &= \sum_{a \in \{-1, 1\}}\sum_{b' \in \{1, -1\}^{n-1}}a \cdot m'(b') \\
+    &= \sum_{a \in \{-1, 1\}} a \cdot \left(\sum_{b' \in \{1, -1\}^{n-1}} m'(b')\right) \\
+    &= \left(\sum_{b' \in \{1, -1\}^{n-1}} m'(b')\right) - \left(\sum_{b' \in \{1, -1\}^{n-1}} m'(b')\right) \\
+    &= 0.
+  \end{align*}
+\end{proof}
+
 \chapter{Relativization}
 
 % TODO: Examples
@@ -675,6 +697,28 @@ it is outside the scope of this paper.
   % TODO: I don't quite understand the phrasing here; perhaps rephrase
 \end{defn}
 
+To make this more clear, let us give an example problem.
+
+\begin{defn}\label{def:or-problem}\index{OR@$\mathsf{OR}$}
+  The $\mathsf{OR}$ problem is the following oracle problem:
+  \begin{quote}
+    Let $A: \{0, 1\}^{n} \rightarrow \{0, 1\}$ be an oracle. The function $\mathsf{OR}(A)$
+    returns 1 if there exists a string on which $A$ returns 1, and $0$
+    otherwise.
+  \end{quote}
+\end{defn}
+
+The question is then what the deterministic query complexity of the
+$\mathsf{OR}$ function is.
+
+\begin{thm}
+  The $\mathsf{OR}$ problem has a deterministic query complexity of $2^{n}$.
+\end{thm}
+
+\begin{proof}
+  % TODO
+\end{proof}
+
 For the next two definitions, since their Turing machines include some element
 of randomness, we only require that they succeed with a $2/3$ probability. This
 is in line with most definitions of complexity classes involving random
@@ -760,7 +804,7 @@ upper bound on the complexity of $L(X)$ when given $X$ as an oracle, regardless
 of the value of $X$. This fact is what gives us the freedom to construct $X$ in
 such a way that $L(X)$ will not be in $\P^{X}$.
 
-\begin{lemma}[{\cite[436]{BGS75}}]\label{lem:l(x)-in--np}
+\begin{lemma}[{\cite[436]{BGS75}}]\label{lem:l(x)-in-np}
   For any oracle $X$, $L(X) \in \NP^{X}$.
 \end{lemma}
 
@@ -862,7 +906,7 @@ With this lemma as a base, we can now move on to our main theorem.
   % in the construction of the set
   Having run this over all polynomial-time Turing machines, we have a set $L(B)$
   such that no machine in $\P^{B}$ accepts it, which tells us $L(B) \notin \P^{B}$.
-  But, Lemma~\ref{lem:l(x)-in--np} already told us $L(B) \in \NP^{B}$. Hence,
+  But, Lemma~\ref{lem:l(x)-in-np} already told us $L(B) \in \NP^{B}$. Hence,
   $\P^{B} \ne \NP^{B}$.
 \end{proof}
 
@@ -870,9 +914,21 @@ With this lemma as a base, we can now move on to our main theorem.
 
 Of course, determining that $\P$ vs $\NP$ does not relativize is only important
 if the proof techniques used in practice \emph{do} in fact relativize. Rather
-unfortunately, it turns out that diagonalization is a relativizing result.
+unfortunately, it turns out that simple diagonalization is a relativizing
+result.
 
-% TODO
+% FIXME: Are there formal definitions of diagonalization?
+While diagonalization itself does not have a formal definition, we can still
+think about it informally. Looking at our construction of $B$, which we did
+using diagonalization, notice that our definition never really cared about how
+the $P_{i}$ worked, just about the results it produced. Hence, if it were to be
+possible to modify Algorithm~\ref{alg:construct-b} to construct $B \in \NP \setminus \P$,
+the proof would remain the same if we were to replace our sequence $\{P_{i}\}$
+with a sequence of machines in $\P^{A}$ for some $\PSPACE$-complete $A$.
+However, this would lead to a contradiction, as we showed in
+Theorem~\ref{thm:p-np-rel} that in that case, $\P^{A} = \NP^{A}$! This tells us
+that a simple diagonalization argument would not suffice to determine separation
+between $\P$ and $\NP$.
 
 \chapter{Algebrization}\label{chap:algebrization}
 
@@ -956,6 +1012,59 @@ an extension oracle of $A$, and second, that we can limit our $\tilde{A}$ in
 its maximum multidegree. For the most part, we will focus on equations with
 multidegree 2, which is enough to get the results we want.
 
+As an example, let us look at the same $\mathsf{OR}$ problem we defined in
+Definition~\ref{def:or-problem}.
+
+% FIXME:
+\begin{thm}[{\cite[Thm.\ 4.4]{AW09}}]\label{thm:or-algebraic}
+  $\tilde{D}_{\mathbb{F},2}(\mathsf{OR}) = 2^{n}$ for every field $\mathbb{F}$.
+\end{thm}
+
+\begin{proof}
+  % TODO
+\end{proof}
+
+This gives us a potentially counterintuitive property of algebraic query
+complexity: while it would seem that giving our machine a polynomial (and a
+polynomial of multidegree only 2, at that) would give us the ability to solve
+the hardest problems more quickly, that turns out not to be the case.
+
+Now, while this is true for polynomials of multidegree 2, it turns out that if
+we restrict our oracles to being simply \emph{multilinear} polynomials, we do
+get a speedup.
+
+\begin{thm}[{\cite[Thm. 3]{JKRS09}}]\label{thm:or-multilinear}
+  $\tilde{D}_{\mathbb{F},1}(\mathsf{OR}) = 1$ for every field $\mathbb{F}$ with
+  characteristic not equal to $2$.
+\end{thm}
+
+\begin{proof}
+  % TODO
+  Let $A: \{0, 1\}^{n} \rightarrow \{0, 1\}$ and $\tilde{A}$ be our extension polynomial.
+  Consider the value of $p(1/2, \ldots, 1/2)$. We aim to show that this value is
+  equal to $0$ if and only if $A$ is the zero oracle.
+
+  Consider the function
+  \begin{equation}
+    p'(x_{1}, \ldots, x_{n}) = p(1 - 2x_{1}, \ldots, 1 - 2x_{n}).
+  \end{equation}
+  Since $1 - 2x$ is a linear polynomial, it follows that $p'$ is itself a
+  multilinear polynomial. Further, since the sum over $\{1, -1\}^{n}$ of a
+  non-constant multilinear monomial is 0 as per Lemma~\ref{lem:monomial-sum}, it
+  follows that
+  \begin{equation}
+    \sum_{b \in \{-1, 1\}^{n}}p'(b) = p'(0, \ldots, 0),
+  \end{equation}
+  i.e., the constant term of $p'$. Further, from our definition of $p'$, we have
+  that $p'(0, \ldots, 0) = p(1/2, \ldots, 1/2)$. Hence, we have
+  \begin{equation}
+    \sum_{b \in \{0, 1\}^{n}}p(b) = p(1/2, \ldots, 1/2).
+  \end{equation}
+  Since $p(b) \ge 0$ for all $b \in \{0, 1\}^{n}$, it follows that $p(1/2, \ldots, 1/2)$
+  is 0 if and only if $p(b) = 0$ for all $b \in \{0, 1\}^{n}$, i.e. exactly when
+  $A$ is the zero function.
+\end{proof}
+
 % TODO: Deterministic & nondeterministic AQC
 % TODO: Work through the result of Juma et al. (JKRS09) that the OR problem can
 % be solved with 1 query for multilinear polynomials? More generally, perhaps
@@ -1012,7 +1121,7 @@ Theorem~\ref{thm:p-np-rel} mostly as-is.
   recognize. Also like before, we will do this by constructing an oracle
   extension $\tilde{A}$ such that $L(A) \notin \P^{\tilde{A}}$. Since we only give an
   algebraic extension to $\P$ and not $\NP$, we can resuse the result from
-  Lemma~\ref{lem:l(x)-in--np} that $L(B) \in \NP^{A}$. We shall construct
+  Lemma~\ref{lem:l(x)-in-np} that $L(B) \in \NP^{A}$. We shall construct
   $\tilde{A}$ using the following algorithm:
   % FIXME: Mention that until set, A_{n,F} outputs 0
   \begin{algorithm}[H]
@@ -1047,7 +1156,7 @@ Theorem~\ref{thm:p-np-rel} mostly as-is.
       $n_{i+1} \leftarrow 2^{n}$\;
     }
     $B \leftarrow \bigcup_{i}B(i)$\;
-    \caption{An algorithm for constructing $\tilde{A}$}\label{alg:construct-b}
+    \caption{An algorithm for constructing $\tilde{A}$}\label{alg:construct-a-tilde}
   \end{algorithm}
   As before, we will start by demonstrating soundness and then move on to why
   the constructed oracle provides the separation we seek.
