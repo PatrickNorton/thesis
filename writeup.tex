@@ -5,6 +5,7 @@
 \usepackage{enumerate}
 \usepackage{booktabs}
 \usepackage{complexity}
+\usepackage{mleftright}
 
 \usepackage[linesnumbered]{algorithm2e}
 \usepackage{biblatex}
@@ -427,9 +428,9 @@ we shall now calculate.
   where $\delta$ is the polynomial
   % TODO? Flip x and y here
   \begin{equation}\label{eqn:delta-poly}
-    \delta_{x}(y) = \prod_{i = 1}^{m}\left(\sum_{\omega \in H}\left(
+    \delta_{x}(y) = \prod_{i = 1}^{m}\mleft(\sum_{\omega \in H}\mleft(
         \prod_{\gamma \in H \setminus \{\omega\}}\frac{(x_{i} - \gamma)(y_{i} - \gamma)}{(\omega - \gamma)^{2}}
-      \right)\right).
+      \mright)\mright).
   \end{equation}
 \end{thm}
 
@@ -478,7 +479,7 @@ makes it much easier to reason about.
   \end{equation}
   is a low-degree extension of $f$, where $\delta$ is the polynomial
   \begin{equation}\label{eqn:delta-poly-small}
-    \delta_{x}(y) = \left(\prod_{i:x_{i}=1}y_{i}\right)\left(\prod_{i:x_{i}=0}(1 - y_{i})\right).
+    \delta_{x}(y) = \mleft(\prod_{i:x_{i}=1}y_{i}\mright)\mleft(\prod_{i:x_{i}=0}(1 - y_{i})\mright).
   \end{equation}
 \end{cor}
 Note that in the product bound $i:x_{i} = 1$, we mean the product over all
@@ -563,8 +564,8 @@ multilinear polynomials in terms of their outcomes on the Boolean cube.
   \begin{align*}
     \sum_{b \in \{1, -1\}^{n}}m(b)
     &= \sum_{a \in \{-1, 1\}}\sum_{b' \in \{1, -1\}^{n-1}}a \cdot m'(b') \\
-    &= \sum_{a \in \{-1, 1\}} a \cdot \left(\sum_{b' \in \{1, -1\}^{n-1}} m'(b')\right) \\
-    &= \left(\sum_{b' \in \{1, -1\}^{n-1}} m'(b')\right) - \left(\sum_{b' \in \{1, -1\}^{n-1}} m'(b')\right) \\
+    &= \sum_{a \in \{-1, 1\}} a \cdot \mleft(\sum_{b' \in \{1, -1\}^{n-1}} m'(b')\mright) \\
+    &= \mleft(\sum_{b' \in \{1, -1\}^{n-1}} m'(b')\mright) - \mleft(\sum_{b' \in \{1, -1\}^{n-1}} m'(b')\mright) \\
     &= 0.
   \end{align*}
 \end{proof}
@@ -588,7 +589,7 @@ we can do this, it gives us the ability to think of the complexity of the
 oracle. If we want to think about the subset in terms of our functions, we can
 write $A$ as
 \begin{equation}
-  A = \bigcup_{m \in \mathbb{N}}\left\{x \in \{0, 1\}^{m} \mid A_{m}(x) = 1\right\}.
+  A = \bigcup_{m \in \mathbb{N}}\mleft\{x \in \{0, 1\}^{m} \mid A_{m}(x) = 1\mright\}.
 \end{equation}
 
 An oracle is not particularly interesting mathematical object on its own; its
@@ -996,9 +997,9 @@ definition of \emph{algebraic} query complexity. % TODO: More
   Then, the deterministic algebraic query complexity of $f$ over $\mathbb{F}$ is
   defined as
   \begin{equation}
-    \tilde{D}_{\mathbb{F}, c}(f) = \min_{M \in \mathcal{M}}\left(
+    \tilde{D}_{\mathbb{F}, c}(f) = \min_{M \in \mathcal{M}}\mleft(
       \max_{A, \tilde{A}: \mdeg(\tilde{A}) \le c}T_{M}(\tilde{A})
-    \right),
+    \mright),
   \end{equation}
   where $T_{M}(\tilde{A})$ is the number of queries to $\tilde{A}$ made by
   $M^{\tilde{A}}$.
