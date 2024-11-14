@@ -6,13 +6,13 @@
 \usepackage{booktabs}
 \usepackage{complexity}
 
-\usepackage[colorlinks]{hyperref}
-
 \usepackage[linesnumbered]{algorithm2e}
 \usepackage{biblatex}
 \usepackage{imakeidx}
 \usepackage{microtype}
 \usepackage{tikz}
+
+\usepackage[colorlinks]{hyperref}
 
 %%% Theorems %%%---------------------------------------------------------
 \theoremstyle{plain}
@@ -177,6 +177,13 @@ Complexity classes are the main way we think about the hardness of problems in
 computer science. A complexity class\index{complexity class} is a collection of
 languages that all share a common level of difficulty.
 
+\subsection{Time complexity}
+
+The most intuitive (and most important) notion of complexity is that of time
+complexity. Time complexity is the answer of the question of how long it takes
+to solve a problem. We begin with an abstract base for our time classes, and
+will then introduce some specific ones that we care about.
+
 \begin{defn}[{\cite[Def.\ 1.19]{AB09}}]\label{def:dtime}\index{DTIME@$\DTIME$}
   % FIXME: Reword to make more clear what $n$ is
   Let $f: \mathbb{N} \rightarrow \mathbb{N}$ be a function. The class $\DTIME(f(n))$ is the class of all
@@ -184,10 +191,9 @@ languages that all share a common level of difficulty.
   some constant $c > 0$.
 \end{defn}
 
-% TODO: P, NP, PSPACE, NPSPACE at least
-% Also PSPACE-complete and probably NP-complete
-% Should I define a complexity class?
-% Do we want DTIME/NTIME?
+While $\DTIME$ is a useful base to start from, it is rare that we deal with
+$\DTIME$ classes directly. % TODO
+
 \begin{defn}[{\cite[Def.\ 1.20]{AB09}}]\label{def:p}\index{P@$\P$}
   The complexity class $\P$ is the class
   \[
@@ -195,30 +201,156 @@ languages that all share a common level of difficulty.
   \]
 \end{defn}
 
-\begin{defn}\label{def:np}\index{NP@$\NP$}
-  The complexity class $\NP$ is
-  % TODO: Also talk about verifiers
+The class $\P$ is perhaps the most important complexity class. Mathematically,
+we care about $\P$ because it is closed under composition: a polynomial-time
+algorithm iterated a polynomial number of times is still in $\P$. Further, $\P$
+turns out to generally be invariant under change of (deterministic) computation
+model, which allows us to reason about $\P$ problems easily without needing to
+resort to the formal definition of a Turing machine. More philosophically, $\P$
+generally represents the set of ``efficient'' algorithms in the real world.
+
+As we have defined $\P$ in terms of $\DTIME$, the question naturally arises of
+whether there is an equivalent in terms of $\NTIME$. Naturally, there is, and we
+call it $\NP$.
+
+\begin{defn}[{\cite[Cor.\ 7.22]{Sip97}}]\label{def:np}\index{NP@$\NP$}
+  The complexity class $\NP$ is the class
+  \[
+    \NP = \bigcup_{c > 0}\NTIME(n^{c}).
+  \]
 \end{defn}
 
-\begin{defn}\label{def:np-complete}\index{NP-complete@$\NP$-complete}
-  A language is $\NP$-complete if
+While this definition demonstrates how $\NP$ is similar to $\P$, there are other
+equivalent ones that we can use. In particular, we very often like to think of
+$\NP$ in terms of deterministic \emph{verifiers}. Since nondeterministic
+machines do not exist in real life, this definition gives a practical meaning to
+$\NP$.
+
+\begin{thm}[{\cite[Def.\ 7.19]{Sip97}}]\label{thm:np-verifier}
+  $\NP$ is exactly the class of all languages verifiable by a $\P$-time Turing
+  machine.
+\end{thm}
+
+% TODO: Should I prove this?
+
+\subsection{Space complexity}
+
+In addition to time complexity, the an additional notion of complexity is that
+of space complexity. Space complexity is the question of how much space on its
+memory tape a machine needs in order to compute a problem. In many ways, our
+definitions of space complexity are analagous to those for time complexity that
+we have already defined. In particular, $\DSPACE$ will correspond nicely to
+$\DTIME$, and $\NSPACE$ to $\NTIME$.
+
+\begin{defn}[{\cite[Def.\ 4.1]{AB09}}]\label{def:dspace}\index{DSPACE@$\DSPACE$}
+  Let $f: \mathbb{N} \rightarrow \mathbb{N}$ be a function. A language $L$ is in $\DSPACE(f(n))$ if there
+  exists a deterministic Turing machine $M$ such that the number of locations on
+  the tape that are non-blank at some point during the execution of $M$ is
+  in $O(f(n))$.
 \end{defn}
 
-\begin{defn}\label{def:pspace}\index{PSPACE@$\PSPACE$}
-  The complexity class $\PSPACE$ is
+In the same way as we have defined $\DSPACE$ for deterministic machines, we now
+need to define $\NSPACE$ for nondeterministic machines.
+
+\begin{defn}[{\cite[Def. 4.1]{AB09}}]\label{def:nspace}\index{NSPACE@$\NSPACE$}
+  Let $f: \mathbb{N} \rightarrow \mathbb{N}$ be a function. A language $L$ is in $\NSPACE(f(n))$ if there
+  exists a nondeterministic Turing machine $M$ such that the number of locations
+  on the tape that are non-blank at some point during the execution of $M$ is in
+  $O(f(n))$.
 \end{defn}
 
-\begin{defn}\label{def:npspace}\index{NPSPACE@$\NPSPACE$}
-  The complexity class $\NPSPACE$ is
+Analagously to $\P$ and $\NP$, our two main classes of space complexity are
+$\PSPACE$ and $\NPSPACE$.
+
+\begin{defn}[{\cite[Def.\ 4.5]{AB09}}]\label{def:pspace}\index{PSPACE@$\PSPACE$}
+  The complexity class $\PSPACE$ is the class
+  \[
+    \PSPACE = \bigcup_{c > 0}\DSPACE(n^{c}).
+  \]
 \end{defn}
 
-\begin{defn}\label{def:pspace-complete}\index{PSPACE-complete@$\PSPACE$-complete}
-  A language is $\PSPACE$-complete if
+\begin{defn}[{\cite[Def.\ 4.5]{AB09}}]\label{def:npspace}\index{NPSPACE@$\NPSPACE$}
+  The complexity class $\NPSPACE$ is the class
+  \[
+    \NPSPACE = \bigcup_{c > 0}\NSPACE(n^{c}).
+  \]
 \end{defn}
 
-\begin{defn}\label{def:npspace-complete}\index{NPSPACE-complete@$\NPSPACE$-complete}
-  A language is $\NPSPACE$-complete if
+Unlike with $\P$ and $\NP$, the relationship between $\PSPACE$ and $\NPSPACE$ is
+well known. Due to the complexity of the proof of the theorem, we will not prove
+it here, as it is mostly not relevant to what we will be doing.
+
+\begin{thm}[{Savitch's theorem;~\cite{Sav70}}]\label{thm:savitch}\index{Savitch's theorem}
+  $\PSPACE = \NPSPACE$.
+\end{thm}
+
+Upon seeing this, one might ask why it is that we believe $\P \ne \NP$ if we know
+that $\PSPACE = \NPSPACE$, given they are defined analogously. The answer to
+this question boils down to the fact that we are able to reuse space, while we
+are not able to reuse time. Space on the tape that is no longer needed can be
+overwritten, while time that is no longer needed is gone forever.
+
+Since $\PSPACE$ and $\NPSPACE$ are equal classes, it is relatively rare to see
+$\NPSPACE$ referred to. Here, we will only refer to it when it makes a class
+relationship clearer; most frequently when comparing $\NPSPACE$ to some other
+nondeterministic class.
+
+\subsection{Completeness}
+
+% TODO: Not a huge fan of this paragraph
+Even within a complexity class, not all problems are created equal. The notion
+of \emph{completeness} gives us a mathematically-rigorous way to talk about
+which problems in a class are the hardest. Since putting upper bounds on hard
+problems naturally puts those same bounds on any easier problems, complete
+problems can be useful in reasoning about the relationship between complexity
+classes.
+
+\begin{defn}[{\cite[Def.\ 7.29]{Sip97}}]\label{def:p-reduction}\index{Polynomial-time reduction}
+  A language $A$ is \emph{polynomial-time reducible} to a language $B$ if a
+  polynomial-time computable function $f: \Sigma^{*} \rightarrow \Sigma^{*}$ exists such that for
+  all $w \in \Sigma^{*}$, $w \in A$ if and only if $f(w) \in B$.
 \end{defn}
+
+Polynomial-time reductions are important because they give us a way to say that
+$A$ is \emph{no harder} than $B$. In particular, if we have an algorithm $M$
+that determines $B$, we can construct the following algorithm that determines
+$A$ with only a polynomial amount of additional work:
+
+\begin{algorithm}[H]
+  \KwIn{A string $w \in \Sigma^{*}$}
+  \KwOut{Whether $w \in A$}
+  Compute $f(w)$\;
+  Use $M$ to check whether $f(w) \in B$\;
+  \KwRet{the result of $M$}\;
+  \caption{An algorithm to reduce $A$ to $B$}
+\end{algorithm}
+
+\begin{defn}[{\cite[Def.\ 7.34]{Sip97}}]\label{def:np-complete}\index{NP-complete@$\NP$-complete}
+  A language $L$ is $\NP$-complete if $L \in \NP$ and every $A \in \NP$ is
+  polynomial-time reducible to $L$.
+\end{defn}
+
+This is a practical use of our polynomial-time reductions: since an
+$\NP$-complete language has a reduction from every other language in $\NP$, it
+follows that it is \emph{at least as hard} as any other language in $\NP$. Of
+particular interest to complexity theorists is the fact that $\P = \NP$ if and
+only if \emph{any} $\NP$-complete language is in $\P$.
+
+Just as we have $\NP$-completeness for time complexity, we also have notions of
+completeness for space complexity. Since $\PSPACE = \NPSPACE$, instead of
+calling the class $\NPSPACE$-complete, we call it $\PSPACE$-complete.
+
+\begin{defn}[{\cite[Def.\ 8.8]{Sip97}}]\label{def:pspace-complete}\index{PSPACE-complete@$\PSPACE$-complete}
+  A language $L$ is $\PSPACE$-complete if $L \in \PSPACE$ and every $A \in \PSPACE$
+  is polynomial-time reducible to $\NP$.
+\end{defn}
+
+While this definition is mostly analagous to that of $\NP$-completeness, one
+might wonder why we use a time complexity for our reduction when $\PSPACE$ is a
+space-complexity class. This is because if we were to use space complexity, we
+would want to use $\PSPACE$-reductions, but that would make every language in
+$\PSPACE$ trivially $\PSPACE$-complete. Since that is not a useful definition,
+we instead restrict ourselves to polynomial-time reductions.
 
 % TODO: If/when we pull random/quantum stuff in here, probably worth defining
 % BPP and BQP (QMA might need its own section?)
@@ -733,6 +865,14 @@ With this lemma as a base, we can now move on to our main theorem.
   But, Lemma~\ref{lem:l(x)-in--np} already told us $L(B) \in \NP^{B}$. Hence,
   $\P^{B} \ne \NP^{B}$.
 \end{proof}
+
+\section{Diagonalization relativizes}
+
+Of course, determining that $\P$ vs $\NP$ does not relativize is only important
+if the proof techniques used in practice \emph{do} in fact relativize. Rather
+unfortunately, it turns out that diagonalization is a relativizing result.
+
+% TODO
 
 \chapter{Algebrization}\label{chap:algebrization}
 
