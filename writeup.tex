@@ -19,7 +19,7 @@
 \usepackage{aliascnt}
 
 \usepackage[colorlinks]{hyperref}
-\usepackage[capitalize]{cleveref}
+\usepackage[capitalize,noabbrev]{cleveref}
 
 %%% Theorems %%%---------------------------------------------------------
 \theoremstyle{plain}
@@ -499,12 +499,12 @@ Note that in the product bound $i:x_{i} = 1$, we mean the product over all
 numbers $i$ such that $x_{i} = 1$.
 % TODO: Prove?
 
-As we can see, the form of $\delta$ in Equation~\eqref{eqn:delta-poly-small} is much
-more manageable than the form in Equation~\eqref{eqn:delta-poly}, and it is
-perhaps more immediately apparent here why $\delta$ has the property it does.
+As we can see, the form of $\delta$ in \cref{eqn:delta-poly-small} is much more
+manageable than the form in \cref{eqn:delta-poly}, and it is perhaps more
+immediately apparent here why $\delta$ has the property it does.
 
-The form of $\delta_{x}$ defined in Equation~\eqref{eqn:delta-poly-small} has further
-use to us than just being simpler.
+The form of $\delta_{x}$ defined in \cref{eqn:delta-poly-small} has further use to us
+than just being simpler.
 
 % TODO: Find better statement of this theorem
 \begin{thm}[{\cite[\defaultS 4.1]{AW09}}]
@@ -596,11 +596,10 @@ To do this, we first must define an \emph{oracle}.
 \end{defn}
 There are several ways to think of an oracle; this will extend the most
 naturally when it comes time to define an extension oracle in
-Definition~\ref{def:ext-oracle}. Another way to think of an oracle is as a
-subset $A \subseteq \{0, 1\}^{*}$. This allows us to think of $A$ as a language. Since
-we can do this, it gives us the ability to think of the complexity of the
-oracle. If we want to think about the subset in terms of our functions, we can
-write $A$ as
+\cref{def:ext-oracle}. Another way to think of an oracle is as a subset
+$A \subseteq \{0, 1\}^{*}$. This allows us to think of $A$ as a language. Since we can
+do this, it gives us the ability to think of the complexity of the oracle. If we
+want to think about the subset in terms of our functions, we can write $A$ as
 \begin{equation}
   A = \bigcup_{m \in \mathbb{N}}\mleft\{x \in \{0, 1\}^{m} \mid A_{m}(x) = 1\mright\}.
 \end{equation}
@@ -679,8 +678,8 @@ We start with a very straightforward example of a relativizing result.
 This result tells us that not \emph{everything} is weird in the world of
 relativization: if we have a machine that can do more operations without an
 oracle, it can still do so with an oracle. Further, for the question of $\P$
-vs.\ $\NP$ that we will discuss in Section~\ref{sec:rel-p-np}, this means that
-the question we care about is whether $\NP \subseteq^{?} \P$ relativizes. As such, the
+vs.\ $\NP$ that we will discuss in \cref{sec:rel-p-np}, this means that the
+question we care about is whether $\NP \subseteq^{?} \P$ relativizes. As such, the
 question we are asking simplifies to determining where $\P^{A} = \NP^{A}$ and
 where $\P^{A} \subsetneq \NP^{A}$.
 
@@ -744,9 +743,9 @@ From this, we get that the $\mathsf{OR}$ problem cannot be solved any better
 than by enumerative checking. This makes intuitive sense because none of the
 results we get by querying $A$ imply anything about what $A$ will do on other
 values, since $A$ can be an arbitrary function. Later on (in
-Section~\ref{sec:alg-query-complexity}), we will look at what happens when we
-give ourselves access to a \emph{polynomial}, where querying one point could
-tell us information about others.
+\cref{sec:alg-query-complexity}), we will look at what happens when we give
+ourselves access to a \emph{polynomial}, where querying one point could tell us
+information about others.
 
 For the next two definitions, since their Turing machines include some element
 of randomness, we only require that they succeed with a $2/3$ probability. This
@@ -780,7 +779,7 @@ some oracles $A$ where $\P^{A} = \NP^{A}$, and some where $\P^{A} \ne \NP^{A}$.
 
 Additionally, it should be noted that the similarity of relativization to
 algebrization means that the structure of these proofs will return in
-Section~\ref{sec:alg-p-np} when we show the algebrization of $\P$ and $\NP$.
+\cref{sec:alg-p-np} when we show the algebrization of $\P$ and $\NP$.
 
 \subsection{Equality}
 
@@ -935,7 +934,7 @@ With this lemma as a base, we can now move on to our main theorem.
   % in the construction of the set
   Having run this over all polynomial-time Turing machines, we have a set $L(B)$
   such that no machine in $\P^{B}$ accepts it, which tells us $L(B) \notin \P^{B}$.
-  But, Lemma~\ref{lem:l(x)-in-np} already told us $L(B) \in \NP^{B}$. Hence,
+  But, \cref{lem:l(x)-in-np} already told us $L(B) \in \NP^{B}$. Hence,
   $\P^{B} \ne \NP^{B}$.
 \end{proof}
 
@@ -951,13 +950,12 @@ While diagonalization itself does not have a formal definition, we can still
 think about it informally. Looking at our construction of $B$, which we did
 using diagonalization, notice that our definition never really cared about how
 the $P_{i}$ worked, just about the results it produced. Hence, if it were to be
-possible to modify Algorithm~\ref{alg:construct-b} to construct $B \in \NP \setminus \P$,
-the proof would remain the same if we were to replace our sequence $\{P_{i}\}$
-with a sequence of machines in $\P^{A}$ for some $\PSPACE$-complete $A$.
-However, this would lead to a contradiction, as we showed in
-Theorem~\ref{thm:p-np-rel} that in that case, $\P^{A} = \NP^{A}$! This tells us
-that a simple diagonalization argument would not suffice to determine separation
-between $\P$ and $\NP$.
+possible to modify \cref{alg:construct-b} to construct $B \in \NP \setminus \P$, the proof
+would remain the same if we were to replace our sequence $\{P_{i}\}$ with a
+sequence of machines in $\P^{A}$ for some $\PSPACE$-complete $A$. However, this
+would lead to a contradiction, as we showed in \cref{thm:p-np-rel} that in that
+case, $\P^{A} = \NP^{A}$! This tells us that a simple diagonalization argument
+would not suffice to determine separation between $\P$ and $\NP$.
 
 \chapter{Algebrization}\label{chap:algebrization}
 
@@ -1012,9 +1010,9 @@ Next, we need to formally define what algebrization is.
 
 \section{Algebraic query complexity}\label{sec:alg-query-complexity}
 
-Similarly to how we defined query complexity in
-Section~\ref{sec:query-complexity}, our notion of algebrization requires a
-definition of \emph{algebraic} query complexity. % TODO: More
+Similarly to how we defined query complexity in \cref{sec:query-complexity}, our
+notion of algebrization requires a definition of \emph{algebraic} query
+complexity. % TODO: More
 
 \begin{defn}[{\cite[Def. 4.1]{AW09}}]\label{def:aqc}\index{query complexity!algebraic}
   Let $f: \{0, 1\}^{N} \rightarrow \{0, 1\}$ be a Boolean function, $\mathbb{F}$ be a
@@ -1036,13 +1034,13 @@ definition of \emph{algebraic} query complexity. % TODO: More
 
 Our goal here is to find the \emph{worst}-case scenario for the \emph{best}
 algorithm that calculates the property $f$. The difference between this and
-Definition~\ref{def:det-qc} is twofold: first, our algorithm $M$ has access to
+\cref{def:det-qc} is twofold: first, our algorithm $M$ has access to
 an extension oracle of $A$, and second, that we can limit our $\tilde{A}$ in
 its maximum multidegree. For the most part, we will focus on equations with
 multidegree 2, which is enough to get the results we want.
 
 As an example, let us look at the same $\mathsf{OR}$ problem we defined in
-Definition~\ref{def:or-problem}.
+\cref{def:or-problem}.
 
 % FIXME:
 \begin{thm}[{\cite[Thm.\ 4.4]{AW09}}]\label{thm:or-algebraic}
@@ -1079,7 +1077,7 @@ get a speedup.
   \end{equation}
   Since $1 - 2x$ is a linear polynomial, it follows that $p'$ is itself a
   multilinear polynomial. Further, since the sum over $\{1, -1\}^{n}$ of a
-  non-constant multilinear monomial is 0 as per Lemma~\ref{lem:monomial-sum}, it
+  non-constant multilinear monomial is 0 as per \cref{lem:monomial-sum}, it
   follows that
   \begin{equation}
     \sum_{b \in \{-1, 1\}^{n}}p'(b) = p'(0, \ldots, 0),
@@ -1143,11 +1141,11 @@ to the $\P$ vs.\ $\NP$ problem.
 
   First, we demonstrate that the above algorithm runs in $\PSPACE$. Calculating
   polynomials is itself a $\PSPACE$ problem, and simulating a $\PSPACE$ machine
-  is itself $\PSPACE$, hence Algorithm~\ref{alg:l-tilde-det} is a $\PSPACE$
+  is itself $\PSPACE$, hence \cref{alg:l-tilde-det} is a $\PSPACE$
   algorithm.
 
-  Next, we show that Algorithm~\ref{alg:l-tilde-det} determines $\tilde{L}$.
-  First, from Corollary~\ref{cor:low-degree-boolean}, we know that for any $n$,
+  Next, we show that \cref{alg:l-tilde-det} determines $\tilde{L}$.
+  First, from \cref{cor:low-degree-boolean}, we know that for any $n$,
   \begin{equation}
     \tilde{A}_{n}(x_{1}, \ldots, x_{n}) = \sum_{\beta \in L}\delta_{\beta}(x_{1}, \ldots, x_{n}).
   \end{equation}
@@ -1156,7 +1154,7 @@ to the $\P$ vs.\ $\NP$ problem.
   given. As such, it determines $\tilde{L}$.
 
   Since there is a reduction from $L$ to $\tilde{L}$, we know that $L$ is no
-  harder than $\tilde{L}$, and Algorithm~\ref{alg:l-tilde-det} demonstrates that
+  harder than $\tilde{L}$, and \cref{alg:l-tilde-det} demonstrates that
   $\tilde{L} \in \PSPACE$. Hence, $\tilde{L}$ is $\PSPACE$-complete.
 \end{proof}
 
@@ -1171,11 +1169,10 @@ begin with that.
 \begin{proof}
   % TODO: Pull the lemma from BFL into this paper
   For this theorem, we use the same technique we did in our proof of
-  Theorem~\ref{thm:p-np-rel}: find a $\PSPACE$-complete language $A$ and work
-  from there. If we let $\tilde{A}$ be the unique multilinear extension of $A$,
-  Lemma~\ref{lem:multilinear-is-pspace} tells us $\tilde{A}$ is
-  $\PSPACE$-complete. Hence, reusing our argument from
-  Theorem~\ref{thm:p-np-rel}, we have
+  \cref{thm:p-np-rel}: find a $\PSPACE$-complete language $A$ and work from
+  there. If we let $\tilde{A}$ be the unique multilinear extension of $A$,
+  \cref{lem:multilinear-is-pspace} tells us $\tilde{A}$ is $\PSPACE$-complete.
+  Hence, reusing our argument from \cref{thm:p-np-rel}, we have
   \begin{equation}
     \NP^{\tilde{A}} = \NP^{\PSPACE} = \PSPACE = \P^{A}.
   \end{equation}
@@ -1191,13 +1188,13 @@ Now it is time for the other case.
 \end{thm}
 
 \begin{proof}
-  Like in Theorem~\ref{thm:p-np-nrel}, we aim to ``diagonalize'': iterate over
-  all $\P^{\tilde{A}}$ machines to construct a language that none of them can
+  Like in \cref{thm:p-np-nrel}, we aim to ``diagonalize'': iterate over all
+  $\P^{\tilde{A}}$ machines to construct a language that none of them can
   recognize. Also like before, we will do this by constructing an oracle
   extension $\tilde{A}$ such that $L(A) \notin \P^{\tilde{A}}$. Since we only give an
   algebraic extension to $\P$ and not $\NP$, we can resuse the result from
-  Lemma~\ref{lem:l(x)-in-np} that $L(B) \in \NP^{A}$. We shall construct
-  $\tilde{A}$ using the following algorithm:
+  \cref{lem:l(x)-in-np} that $L(B) \in \NP^{A}$. We shall construct $\tilde{A}$
+  using the following algorithm:
   % FIXME: Mention that until set, A_{n,F} outputs 0
   \begin{algorithm}[H]
     % FIXME: Do the P_i need to be P machines? Everybody is unclear on this
@@ -1215,7 +1212,7 @@ Now it is time for the other case.
       \eIf{$P_{i}^{B(i-1)}$ rejects $0^{n}$}{
         Let $\mathcal{Y}_{\mathbb{F}}$ be the set of all $y \in \mathbb{F}^{n_{i}}$ queried
         during the above computation\;
-        \tcp{See Lemma~\ref{lem:multiquad-adversary} for why we can do this}
+        \tcp{See \cref{lem:multiquad-adversary} for why we can do this}
         Let $w \in \{0, 1\}^{n}$ such that the following
         works\nllabel{line:def-w}\;
         \For{all $\mathbb{F}$}{
