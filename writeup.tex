@@ -471,7 +471,7 @@ multilinear. Not only do we thus constrain our polynomial to have a very low
 multidegree, the $\delta$ function also dramatically simplifies in this case, which
 makes it much easier to reason about.
 
-\begin{cor}[{\cite[\defaultS 4.1]{AW09}}]
+\begin{cor}[{\cite[\defaultS 4.1]{AW09}}]\label{cor:low-degree-boolean}
   Let $\mathbb{F}$ be a finite field, $m \in \mathbb{N}$ a number, and
   $f: \{0, 1\}^{m} \rightarrow \mathbb{F}$. Then
   \begin{equation}
@@ -717,8 +717,23 @@ $\mathsf{OR}$ function is.
 \end{thm}
 
 \begin{proof}
-  % TODO
+  First, note that any algorithm that determines the $\mathsf{OR}$ problem can
+  stop as soon as it queries $A$ and gets an output of $1$. Hence, for any
+  algorithm $M$, let $\{s_{i}\}$ be the sequence of queries $M$ makes to $A$ on
+  the assumption that it always recieves a response of $0$. If
+  $\abs{\{s_{i}\}} \le 2^{n}$, there exists some $s \in \{0, 1\}^{n}$ not queried.
+  In that case, $M$ will not be able to distinguish the zero oracle from the
+  oracle that outputs $1$ only when given $s$. Hence, $M$ must query every
+  string of length $n$ and thus the query complexity is $2^{n}$.
 \end{proof}
+
+From this, we get that the $\mathsf{OR}$ problem cannot be solved any better
+than by enumerative checking. This makes intuitive sense because none of the
+results we get by querying $A$ imply anything about what $A$ will do on other
+values, since $A$ can be an arbitrary function. Later on (in
+Section~\ref{sec:alg-query-complexity}), we will look at what happens when we
+give ourselves access to a \emph{polynomial}, where querying one point could
+tell us information about others.
 
 For the next two definitions, since their Turing machines include some element
 of randomness, we only require that they succeed with a $2/3$ probability. This
@@ -911,7 +926,7 @@ With this lemma as a base, we can now move on to our main theorem.
   $\P^{B} \ne \NP^{B}$.
 \end{proof}
 
-\section{Diagonalization relativizes}
+\section{Diagonalization relativizes}\label{sec:diag-relativizes}
 
 Of course, determining that $\P$ vs $\NP$ does not relativize is only important
 if the proof techniques used in practice \emph{do} in fact relativize. Rather
@@ -982,7 +997,7 @@ Next, we need to formally define what algebrization is.
     not algebrize}.
 \end{defn}
 
-\section{Algebraic query complexity}
+\section{Algebraic query complexity}\label{sec:alg-query-complexity}
 
 Similarly to how we defined query complexity in
 Section~\ref{sec:query-complexity}, our notion of algebrization requires a
@@ -1077,20 +1092,64 @@ get a speedup.
 As with relativization, an important application of algebrization is in regards
 to the $\P$ vs.\ $\NP$ problem.
 
-% TODO: What do we mean by "the multilinear extension of"?
-\begin{lemma} % TODO: Cite (BFL90 somewhere)
-  The multilinear extension of any $\PSPACE$-complete language is also in
-  $\PSPACE$.
+\begin{lemma}\label{lem:multilinear-is-pspace}
+  Let $L$ be a $\PSPACE$-complete language, with corresponding oracle $A$. Let
+  $\tilde{A}$ be the unique multilinear extension oracle of $A$. Then the
+  language
+  \begin{equation}
+    \tilde{L} = \bigcup_{n \in \mathbb{N}}\{(x_{1}, \ldots, x_{n}, z) \in \mathbb{F}^{n+1} \mid \tilde{A}(x_{1}, \ldots, x_{n}) = z\}
+  \end{equation}
+  is $\PSPACE$-complete.
 \end{lemma}
 
 \begin{proof}
-  % TODO
+  First, we provide a polynomial-time reduction from $L$ to $\tilde{L}$. Since
+  for all $x \in \{0, 1\}^{n}$, $\tilde{A}(x) = 1$ if and only if $x \in L$, it
+  follows that
+  \begin{equation}
+    \begin{aligned}
+      f: \Sigma^{*} &\rightarrow \Sigma^{*} \\
+      x &\mapsto (x, 1)
+    \end{aligned}
+  \end{equation}
+  is a polynomial-time reduction from $L$ to $L'$.
+
+  \begin{algorithm}[H]
+    \KwIn{$(x_{1}, \ldots, x_{n}, z) \in \mathbb{F}^{n+1}$}
+    \KwOut{Whether $\tilde{A}(x_{1}, \ldots, x_{n}) = z$}
+    $z' \leftarrow 0$\;
+    \For{$k \in \{0, 1\}^{n}$}{
+      Simulate $L$ on input $k$\;
+      \If{$k \in L$}{
+        $z' \leftarrow z' + \delta_{k}(x_{1}, \ldots, x_{n})$\;
+      }
+    }
+    \Return{whether $z = z'$}\;
+    \caption{Determiner for $\tilde{L}$}\label{alg:l-tilde-det}
+  \end{algorithm}
+
+  First, we demonstrate that the above algorithm runs in $\PSPACE$. Calculating
+  polynomials is itself a $\PSPACE$ problem, and simulating a $\PSPACE$ machine
+  is itself $\PSPACE$, hence Algorithm~\ref{alg:l-tilde-det} is a $\PSPACE$
+  algorithm.
+
+  Next, we show that Algorithm~\ref{alg:l-tilde-det} determines $\tilde{L}$.
+  First, from Corollary~\ref{cor:low-degree-boolean}, we know that for any $n$,
+  \begin{equation}
+    \tilde{A}_{n}(x_{1}, \ldots, x_{n}) = \sum_{\beta \in L}\delta_{\beta}(x_{1}, \ldots, x_{n}).
+  \end{equation}
+  Hence, the only thing the above algorithm does is calculate
+  $\tilde{A}_{n}(x_{1}, \ldots, x_{n})$ and then compares it to the value we were
+  given. As such, it determines $\tilde{L}$.
+
+  Since there is a reduction from $L$ to $\tilde{L}$, we know that $L$ is no
+  harder than $\tilde{L}$, and Algorithm~\ref{alg:l-tilde-det} demonstrates that
+  $\tilde{L} \in \PSPACE$. Hence, $\tilde{L}$ is $\PSPACE$-complete.
 \end{proof}
 
-This result is incredibly important in Theorem~\ref{thm:p-np-alg}: this tells us
-that $\PSPACE$-complete languages are not made any more powerful when extended
-to finite fields. This allows to reuse the same analysis we made earlier in
-Theorem~\ref{thm:p-np-rel} mostly as-is.
+With that as a base, we can now move on to the main theorem. As before, the more
+straightforward proof is the oracle where $\P^{\tilde{A}} = \NP^{A}$, so we
+begin with that.
 
 \begin{thm}[{\cite[Theorem 5.1]{AW09}}]\label{thm:p-np-alg}
   There exist $A$, $\tilde{A}$ such that $\NP^{A} = \P^{\tilde{A}}$.
@@ -1101,9 +1160,9 @@ Theorem~\ref{thm:p-np-rel} mostly as-is.
   For this theorem, we use the same technique we did in our proof of
   Theorem~\ref{thm:p-np-rel}: find a $\PSPACE$-complete language $A$ and work
   from there. If we let $\tilde{A}$ be the unique multilinear extension of $A$,
-  Babai, Fortnow, and Lund~\cite{BFL90} have observed that the multilinear
-  extension of any $\PSPACE$ language is also in $\PSPACE$. Hence, reusing our
-  argument from Theorem~\ref{thm:p-np-rel}, we have
+  Lemma~\ref{lem:multilinear-is-pspace} tells us $\tilde{A}$ is
+  $\PSPACE$-complete. Hence, reusing our argument from
+  Theorem~\ref{thm:p-np-rel}, we have
   \begin{equation}
     \NP^{\tilde{A}} = \NP^{\PSPACE} = \PSPACE = \P^{A}.
   \end{equation}
@@ -1111,6 +1170,8 @@ Theorem~\ref{thm:p-np-rel} mostly as-is.
   % NOTE: This uses BFL90 which introduces concepts of MIP & such; how do we
   % work that in with the MIP work later in the thesis?
 \end{proof}
+
+Now it is time for the other case.
 
 \begin{thm}[{\cite[Theorem 5.3]{AW09}}]\label{thm:p-np-nalg}
   There exist $A$, $\tilde{A}$ such that $\NP^{A} \ne \P^{\tilde{A}}$.
