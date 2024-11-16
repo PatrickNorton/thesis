@@ -1,4 +1,8 @@
-\documentclass{reedthesis}
+\documentclass[english]{reedthesis}
+
+\usepackage[T1]{fontenc}
+\usepackage{babel}
+
 \usepackage{amsfonts, amscd, amssymb, amsthm, amsmath}
 \usepackage{mathtools} %xmapsto etc
 \usepackage{pdfsync} %leaves makers for tex searching
@@ -604,8 +608,23 @@ want to think about the subset in terms of our functions, we can write $A$ as
   A = \bigcup_{m \in \mathbb{N}}\mleft\{x \in \{0, 1\}^{m} \mid A_{m}(x) = 1\mright\}.
 \end{equation}
 
+\begin{example}\label{ex:oracle-function}
+  Let $m = 3$. The function
+  \begin{equation}
+    \begin{aligned}
+      f: \{0, 1\}^{3} &\rightarrow \{0, 1\} \\
+      abc &\mapsto b
+    \end{aligned}
+  \end{equation}
+  is an oracle function. We can think of $f$ as corresponding to the set
+  $\{010, 011, 110, 111\}$.
+\end{example}
+
+% TODO: Example for oracle
+
 An oracle is not particularly interesting mathematical object on its own; its
 utility comes from when it interacts with a Turing machine.
+
 \begin{defn}\label{def:tm-oracle}\index{Turing machine!with oracle}
   A \emph{Turing machine with an oracle} is % TODO
 \end{defn}
@@ -644,7 +663,7 @@ never decrease it.
 
 We are now ready to define what relativization is. First, note that
 relativization is a statement about a \emph{result}: we talk about inclusions
-algebrizing, not sets themselves.
+relativizing, not sets themselves.
 
 % TODO: Define what it means to relativize (and why this is a barrier)
 % TODO: Cite
@@ -677,11 +696,11 @@ We start with a very straightforward example of a relativizing result.
 
 This result tells us that not \emph{everything} is weird in the world of
 relativization: if we have a machine that can do more operations without an
-oracle, it can still do so with an oracle. Further, for the question of $\P$
-vs.\ $\NP$ that we will discuss in \cref{sec:rel-p-np}, this means that the
-question we care about is whether $\NP \subseteq^{?} \P$ relativizes. As such, the
-question we are asking simplifies to determining where $\P^{A} = \NP^{A}$ and
-where $\P^{A} \subsetneq \NP^{A}$.
+oracle, it can still do more operations with an oracle. Further, for the
+question of $\P$ vs.\ $\NP$ that we will discuss in \cref{sec:rel-p-np}, this
+means that the question we care about is whether $\NP \subseteq^{?} \P$ relativizes. As
+such, the question we are asking simplifies to determining where
+$\P^{A} = \NP^{A}$ and where $\P^{A} \subsetneq \NP^{A}$.
 
 \section{Query complexity}\label{sec:query-complexity}
 
@@ -826,6 +845,11 @@ preliminaries.
   \end{equation*}
 \end{defn}
 
+\begin{example}\label{ex:l(x)-simple}
+  Consider the language $X = \{0, 11, 0100\}$. The language $L(X)$ is the
+  language consisting of all strings of length $1$, $2$, and $4$.
+\end{example}
+
 Our eventual goal will be to construct a language $X$ such that
 $L(X) \in \NP^{X} \setminus \P^{X}$. Of particular note is that we can rather nicely put a
 upper bound on the complexity of $L(X)$ when given $X$ as an oracle, regardless
@@ -871,11 +895,11 @@ With this lemma as a base, we can now move on to our main theorem.
     $n_{0} \leftarrow 0$\;
     \For{$i$ starting at $1$}{
       Let $n > n_{i}$ be large enough that
-      $p_{i}(n) < 2^{n}$\nllabel{line:def-n}\;
-      Run $P_{i}^{B(i-1)}$ on input $0^{n}$\nllabel{line:computation}\;
+      $p_{i}(n) < 2^{n}$\;\nllabel{line:def-n}
+      Run $P_{i}^{B(i-1)}$ on input $0^{n}$\;\nllabel{line:computation}
       \If{$P_{i}^{B(i-1)}$ rejects $0^{n}$}{
         Let $x$ be a string of length $n$ not queried during the above
-        computation\nllabel{line:not-queried}\;
+        computation\;\nllabel{line:not-queried}
         $B(i) \leftarrow B(i-1) \sqcup \{x\}$\;
       }
       $n_{i+1} \leftarrow 2^{n}$\;
@@ -962,16 +986,19 @@ would not suffice to determine separation between $\P$ and $\NP$.
 Algebrization, originally described by Aaronson and Wigderson~\cite{AW09}, is an
 extension of relativization. While relativization deals with oracles that are
 Boolean functions, algebrization extends oracles to be a collection of
-polynomials over finite fields.
+polynomials over finite fields. Since any field contains the set $\{0, 1\}$, we
+can think about our new oracles as \emph{extending} some specific oracle $A$, so
+that both oracles agree on the set $\{0, 1\}^{n} \subseteq \mathbb{F}^{n}$. We formalize
+this notion below.
 
 \begin{defn}[{\cite[Def.\ 2.2]{AW09}}]\label{def:ext-oracle}\index{extension oracle}
   % TODO: Reuse definition of extension polynomial from earlier
   Let $A_{m}: \{0, 1\}^{m} \rightarrow \{0, 1\}$ be a Boolean function and let
-  $\mathbb{F}$ be a finite field. Then an \emph{extension} of $A_{m}$
-  over $\mathbb{F}$ is a polynomial
+  $\mathbb{F}$ be a finite field. Then an \emph{extension} of $A_{m}$ over
+  $\mathbb{F}$ is a polynomial
   $\tilde{A}_{m,\mathbb{F}}: \mathbb{F}^{m} \rightarrow \mathbb{F}$ such that
   $\tilde{A}_{m,\mathbb{F}}(x) = A_{m}(x)$ whevever $x \in \{0, 1\}^{m}$. Also,
-  given an oracle $A = (A_{m})$, an extension $\tilde{A}$ of $A$ is a
+  given an oracle $A = (A_{m})$, an \emph{extension} $\tilde{A}$ of $A$ is a
   collection of polynomials
   $\tilde{A}_{m,\mathbb{F}}: \mathbb{F}^{m} \rightarrow \mathbb{F}$, one for each positive
   integer $m$ and finite field $\mathbb{F}$, such that
@@ -983,6 +1010,41 @@ polynomials over finite fields.
           % TODO: Rephrase point 2 in terms of F[x_{1,...,n}^{<= c}]
   \end{enumerate}
 \end{defn}
+
+Take note that an oracle can have many different extension oracles, since one
+can construct an infinite number of polynomials that go through a set of points.
+For this reason, when dealing with oracles in practice, we will also often be
+interested in oracles of a particular multidegree, which limits our options for
+oracles in potentially-interesting ways.
+
+\begin{example}\label{ex:oracle-function-ext}
+  Consider the function we defined in \cref{ex:oracle-function}:
+  \begin{equation}
+    \begin{aligned}
+      f: \{0, 1\}^{3} &\rightarrow \{0, 1\} \\
+      abc &\mapsto b.
+    \end{aligned}
+  \end{equation}
+  An extension of that function is the polynomial
+  \begin{equation}
+    \begin{aligned}
+      \tilde{f}: \mathbb{F}^{3} &\rightarrow \mathbb{F}^{3} \\
+      (a,b,c) &\mapsto b.
+    \end{aligned}
+  \end{equation}
+  While this is a relatively trivial polynomial, there are more non-trivial
+  ones, for example
+  \begin{equation}
+    \begin{aligned}
+      \tilde{f}: \mathbb{F}^{3} &\rightarrow \mathbb{F}^{3} \\
+      (a,b,c) &\mapsto a^{3}c^{3} + b^{2} - ac.
+    \end{aligned}
+  \end{equation}
+  Notice that on $\{0, 1\}$, $x^{2} = x$, which allows us to see that
+  $\tilde{f}$ is a valid extension of $f$.
+\end{example}
+
+% TODO: Example of an extension oracle
 
 \begin{defn}[{\cite[Def.\ 2.2]{AW09}}]\label{def:ext-oracle-class}
   For any complexity class $\mathcal{C}$ and extension oracle $\tilde{A}$, the complexity
@@ -1012,7 +1074,7 @@ Next, we need to formally define what algebrization is.
 
 Similarly to how we defined query complexity in \cref{sec:query-complexity}, our
 notion of algebrization requires a definition of \emph{algebraic} query
-complexity. % TODO: More
+complexity. % TODO: More (connect to previous section)
 
 \begin{defn}[{\cite[Def. 4.1]{AW09}}]\label{def:aqc}\index{query complexity!algebraic}
   Let $f: \{0, 1\}^{N} \rightarrow \{0, 1\}$ be a Boolean function, $\mathbb{F}$ be a
@@ -1214,12 +1276,12 @@ Now it is time for the other case.
         during the above computation\;
         \tcp{See \cref{lem:multiquad-adversary} for why we can do this}
         Let $w \in \{0, 1\}^{n}$ such that the following
-        works\nllabel{line:def-w}\;
+        works\;\nllabel{line:def-w}
         \For{all $\mathbb{F}$}{
           Set $\tilde{A}_{n_{i},\mathbb{F}}$ to be a multiquadratic polynomial
           such that $\tilde{A}_{n_{i},\mathbb{F}}(w) = 1$ and
           $\tilde{A}_{n_{i},\mathbb{F}}(y) = 0$ for all
-          $y \in \mathcal{Y}_{\mathbb{F}} \cup (\{0, 1\}^{n_{i}} \setminus \{w\})$\nllabel{line:set-a}\;
+          $y \in \mathcal{Y}_{\mathbb{F}} \cup (\{0, 1\}^{n_{i}} \setminus \{w\})$\;\nllabel{line:set-a}
           % FIXME: Be more clear about what this means
         }
       }{
