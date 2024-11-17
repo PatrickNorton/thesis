@@ -6,7 +6,7 @@
 \usepackage{amsfonts, amscd, amssymb, amsthm, amsmath}
 \usepackage{mathtools} %xmapsto etc
 \usepackage{pdfsync} %leaves makers for tex searching
-\usepackage{enumerate}
+\usepackage{enumitem}
 \usepackage{booktabs}
 \usepackage{complexity}
 \usepackage{mleftright}
@@ -102,8 +102,6 @@
 
 
 \addbibresource{bibliography.bib}
-
-\numberwithin{equation}{section}
 
 \makeindex
 
@@ -227,9 +225,19 @@ model, which allows us to reason about $\P$ problems easily without needing to
 resort to the formal definition of a Turing machine. More philosophically, $\P$
 generally represents the set of ``efficient'' algorithms in the real world.
 
-As we have defined $\P$ in terms of $\DTIME$, the question naturally arises of
-whether there is an equivalent in terms of $\NTIME$. Naturally, there is, and we
-call it $\NP$.
+\begin{example}\label{ex:polynomial-is-p}
+  The language
+  \[
+    \{(p, x, y) \mid p \text{ a polynomial and } p(x) = y\}
+  \]
+  is in $\P$. We can calculate whether a string is in this language by
+  calculating $p(x)$ (which we can do efficiently), and then comparing it to
+  $y$.
+\end{example}
+
+As we have defined $\P$ in terms of $\DTIME$, the question arises of whether
+there is an equivalent in terms of $\NTIME$. Naturally, there is, and we call it
+$\NP$.
 
 \begin{defn}[{\cite[Cor.\ 7.22]{Sip97}}]\label{def:np}\index{NP@$\NP$}
   The complexity class $\NP$ is the class
@@ -244,12 +252,26 @@ $\NP$ in terms of deterministic \emph{verifiers}. Since nondeterministic
 machines do not exist in real life, this definition gives a practical meaning to
 $\NP$.
 
+\begin{example}\label{ex:sat-is-np}
+  The language $\SAT$ is the language of Boolean formulas with at least one
+  solution. $\SAT$ is in $\NP$: we can nondeterministically pick a potential
+  solution and then evaluate our formula (which can be done efficiently); there
+  will be an accepting path if and only if a solution to the formula exists.
+\end{example}
+
 \begin{thm}[{\cite[Def.\ 7.19]{Sip97}}]\label{thm:np-verifier}
   $\NP$ is exactly the class of all languages verifiable by a $\P$-time Turing
   machine.
 \end{thm}
 
 % TODO: Should I prove this?
+
+\begin{example}\label{ex:sat-np-verifier}
+  The language $\SAT$ we defined in \cref{ex:sat-is-np} can be verified
+  efficiently, where the certificate is an accepting set of variables. Since we
+  can evaluate a Boolean formula efficiently, if we already have an accepting
+  set of variables we can therefore verify it in $\P$.
+\end{example}
 
 \subsection{Space complexity}
 
@@ -313,6 +335,14 @@ $\NPSPACE$ referred to. Here, we will only refer to it when it makes a class
 relationship clearer; most frequently when comparing $\NPSPACE$ to some other
 nondeterministic class.
 
+\begin{example}\label{ex:regex-is-pspace}
+  The language
+  \[
+    \{(x, y) \mid x, y \text{ regexes that accept the same set of strings}\}
+  \]
+  is in $\PSPACE$. % TODO: Explain why
+\end{example}
+
 \subsection{Completeness}
 
 % TODO: Not a huge fan of this paragraph
@@ -354,6 +384,12 @@ follows that it is \emph{at least as hard} as any other language in $\NP$. Of
 particular interest to complexity theorists is the fact that $\P = \NP$ if and
 only if \emph{any} $\NP$-complete language is in $\P$.
 
+\begin{example}\label{ex:sat-is-complete}
+  A famous result of Cook~\cite{Cook71}, also proved around the same time by
+  Levin and thus called the \emph{Cook-Levin theorem}, is that the $\SAT$
+  problem we defined earlier in \cref{ex:sat-is-np} is $\NP$-complete.
+\end{example}
+
 Just as we have $\NP$-completeness for time complexity, we also have notions of
 completeness for space complexity. Since $\PSPACE = \NPSPACE$, instead of
 calling the class $\NPSPACE$-complete, we call it $\PSPACE$-complete.
@@ -369,6 +405,11 @@ space-complexity class. This is because if we were to use space complexity, we
 would want to use $\PSPACE$-reductions, but that would make every language in
 $\PSPACE$ trivially $\PSPACE$-complete. Since that is not a useful definition,
 we instead restrict ourselves to polynomial-time reductions.
+
+\begin{example}
+  A result of Stockmeyer and Meyer~\cite{SM73} is that the language we defined
+  in \cref{ex:regex-is-pspace} is $\PSPACE$-complete.
+\end{example}
 
 % TODO: If/when we pull random/quantum stuff in here, probably worth defining
 % BPP and BQP (QMA might need its own section?)
@@ -508,7 +549,13 @@ manageable than the form in \cref{eqn:delta-poly}, and it is perhaps more
 immediately apparent here why $\delta$ has the property it does.
 
 The form of $\delta_{x}$ defined in \cref{eqn:delta-poly-small} has further use to us
-than just being simpler.
+than just being simpler. In particular, these $\delta_{x}$ form a basis of
+multilinear polynomials (and hence a generating set for the ring of all
+polynomials). This is a particularly useful basis because it allows us to reason
+about multilinear polynomials based solely on their outcomes on the Boolean
+cube.\footnote{As an aside, this fact provides a relatively slick proof of the
+  special case of our unproven statement earlier that low-degree extensions are
+  both of minimal degree and unique.}
 
 % TODO: Find better statement of this theorem
 \begin{thm}[{\cite[\defaultS 4.1]{AW09}}]
@@ -517,11 +564,24 @@ than just being simpler.
   $\mathbb{F}^{n} \rightarrow \mathbb{F}$.
 \end{thm}
 
-% TODO: I should probably define the Boolean cube somewhere
-This is a particularly useful basis because it allows us to reason about
-multilinear polynomials in terms of their outcomes on the Boolean cube.
+\begin{proof}
+  Since $\delta_{y}(x) = 0$ for all $y \ne x \in \{0, 1\}^{n}$, it follows that the only
+  way to get
+  \begin{equation}
+    \sum_{y \in \{0, 1\}^{n}}a_{y}\delta_{y} = 0
+  \end{equation}
+  is to have each $a_{y} = 0$. Hence the set of $\delta_{x}$ is linearly independent.
+  Further, the vector space of multilinear polynomials has $2^{n}$ dimensions;
+  since there are $2^{n}$ distinct $\delta_{x}$ polynomials, it follows that they
+  form a basis.
+\end{proof}
 
-\begin{thm}[{\cite[Theorem 4.3]{AW09}}]
+Now, we can use this fact to prove some cases where our low-degree extensions
+turn out to have a particularly low degree. Unfortunately, these do have a lot
+of qualifiers to them, but they will be useful in later theorems (in particular
+\cref{lem:multiquad-adversary}).
+
+\begin{thm}[{\cite[Theorem 4.3]{AW09}}]\label{thm:multiquad-extension}
   Let $\mathbb{F}$ be a field and $Y \subseteq \mathbb{F}^{n}$ be a set of $t$ points
   $y_{1}, \ldots, y_{t}$. Then for at least $2^{n} - t$ Boolean points
   $w \in \{0, 1\}^{n}$, there exists a multiquadratic extension polynomial
@@ -562,8 +622,54 @@ multilinear polynomials in terms of their outcomes on the Boolean cube.
 \end{lemma}
 
 \begin{proof}
-  % TODO
+  Call $z \in \{0, 1\}^{n}$ \emph{good} if for every $\mathbb{F} \in \mathcal{F}$ there exists
+  a multiquadratic poylnomial $u_{\mathbb{F},z}: \mathbb{F}^{n} \rightarrow \mathbb{F}$
+  such that
+  \begin{enumerate}[label=\alph*.]
+    \item\label{item:zero-in-y} $u_{\mathbb{F},z}(y) = 0$ for all
+          $y \in \mathcal{Y}_{\mathbb{F}}$,
+    \item\label{item:delta-one} $u_{\mathbb{F},z}(z) = 1$, and
+    \item\label{item:delta-zero} $u_{\mathbb{F},z} = 0$ for all
+          $w \in \{0, 1\}^{n} \setminus \{z\}$.
+  \end{enumerate}
+  % TODO: Rephrase w/more explanation
+  From \cref{thm:multiquad-extension}, each $\mathbb{F} \in \mathcal{F}$ can prevent at most
+  $\abs{\mathcal{Y}_{\mathbb{F}}}$ points from being good. Since
+  $t = \abs{\mathcal{Y}_{\mathbb{F}}}$, there are at least $2^{n} - t$ good points.
+
+  Let $G$ be the set of good points, and thus let $B = \{0, 1\}^{n} \setminus G$ be the
+  set of not-good points. Define
+  \begin{equation}\label{eqn:p-prime}
+    p'_{\mathbb{F}}(x) = p_{\mathbb{F}}(x) + \sum_{z \in G}(f'(z) - f(z))u_{\mathbb{F},z}(x).
+  \end{equation}
+  Now, all we need is to show that $p'_{\mathbb{F}}(x)$ satisfies the two
+  conditions from the theorem statement.
+
+  First, we show that $p_{\mathbb{F}}'$ extends $f'$; that is,
+  $p_{\mathbb{F}}'(x) = f'(x)$ for all $x \in \{0, 1\}^{n}$. There are two cases
+  here: $x \in G$ and $x \in B$. If $x \in B$, then the sum term of \cref{eqn:p-prime}
+  is $0$; hence $p'_{\mathbb{F}}(x) = p_{\mathbb{F}}(x)$. Since
+  $p_{\mathbb{F}}(x)$ extends $f(x)$, and since $f(x) = f'(x)$ on $B$, this
+  means $p'_{\mathbb{F}}(x) = f'(x)$. If $x \in G$, then the only term of the sum
+  where $u_{\mathbb{F},z}(x)$ is nonzero is where $x = G$, as per
+  \cref{item:delta-one,item:delta-zero} above. Hence, we have
+  \[
+    p'_{\mathbb{F}}(x) = p_{\mathbb{F}}(x) + f'(x) - f(x),
+  \]
+  and since $p_{\mathbb{F}}(x) = f(x)$, it follows that
+  $p'_{\mathbb{F}}(x) = f'(x)$.
+
+  Next, we show that $p_{\mathbb{F}}'(y)$ and $p_{\mathbb{F}}(y)$ agree for all
+  $y \in \mathcal{Y}_{\mathbb{F}}$. Since by \cref{item:zero-in-y} above, we have that
+  $u_{\mathbb{F},z}(y) = 0$, it follows that the entire sum term is zero.
+  Therefore, $p'_{\mathbb{F}}(y) = p_{\mathbb{F}}(y)$ for all
+  $y \in \mathcal{Y}_{\mathbb{F}}$.
+
+  As such, we have constructed a polynomial $p'_{\mathbb{F}}$ and a set $B$ that
+  satisfy our conditions of the theorem.
 \end{proof}
+
+% TODO: Unpack all that
 
 % NOTE: JKRS09 is actually even stronger than this (we need it only to be linear
 % in at least one variable)
@@ -622,11 +728,18 @@ want to think about the subset in terms of our functions, we can write $A$ as
 
 % TODO: Example for oracle
 
-An oracle is not particularly interesting mathematical object on its own; its
-utility comes from when it interacts with a Turing machine.
+An oracle is not particularly interesting mathematical object on its own (after
+all, it is simply a set of arbitrary Boolean functions); its utility comes from
+when it interacts with a Turing machine.
 
-\begin{defn}\label{def:tm-oracle}\index{Turing machine!with oracle}
-  A \emph{Turing machine with an oracle} is % TODO
+\begin{defn}[{\cite[Def.\ 3.6]{AB09}}]\label{def:tm-oracle}\index{Turing machine!with oracle}
+  A \emph{Turing machine with an oracle} is a Turing machine with an additional
+  tape, called the \emph{oracle tape}, as well as three special states:
+  $q_{\text{query}}$, $q_{\text{yes}}$, and $q_{\text{no}}$. Further, each
+  machine is associated with an oracle $A$. During the execution of the machine,
+  if it ever moves into the state $q_{\text{query}}$, the machine then (in one
+  step) takes the output of $A$ on the contents of the oracle tape, moving into
+  $q_{\text{yes}}$ if the answer is 1 and $q_{\text{no}}$ if the answer is 0.
 \end{defn}
 
 Of course, the question now becomes how we can effectively use an oracle in an
@@ -656,7 +769,10 @@ never decrease it.
 \end{lemma}
 
 \begin{proof}
-  % TODO
+  Let $L \in \mathcal{C}$ and $M$ be a machine that determines $L$. Then the oracle machine
+  $M'$ that simulates $M$ on its input and makes no queries to the oracle will
+  also accept exactly $L$. Since $M'$ is a $\mathcal{C}^{A}$ machine for any oracle $A$,
+  it follows that $L \in \mathcal{C}^{A}$ and hence $\mathcal{C} \in \mathcal{C}^{A}$.
 \end{proof}
 
 \section{Defining relativization}
@@ -695,12 +811,13 @@ We start with a very straightforward example of a relativizing result.
 \end{proof}
 
 This result tells us that not \emph{everything} is weird in the world of
-relativization: if we have a machine that can do more operations without an
-oracle, it can still do more operations with an oracle. Further, for the
-question of $\P$ vs.\ $\NP$ that we will discuss in \cref{sec:rel-p-np}, this
-means that the question we care about is whether $\NP \subseteq^{?} \P$ relativizes. As
-such, the question we are asking simplifies to determining where
-$\P^{A} = \NP^{A}$ and where $\P^{A} \subsetneq \NP^{A}$.
+relativization (although we will soon do our best to find all the weird bits):
+if we have a machine that can do more operations without an oracle, it can still
+do more operations with an oracle. Further, for the question of $\P$ vs.\ $\NP$
+that we will discuss in \cref{sec:rel-p-np}, this means that the question we
+care about is whether $\NP \subseteq^{?} \P$ relativizes. As such, the question we are
+asking simplifies to determining where $\P^{A} = \NP^{A}$ and where
+$\P^{A} \subsetneq \NP^{A}$.
 
 \section{Query complexity}\label{sec:query-complexity}
 
@@ -815,8 +932,9 @@ $\P^{A} = \NP^{A}$, so we shall begin with that.
   therefore get that $\PSPACE \subseteq \P^{A}$. Similarly, if we have a problem in
   $\NP^{A}$, we can verify it in polynomial space without talking to $A$ at all
   (by having our machine include a determiner for $A$). Hence, we have that
-  $\NP^{A} \subseteq \NPSPACE$. Further, a celebrated result of Savitch~\cite{Sav70} is
-  that $\PSPACE = \NPSPACE$. Combining all these results, we get the chain
+  $\NP^{A} \subseteq \NPSPACE$. Further, a celebrated result of Savitch~\cite{Sav70}
+  (which we briefly discussed as \cref{thm:savitch}) is that
+  $\PSPACE = \NPSPACE$. Combining all these results, we get the chain
   \begin{equation}
     \NP^{A} \subseteq \NPSPACE = \PSPACE \subseteq \P^{A} \subseteq \NP^{A}.
   \end{equation}
