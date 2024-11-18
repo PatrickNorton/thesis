@@ -726,11 +726,25 @@ want to think about the subset in terms of our functions, we can write $A$ as
   $\{010, 011, 110, 111\}$.
 \end{example}
 
+\begin{example}\label{ex:oracle-full}
+  For each $n \in \mathbb{N}$, define
+  \begin{equation}
+    \begin{aligned}
+      f_{n}: \{0, 1\}^{n} &\rightarrow \{0, 1\} \\
+      a_{1}a_{2} \cdots a_{n} &\mapsto a_{n}.
+    \end{aligned}
+  \end{equation}
+  Then the set $\{f_{n}\}$ forms an oracle, whose corresponding language is the
+  set of all binary representations of odd numbers.
+\end{example}
+
 % TODO: Example for oracle
 
 An oracle is not particularly interesting mathematical object on its own (after
 all, it is simply a set of arbitrary Boolean functions); its utility comes from
-when it interacts with a Turing machine.
+when it interacts with a Turing machine. A normal Turing machine does not have
+the facilities to interact with an oracle, so we need to define a small
+extension to a standard Turing machine to allow for this.
 
 \begin{defn}[{\cite[Def.\ 3.6]{AB09}}]\label{def:tm-oracle}\index{Turing machine!with oracle}
   A \emph{Turing machine with an oracle} is a Turing machine with an additional
@@ -781,20 +795,19 @@ We are now ready to define what relativization is. First, note that
 relativization is a statement about a \emph{result}: we talk about inclusions
 relativizing, not sets themselves.
 
-% TODO: Define what it means to relativize (and why this is a barrier)
 % TODO: Cite
 \begin{defn}\label{def:relativization}\index{relativization}
   Let $\mathcal{C}$ and $\mathcal{D}$ be complexity classes such that $\mathcal{C} \subseteq \mathcal{D}$. We say the result
   $\mathcal{C} \subseteq \mathcal{D}$ \emph{relativizes} if $\mathcal{C}^{A} \subseteq \mathcal{D}^{A}$ for all oracles $A$. Conversely,
   if there exists $A$ such that $\mathcal{C} \nsubseteq \mathcal{D}$, we say that the result $\mathcal{C} \subseteq \mathcal{D}$
-  \emph{does not algebrize}.
+  \emph{does not relativize}.
 \end{defn}
 
 \begin{defn}\label{def:relativization-ne}
   Let $\mathcal{C}$ and $\mathcal{D}$ be complexity classes such that $\mathcal{C} \nsubseteq \mathcal{D}$. We say the result
   $\mathcal{C} \nsubseteq \mathcal{D}$ \emph{relativizes} if $\mathcal{C}^{A} \nsubseteq \mathcal{D}^{A}$ for all oracles $A$. Conversely,
   if there exists $A$ such that $\mathcal{C} \subseteq \mathcal{D}$, we say that the result $\mathcal{C} \nsubseteq \mathcal{D}$
-  \emph{does not algebrize}.
+  \emph{does not relativize}.
 \end{defn}
 
 We start with a very straightforward example of a relativizing result.
@@ -819,13 +832,38 @@ care about is whether $\NP \subseteq^{?} \P$ relativizes. As such, the question 
 asking simplifies to determining where $\P^{A} = \NP^{A}$ and where
 $\P^{A} \subsetneq \NP^{A}$.
 
+Now that we have talked about set inclusions relativizing, we need to define the
+other side of the coin: \emph{proofs} can relativize as well as results.
+Unfortunately, this needs to be a somewhat informal definition as formally
+delineating different types of proof is far beyond the scope of this paper.
+However, the definition we offer here will be sufficient for our purposes.
+
+\begin{defn}\label{def:relativizing-result}
+  We say a \emph{proof relativizes} if it is not made invalid if the relevant
+  classes are replaced with oracle classes, i.e., a proof that $\mathcal{C} \subseteq \mathcal{D}$
+  \emph{relativizes} if the same proof can be used to show $\mathcal{C}^{A} \subseteq \mathcal{D}^{A}$ for
+  all oracles $A$ with minimal modifications.
+\end{defn}
+
+This gives us a reason to care about relativization as a concept: if our proofs
+are relativizing then we know not to try to use them to prove nonrelativizing
+results. In particular, we will show in \cref{sec:rel-p-np} that the famous $\P$
+vs.\ $\NP$ problem will not relativize regardless of the outcome, and then in
+\cref{sec:diag-relativizes} we will show that the common proof technique of
+diagonalization \emph{does} in fact relativize.
+
+Now that we have given ourselves a reason to care about oracles and how they
+interact with Turing machines, we now turn to the question of how a machine can
+gain information about the oracle it queries. We will do this with the notion of
+\emph{query complexity}.
+
 \section{Query complexity}\label{sec:query-complexity}
 
 The goal of query complexity is to ask questions about some Boolean function
-$A: \{0, 1\}^{n} \rightarrow \{0, 1\}$ by querying $A$. For this, we will interchangeably
-think of $A$ as a \emph{function} as well as a bit string of length $N = 2^{n}$,
-where each string element is $A$ applied to the $i$th string of length $n$,
-arranged in some lexicographical order. % TODO: Better way to phrase this
+$A: \{0, 1\}^{n} \rightarrow \{0, 1\}$ by querying $A$ itself. For this, we will
+interchangeably think of $A$ as a \emph{function} as well as a bit string of
+length $N = 2^{n}$, where each string element is $A$ applied to the $i$th string
+of length $n$, arranged in some lexicographical order. % TODO: Better way to phrase this
 We can further think of the property itself as being a Boolean function; a
 function that takes as input the bit-string representation of $A$ and outputs
 whether or not $A$ has the given property. We will call the function
