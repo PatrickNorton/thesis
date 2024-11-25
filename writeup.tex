@@ -3,6 +3,7 @@
 \usepackage[T1]{fontenc}
 \usepackage{babel}
 
+\usepackage{appendix}
 \usepackage{amsfonts, amscd, amssymb, amsthm, amsmath}
 \usepackage{mathtools} %xmapsto etc
 \usepackage{pdfsync} %leaves makers for tex searching
@@ -175,13 +176,12 @@ convoluted) formalism.
 % TODO: Cite Church-Turing
 Another way we think about a Turing machine is as an algorithm. Perhaps the
 foundational paper of modern computer science theory, the \emph{Church-Turing
-  thesis}, states that any actually-computable algorithm has an equivalent
-Turing machine, and vice versa. We will use this fact liberally; in many cases
-we will simply describe an algorithm and not deal with putting it into the
-context of a Turing machine. If we have explained the algorithm well enough that
-a reader can execute it (as we endeavor to do), then we know a Turing machine
-must exist.
-% TODO: Is any of this really necessary?
+  thesis}~\cite{Tur36}, states that any actually-computable algorithm has an
+equivalent Turing machine, and vice versa. We will use this fact liberally; in
+many cases we will simply describe an algorithm and not deal with putting it
+into the context of a Turing machine. If we have explained the algorithm well
+enough that a reader can execute it (as we endeavor to do), then we know a
+Turing machine must exist.
 
 % TODO: Nondeterministic TM
 
@@ -343,6 +343,11 @@ nondeterministic class.
   is in $\PSPACE$. % TODO: Explain why
 \end{example}
 
+% TODO: If/when we pull random/quantum stuff in here, probably worth defining
+% BPP and BQP (QMA might need its own section?)
+
+% TODO: Draw a graph of all these complexity inclusions
+
 \subsection{Completeness}
 
 % TODO: Not a huge fan of this paragraph
@@ -411,10 +416,28 @@ we instead restrict ourselves to polynomial-time reductions.
   in \cref{ex:regex-is-pspace} is $\PSPACE$-complete.
 \end{example}
 
-% TODO: If/when we pull random/quantum stuff in here, probably worth defining
-% BPP and BQP (QMA might need its own section?)
+\section{Polynomials}\label{sec:polynomial}
 
-\section{Polynomials}
+\begin{defn}[{\cite{Knu92}}]\label{def:iverson-bracket}\index{Iverson bracket}
+  Let $P$ be a mathematical statement. The function $[P]$ is the the function
+  \begin{equation}\label{eqn:iverson-bracket}
+    [P] = \begin{cases}
+      1 & P \text{ is true} \\
+      0 & \text{otherwise.}
+    \end{cases}
+  \end{equation}
+  This is called the \emph{Iverson bracket}, after its inventor Kenneth Iverson,
+  who originally included it in the programming language APL (although
+  originally using parentheses)~\cite[11]{APL}.
+\end{defn}
+
+\begin{example}
+  Using the Iverson bracket, the Kronecker delta function can be defined as
+  \[
+    \delta_{ij} = [i = j].
+  \]
+\end{example}
+% TODO: Transition sentence
 
 Much of our work will deal with multivariate polynomials. For a given field
 $\mathbb{F}$, we will denote the set of $m$-variable polynomials over
@@ -455,6 +478,7 @@ field.
   is any polynomial $f' \in \mathbb{F}[x_{1, \ldots, m}]$ such that $f(h) = f'(h)$ for
   all $h \in H$.
 \end{defn}
+% TODO: Examples
 
 It turns out that this polynomial needs only to be of a surprisingly low
 multidegree. Since polynomials of lower degree are generally easier to compute,
@@ -505,15 +529,13 @@ we shall now calculate.
   % TODO: Turn this into a lemma?
   To understand why $\hat{f}(x)$ agrees with $f(x)$ on $H$, we first should look
   at $\delta_{\beta}(x)$. In particular, for all $x, y \in H^{m}$,
-  \begin{equation*}
-    \delta_{y}(x) = \begin{cases}
-      1 & x = y \\
-      0 & x \ne y.
-    \end{cases}
-  \end{equation*}
-  This can be shown through some straightforward but tedious algebra which we
-  have omitted here. The equivalence above is the reason we have chosen our
-  notation here to be reminiscent of the Kronecker delta function.
+  \begin{equation}\label{eqn:delta-is-delta}
+    \delta_{y}(x) = [x = y] = \delta_{xy}.
+  \end{equation}
+  This can be shown through some algebra which we have worked through in full
+  detail in \cref{app:ext-poly}. This is the reason why we have named the
+  polynomial in \cref{eqn:delta-poly} as we have; it functions as the Kronecker
+  delta function over the set $H^{m}$.
 
   Taking the above statement, we get that for all $x \in H^{m}$, the only nonzero
   term of $\hat{f}(x)$ is the term where $\beta = x$; thus $\hat{f}(x) = f(x)$.
@@ -532,24 +554,28 @@ makes it much easier to reason about.
 \begin{cor}[{\cite[\defaultS 4.1]{AW09}}]\label{cor:low-degree-boolean}
   Let $\mathbb{F}$ be a finite field, $m \in \mathbb{N}$ a number, and
   $f: \{0, 1\}^{m} \rightarrow \mathbb{F}$. Then
-  \begin{equation}
+  \begin{equation}\label{eqn:low-deg-ext-small}
     \hat{f}(x) = \sum_{\beta \in \{0, 1\}^{m}}\delta_{\beta}(x)f(\beta)
   \end{equation}
   is a low-degree extension of $f$, where $\delta$ is the polynomial
   \begin{equation}\label{eqn:delta-poly-small}
-    \delta_{x}(y) = \mleft(\prod_{i:x_{i}=1}y_{i}\mright)\mleft(\prod_{i:x_{i}=0}(1 - y_{i})\mright).
+    \delta_{y}(x) = \mleft(\prod_{i:y_{i}=1}x_{i}\mright)\mleft(\prod_{i:y_{i}=0}(1 - x_{i})\mright).
   \end{equation}
 \end{cor}
-Note that in the product bound $i:x_{i} = 1$, we mean the product over all
-numbers $i$ such that $x_{i} = 1$.
+Note that in the product bound $i:y_{i} = 1$, we mean the product over all
+numbers $i$ such that $y_{i} = 1$.
 % TODO: Prove?
 
 As we can see, the form of $\delta$ in \cref{eqn:delta-poly-small} is much more
 manageable than the form in \cref{eqn:delta-poly}, and it is perhaps more
-immediately apparent here why $\delta$ has the property it does.
+immediately apparent here why $\delta$ has the property it does. Further, since this
+equation has no division, it turns out that it is valid for arbitrary
+(non-trivial) rings, while the more complex equation is only valid for fields.
+We show the algebra that brings us from the first to the second in
+\cref{app:ext-poly}.
 
-The form of $\delta_{x}$ defined in \cref{eqn:delta-poly-small} has further use to us
-than just being simpler. In particular, these $\delta_{x}$ form a basis of
+The form of $\delta_{y}$ defined in \cref{eqn:delta-poly-small} has further use to us
+than just being simpler. In particular, these $\delta_{y}$ form a basis of
 multilinear polynomials (and hence a generating set for the ring of all
 polynomials). This is a particularly useful basis because it allows us to reason
 about multilinear polynomials based solely on their outcomes on the Boolean
@@ -713,6 +739,9 @@ want to think about the subset in terms of our functions, we can write $A$ as
 \begin{equation}
   A = \bigcup_{m \in \mathbb{N}}\mleft\{x \in \{0, 1\}^{m} \mid A_{m}(x) = 1\mright\}.
 \end{equation}
+% FIXME: Will we actually do this?
+We will use the Iverson bracket defined in \cref{def:iverson-bracket} for this
+purpose: allowing us to think of $A$ as the set and $[A]$ as the function.
 
 \begin{example}\label{ex:oracle-function}
   Let $m = 3$. The function
@@ -787,6 +816,54 @@ never decrease it.
   $M'$ that simulates $M$ on its input and makes no queries to the oracle will
   also accept exactly $L$. Since $M'$ is a $\mathcal{C}^{A}$ machine for any oracle $A$,
   it follows that $L \in \mathcal{C}^{A}$ and hence $\mathcal{C} \in \mathcal{C}^{A}$.
+\end{proof}
+
+While the above lemma tells us that $\mathcal{C} \subseteq \mathcal{C}^{A}$ always, another interesting
+question is when $\mathcal{C} = \mathcal{C}^{A}$. We do have a notion for this, called
+\emph{lowness}. Lowness can be defined for both individual languages and
+complexity classes; we will define both here.
+
+% TODO: Cite all these
+\begin{defn}\label{def:low-class}\index{low}
+  A language $L$ is \emph{low} for a class $\mathcal{C}$ if $\mathcal{C}^{L} = \mathcal{C}$.
+\end{defn}
+
+\begin{defn}\label{def:low-lang}\index{low}
+  A complexity class $\mathcal{D}$ is \emph{low} for a class $\mathcal{C}$ if each language in $\mathcal{D}$
+  is low for $\mathcal{C}$.
+\end{defn}
+
+Of particular interest to us will be classes that are low for \emph{themselves}.
+We care about these classes because they can use other problems from the same
+class as a subroutine without issue; in particular recursion and iteration both
+work here. Thankfully, both $\P$ and $\PSPACE$ are low for themselves (it turns
+out $\NP$ is probably not); this allows us to easily write algorithms that
+recurse for classes in both of our most common classes.
+
+\begin{thm}\label{thm:p-low}
+  $\P$ is low for itself.
+\end{thm}
+
+\begin{proof}
+  % TODO: Rewrite?
+  Let $L \in \P$ and let $K \in \P^{L}$. Let $M(L)$ be the determiner of $L$ and
+  $M(K)$ be the determiner of $K$. Further, let $\hat{M}(K)$ be the determiner
+  of $K$ but with access to $L$ as an oracle. We aim to show $K \in \P$. Let
+  $p_{L}(n)$ be a polynomial upper bound of the runtime of $M(L)$ on an input of
+  length $n$, and let $p_{\hat{K}}(n)$ be similar. Since $M(K)$ can call $M(L)$ no
+  more than $p_{\hat{K}}(n)$ times, it follows that
+  $p_{K}(n) \le p_{\hat{K}}(p_{L}(n))$. Hence, the runtime of $M(K)$ is bounded
+  above by a polynomial, and thus $K \in P$.
+\end{proof}
+
+\begin{thm}\label{thm:pspace-low}
+  $\PSPACE$ is low for itself.
+\end{thm}
+
+\begin{proof}
+  The proof is very similar to that for \cref{thm:p-low}, but with space instead
+  of time.
+  % TODO
 \end{proof}
 
 \section{Defining relativization}
@@ -1321,15 +1398,39 @@ get a speedup.
 As with relativization, an important application of algebrization is in regards
 to the $\P$ vs.\ $\NP$ problem.
 
-\begin{lemma}\label{lem:multilinear-is-pspace}
-  Let $L$ be a $\PSPACE$-complete language, with corresponding oracle $A$. Let
+\begin{defn}[{\cite[Def.\ 6.1]{BFL90}}]\label{def:pspace-robust}\index{PSPACE-robust@$\PSPACE$-robust}
+  A language $L$ is \emph{$\PSPACE$-robust} if $\P^{L} = \PSPACE^{L}$.
+\end{defn}
+
+% TODO: Move up above thm:p-np-rel so I can reference it there?
+\begin{lemma}\label{lem:complete-is-robust}
+  Any $\PSPACE$-complete language is also $\PSPACE$-robust.
+\end{lemma}
+
+\begin{proof}
+  First, we know from \cref{thm:relativizing-increases} that
+  $\P^{L} \subseteq \PSPACE^{L}$. Next, let $M \in \PSPACE^{L}$, and we aim to show
+  $M \in \P^{L}$. Since $L \in \PSPACE$ and $\PSPACE$ is low for itself, we know
+  $M \in \PSPACE$. As such, we know there is a polynomial-time reduction $f$ from
+  $M$ to $L$. Hence, we can compute $M$ by running $f$ on the input and then
+  testing if that output is in $L$ (using the oracle). Hence, $M \in \P^{L}$ and
+  thus $\P^{L} = \PSPACE^{L}$.
+\end{proof}
+
+\begin{lemma}[{\cite[Lemma 6.2]{BFL90}}]\label{lem:multilinear-is-pspace}
+  Let $L$ be a $\PSPACE$-robust language, with corresponding oracle $A$. Let
   $\tilde{A}$ be the unique multilinear extension oracle of $A$. Then the
   language
   \begin{equation}
     \tilde{L} = \bigcup_{n \in \mathbb{N}}\{(x_{1}, \ldots, x_{n}, z) \in \mathbb{F}^{n+1} \mid \tilde{A}(x_{1}, \ldots, x_{n}) = z\}
   \end{equation}
-  is $\PSPACE$-complete.
+  is polynomially-equivalent to $L$; that is, $\tilde{L} \in \P^{L}$ and
+  $L \in \P^{\tilde{L}}$.
 \end{lemma}
+
+The proof of this statement originally given in~\cite{BFL90} has some apparent
+problems; we discuss these more thoroughly later on in \cref{app:bug-in-pspace}.
+Instead, we present our own proof of the above lemma.
 
 \begin{proof}
   First, we provide a polynomial-time reduction from $L$ to $\tilde{L}$. Since
@@ -1347,26 +1448,64 @@ to the $\P$ vs.\ $\NP$ problem.
     \KwIn{$(x_{1}, \ldots, x_{n}, z) \in \mathbb{F}^{n+1}$}
     \KwOut{Whether $\tilde{A}(x_{1}, \ldots, x_{n}) = z$}
     $z' \leftarrow 0$\;
-    \For{$k \in \{0, 1\}^{n}$}{
+    \For{$k \in \{0, 1\}^{n}$}{\nllabel{line:for-z-prime}
       Simulate $L$ on input $k$\;
       \If{$k \in L$}{
-        $z' \leftarrow z' + \delta_{k}(x_{1}, \ldots, x_{n})$\;
+        \tcp{Compute $d_{k}(x)$}
+        $d \leftarrow 1$\;
+        \For{$i$ from $1$ to $n$}{\nllabel{line:for-d}
+          \eIf{$k_{i} = 1$}{
+            $d \leftarrow d \cdot x_{i}$\;
+          }{
+            $d \leftarrow d \cdot (1 - x_{i})$\;
+          }
+        }
+        $z' \leftarrow z' + d$\;
       }
     }
     \Return{whether $z = z'$}\;
     \caption{Determiner for $\tilde{L}$}\label{alg:l-tilde-det}
   \end{algorithm}
 
-  First, we demonstrate that the above algorithm runs in $\PSPACE$. Calculating
-  polynomials is itself a $\PSPACE$ problem, and simulating a $\PSPACE$ machine
-  is itself $\PSPACE$, hence \cref{alg:l-tilde-det} is a $\PSPACE$
-  algorithm.
+  This algorithm simply calculates the value of $\tilde{A}(x_{1}, \ldots, x_{n})$
+  directly, from the explicit definition we gave in
+  \cref{cor:low-degree-boolean}, and then compares it to the value of $z$.
 
-  Next, we show that \cref{alg:l-tilde-det} determines $\tilde{L}$.
-  First, from \cref{cor:low-degree-boolean}, we know that for any $n$,
+  First, we demonstrate that the above algorithm runs in $\P^{L}$. From the
+  definition of $\PSPACE$-robustness, we know that we only need to show that the
+  algorithm runs in $\PSPACE^{L}$, a much weaker bound. The inner for-loop runs
+  in polynomial \emph{time}, hence it must run in polynomial space. The outer
+  for-loop runs for $2^{n}$ iterations, so determining that it is in $\P^{L}$ is
+  non-trivial. Beyond the inner loop (which we have already discussed), the only
+  thing we do in the outer loop is simulate $L$, which can be done in one step
+  with access to an oracle for $L$.
+
+  The only memory we need to simulate this oracle (beyond that for the input) is
+  space for $d$ and $z'$. We have already shown $d$ needs polynomial space, so
+  what remains is $z'$. Since $A(x_{1}, \ldots, x_{n}) \in \{0, 1\}$, each term in the
+  sum in \cref{eqn:low-deg-ext-small} is bounded above by $\delta_{\beta}(x)$. This means
+  that the value of $z'$ that we compute is bounded above by
+  \begin{equation}
+    2^{n}\max_{k \in \{0, 1\}^{n}}\delta_{k}(x).
+  \end{equation}
+  Since each $\delta_{k}(x)$ can be written in polynomial space, and $2^{n}$ can be
+  \emph{written} in polynomial space, it follows that $z'$ can as well. Hence,
+  \cref{alg:l-tilde-det} is in $\PSPACE^{L}$, and thus is in $\P^{L}$.
+
+  Next, we show that \cref{alg:l-tilde-det} determines $\tilde{L}$. As mentioned
+  earlier, our algorithm computes $\tilde{A}$ directly through the equations
+  given in \cref{cor:low-degree-boolean}. First, we show the inner loop
+  (beginning on line~\ref{line:for-d}) computes $\delta_{k}(x)$. We compute $\delta$
+  directly, through the formula described at \cref{eqn:delta-poly-small}. We do
+  this by simply iterating through each $i$ and then multiplying $d$ by either
+  $x_{i}$ or $1-x_{i}$, as appropriate.
+
+  Second, in this case \cref{eqn:low-deg-ext-small} simplifies to
   \begin{equation}
     \tilde{A}_{n}(x_{1}, \ldots, x_{n}) = \sum_{\beta \in L}\delta_{\beta}(x_{1}, \ldots, x_{n}).
   \end{equation}
+  This is exactly what our outer loop does: computes the sum directly through
+  iteration.
   Hence, the only thing the above algorithm does is calculate
   $\tilde{A}_{n}(x_{1}, \ldots, x_{n})$ and then compares it to the value we were
   given. As such, it determines $\tilde{L}$.
@@ -1452,6 +1591,119 @@ Now it is time for the other case.
   the constructed oracle provides the separation we seek.
   % TODO
 \end{proof}
+
+\begin{appendices}
+
+\chapter{More on extension polynomials}\label[appendix]{app:ext-poly}
+
+In this appendix, we will work through some of the algebra we mentioned but did
+not go into detail about in \cref{sec:polynomial}.
+
+\section{A proof of \cref{eqn:delta-is-delta}}\label{sec:delta-is-delta}
+
+% TODO: Restate preliminaries
+Our goal is to demonstrate the following:
+\begin{equation}\label{eqn:delta-is-iverson}
+  [x = y] = \prod_{i = 1}^{m}\mleft(\sum_{\omega \in H}\mleft(
+    \prod_{\gamma \in H \setminus \{\omega\}}\frac{(x_{i} - \gamma)(y_{i} - \gamma)}{(\omega - \gamma)^{2}}
+  \mright)\mright)
+\end{equation}
+for all $x, y \in H^{n}$. We will do this in two cases: one where $x = y$ and one
+where $x \ne y$.
+
+First, assume $x \ne y$ (so we want to show $\delta_{y}(x) = 0$). In this case, there
+exists at least one $i$ where $x_{i} \ne y_{i}$. For this $i$, for each $\omega$ there
+exists some $\gamma \in H \setminus \{\omega\}$ such that either $x_{i} = \gamma$ or
+$y_{i} = \gamma$.\footnote{This piece fails in the case where $x_{i} = y_{i}$, since
+  if $\omega = x_{i} = y_{i}$ neither of the terms will ever be zero.} As
+such, it follows that either $(x_{i} - \gamma) = 0$ or $(\gamma_{i} - \gamma) = 0$. Hence, for
+this $i$ the sum will be entirely over zero terms (since there will be at least
+one zero term in the product for each $\omega$). As such, this means that the $i$th
+term of our outermost product is $0$, and hence the entire product is $0$, as
+desired.
+
+When $x = y$ (and so we want to show $\delta_{y}(x) = 1$), the above equation
+simplifies to
+\begin{equation}
+  [x = y] = \prod_{i = 1}^{m}\mleft(\sum_{\omega \in H}\mleft(
+    \prod_{\gamma \in H \setminus \{\omega\}}\frac{(x_{i} - \gamma)^{2}}{(\omega - \gamma)^{2}}
+  \mright)\mright)
+\end{equation}
+Whenever $\omega \ne x_{i}$, the innermost product becomes $0$ since there will be a
+term where $\gamma = x_{i}$. Hence, we can simplify this further to
+\begin{equation}
+  [x = y] = \prod_{i=1}^{m}\mleft(\prod_{\gamma \in H \setminus \{\omega\}}\frac{(x_{i} - \gamma)^{2}}{(x_{i} - \gamma)^{2}}\mright).
+\end{equation}
+Since $\gamma \ne x_{i}$, we can simplify the fraction to $1$; since we have two nested
+products it follows that the equation as a whole simplifies to $1$.
+
+\section{Algebra behind \cref{eqn:delta-poly-small}}\label{sec:delta-poly-small}
+
+Our goal is to show that the equation in \cref{eqn:delta-poly} simplifies to
+that of \cref{eqn:delta-poly-small} when $H = \{0, 1\}^{n}$.
+% TODO
+
+As a refresher, our starting equation has the form
+\begin{equation}
+  \delta_{y}(x) = \prod_{i = 1}^{m}\mleft(\sum_{\omega \in H}\mleft(
+  \prod_{\gamma \in H \setminus \{\omega\}}\frac{(x_{i} - \gamma)(y_{i} - \gamma)}{(\omega - \gamma)^{2}}
+  \mright)\mright).
+\end{equation}
+We start by manually substituting the outer sum:
+\begin{equation}
+  \delta_{y}(x) = \prod_{i = 1}^{m}\mleft(\mleft(
+    \prod_{\gamma \in \{0, 1\} \setminus \{0\}}\frac{(x_{i} - \gamma)(y_{i} - \gamma)}{(\omega - \gamma)^{2}}
+    \mright) + \mleft(
+    \prod_{\gamma \in \{0, 1\} \setminus \{1\}}\frac{(x_{i} - \gamma)(y_{i} - \gamma)}{(\omega - \gamma)^{2}}
+    \mright)
+  \mright).
+\end{equation}
+Next, notice that the inner products are actually each over one term, so we can
+manually substitute there:
+\begin{equation}
+  \delta_{y}(x) = \prod_{i = 1}^{m}\mleft(
+    \frac{(x_{i} - 1)(y_{i} - 1)}{(0 - 1)^{2}} +
+    \frac{(x_{i} - 0)(y_{i} - 0)}{(1 - 0)^{2}}
+  \mright).
+\end{equation}
+Next, we simplify, taking note that the denominator of both fractions is $1$:
+\begin{equation}
+  \delta_{y}(x) = \prod_{i = 1}^{m}\mleft((x_{i} - 1)(y_{i} - 1) + x_{i}y_{i}\mright).
+\end{equation}
+From here, we take advantage of the fact that $y \in \{0, 1\}^{n}$; here we split
+our product into two smaller products: one where $y_{i} = 0$ and one where
+$y_{i} = 1$.
+\begin{equation}
+  \delta_{y}(x) = \mleft(\prod_{i:y_{i}=0}(x_{i} - 1)(0 - 1) + 0x_{i}\mright)
+  \mleft(\prod_{i:y_{i}=1}(x_{i} - 1)(1 - 1) + x_{i}1\mright).
+\end{equation}
+Finally, we simplify, bringing us to \cref{eqn:delta-poly-small}.
+\begin{equation}
+  \delta_{y}(x) = \mleft(\prod_{i:y_{i}=0}(1 - x_{i})\mright)\mleft(\prod_{i:y_{i}=1}x_{i}\mright).
+\end{equation}
+
+\chapter{More on \cref{lem:multilinear-is-pspace}}\label[appendix]{app:bug-in-pspace}
+
+\begin{defn}\label{def:alternating-tm}\index{Turing machine!alternating}
+  An \emph{alternating Turing machine} is
+\end{defn}
+
+\begin{proof}[{Proof of \cref{lem:multilinear-is-pspace} as written in~\cite{BFL90}}]
+  Let $L$ be a $\PSPACE$-robust language. Let $g_{n}(x_{1}, \ldots, x_{n})$ be the
+  multilinear extension of the characteristic function of
+  $L_{n} = L \cap \{0, 1\}^{n}$. Clearly, $L \in \P^{g}$, where
+  $g = \{g_{n} \mid n \ge 0\}$. We will describe an alternating polynomial-time
+  Turing machine with access to $L$ computing $g$. First guess the value
+  $z = g_{n}(x_{1}, \ldots, x_{n})$. Then existentially guess the linear function
+  $h_{1}(y) = g(y, x_{2}, \ldots, x_{n})$ and verify that $h_{1}(x_{1}) = z$. Then
+  universally choose $t_{1} \in \{0, 1\}$ and existentially guess the linear
+  function $h_{2}(y) = g(t_{1}, y, x_{3}, \ldots, x_{n})$. Keep repeating this
+  process until we have specified $t_{1}, \ldots, t_{n}$ and then verify
+  $t_{1}, \ldots, t_{n} \in L$. Since a $\PSPACE$ machine can simulate an alternating
+  polynomial-time Turing machine, if $L$ is $\PSPACE$-robust then $g$ is
+  Turing-reducible to $L$.
+\end{proof}
+\end{appendices}
 
 \printbibliography[heading=bibintoc]{}
 
