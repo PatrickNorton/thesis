@@ -125,6 +125,7 @@
 % TODO: Abstract
 
 \chapter*{Introduction}
+\addcontentsline{toc}{chapter}{Introduction}
 
 The $\P$ vs $\NP$ problem is perhaps the most important open problem in
 complexity theory.
@@ -192,6 +193,37 @@ Turing machine must exist.
 Complexity classes are the main way we think about the hardness of problems in
 computer science. A complexity class\index{complexity class} is a collection of
 languages that all share a common level of difficulty.
+
+We start with a relatively straightforward example of a complexity class: the
+class of languages that a Turing machine can recognize. First, we need to
+define what recognition is in order to make a complexity class out of it.
+
+\begin{defn}[{\cite[Def.\ 3.2]{Sip97}}]\label{def:recognition}\index{recognize}
+  A language $L$ is \emph{recognized} by a Turing machine $M$ if for all strings
+  $s \in L$, $M$ halts in the accept state when given $s$ as input.
+\end{defn}
+
+Now, since our complexity classes are about \emph{languages}, we naturally wish
+to extend our notion of recognition to a statistic on languages.
+
+\begin{defn}\label{def:turing-recognizable}\index{Turing-recognizable language}
+  A language $L$ is \emph{Turing-recognizable} (frequently just
+  \emph{recognizable}) if it is recognized by some Turing machine.
+\end{defn}
+
+Now that we have a property of languages, it is straightforward for us to turn
+it into a complexity class.
+
+\begin{defn}\label{def:re}\index{RE@$\RE$}
+  The class $\RE$ is the class of all Turing-recognizable languages.
+\end{defn}
+
+For most other classes, we want our Turing machines to halt on \emph{all}
+inputs, not just those in the class. From a practical perspective, this is
+useful because it tells us that we can be certain about whether any given string
+is in the given language. From here on, we will generally care about how much of
+some resource our machines take when making their decision, as opposed to
+whether or not they can.
 
 \subsection{Time complexity}
 
@@ -358,7 +390,7 @@ problems naturally puts those same bounds on any easier problems, complete
 problems can be useful in reasoning about the relationship between complexity
 classes.
 
-\begin{defn}[{\cite[Def.\ 7.29]{Sip97}}]\label{def:p-reduction}\index{Polynomial-time reduction}
+\begin{defn}[{\cite[Def.\ 7.29]{Sip97}}]\label{def:p-reduction}\index{polynomial-time reduction}
   A language $A$ is \emph{polynomial-time reducible} to a language $B$ if a
   polynomial-time computable function $f: \Sigma^{*} \rightarrow \Sigma^{*}$ exists such that for
   all $w \in \Sigma^{*}$, $w \in A$ if and only if $f(w) \in B$.
@@ -1591,6 +1623,100 @@ Now it is time for the other case.
   the constructed oracle provides the separation we seek.
   % TODO
 \end{proof}
+
+\chapter{Interactive proof systems}\label{chap:ips}
+
+\section{Single-prover systems}\label{sec:zero-prover}
+
+\begin{defn}[{\cite[Def.\ 4.2.1]{Go01}}]\label{def:interactive-tm}\index{Turing machine!interactive}
+  An \emph{interactive Turing machine} is
+\end{defn}
+
+\begin{defn}[{\cite[Def.\ 4.2.2]{Go01}}]\label{def:joint-comp}\index{joint computation}
+  The \emph{joint computation} of a linked pair of interactive Turing machines
+  is
+\end{defn}
+
+\begin{defn}[{\cite[Def.\ 4.2.4]{Go01}}]\label{def:ips}\index{interactive proof!single-prover}
+  An \emph{interactive proof system} is
+\end{defn}
+
+\begin{defn}[{\cite[Def.\ 4.2.5]{Go01}}]\label{def:ip}\index{IP@$\IP$}
+  The class $\IP$ is
+\end{defn}
+
+\section{Multi-prover systems}\label{sec:multi-prover}
+
+% TODO: Find citations
+\begin{defn}\label{def:mps}\index{interactive proof!multi-prover}
+  A \emph{multi-prover interactive proof system} is
+\end{defn}
+
+\begin{defn}\label{def:mip}\index{MIP@$\MIP$}
+  The class $\MIP$ is
+\end{defn}
+
+\begin{thm}[{\cite{BFL90}}]\label{thm:mip-is-nexp}
+  $\MIP = \NEXP$.
+\end{thm}
+
+\section{Zero-knowledge proofs}\label{sec:zero-knowledge}
+
+\begin{defn}\label{def:zero-knowledge}\index{perfect zero-knowledge}
+  A proof system is \emph{perfect zero-knowledge} if
+\end{defn}
+
+\begin{defn}\label{def:pzk}\index{PZK@$\PZK$}
+  The class $\PZK$ is
+\end{defn}
+
+\section{Probabilistically-checkable proofs}\label{sec:pcp}
+
+\begin{defn}\label{def:prob-check}\index{probabilistically-checkable proof}
+  A \emph{probabilistically-checkable proof} is
+\end{defn}
+
+\begin{defn}\label{def:pcp}\index{PCP@$\PCP$}
+  The class $\PCP$ is
+\end{defn}
+
+\chapter{Quantum computation}\label{chap:quantum}
+
+\section{Quantum computers}\label{sec:quant-comp}
+
+\begin{defn}\label{def:qubit}\index{qubit}
+  A \emph{qubit} is
+\end{defn}
+
+\begin{defn}\label{def:operator}\index{operator}
+  A \emph{operator} is
+\end{defn}
+
+\begin{defn}\label{def:povm}\index{positive operator-valued measure}
+  A \emph{positive operator-valued measure} is
+\end{defn}
+
+\section{Quantum complexity classes}
+
+\begin{defn}\label{def:bqp}\index{BQP@$\BQP$}
+  The class $\BQP$ is
+\end{defn}
+
+\begin{defn}\label{def:qma}\index{QMA@$\QMA$}
+  The class $\QMA$ is
+\end{defn}
+
+\section{Quantum interactive proofs}\label{sec:quant-interactive}
+
+\begin{defn}\label{def:mip-star}\index{MIP*@$\MIP*$}
+  The class $\MIP*$ is
+\end{defn}
+
+% TODO: This is actually worth exploring a *lot* more (it's non-relativizing!)
+% See https://scottaaronson.blog/?p=4512
+\begin{thm}[{\cite{JNVWY21}}]\label{thm:mip-star-is-re}
+  $\MIP* = \RE$.
+\end{thm}
 
 \begin{appendices}
 
