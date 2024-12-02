@@ -1,0 +1,623 @@
+\documentclass[english]{reedthesis}
+
+\usepackage[T1]{fontenc}
+\usepackage{babel}
+
+\usepackage{appendix}
+\usepackage{amsfonts, amscd, amssymb, amsthm, amsmath}
+\usepackage{mathtools} %xmapsto etc
+\usepackage{pdfsync} %leaves makers for tex searching
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{complexity}
+\usepackage{mleftright}
+
+\usepackage[linesnumbered]{algorithm2e}
+\usepackage{biblatex}
+\usepackage{imakeidx}
+\usepackage{microtype}
+\usepackage{tikz}
+
+% FIXME: Really bad hack to get cleveref working
+% This is unnecessary on literally every other LaTeX setup except mine
+% When working again, will need to reset theorem defs to point to the thm counter
+\usepackage{aliascnt}
+
+\usepackage[colorlinks]{hyperref}
+\usepackage[capitalize,noabbrev]{cleveref}
+
+%%% Theorems %%%---------------------------------------------------------
+\theoremstyle{plain}
+\newtheorem{thm}{Theorem}[section]
+\newaliascnt{lemma}{thm}
+\newtheorem{lemma}[lemma]{Lemma}
+\aliascntresetthe{lemma}
+\newaliascnt{prop}{thm}
+\newtheorem{prop}[prop]{Proposition}
+\aliascntresetthe{prop}
+\newaliascnt{cor}{thm}
+\newtheorem{cor}[cor]{Corollary}
+\aliascntresetthe{cor}
+\theoremstyle{definition}
+\newtheorem*{def*}{Definition}
+\newaliascnt{defn}{thm}
+\newtheorem{defn}[defn]{Definition}
+\aliascntresetthe{defn}
+\theoremstyle{remark}
+\newtheorem{example}{Example}[thm]
+\newtheorem{remark}[thm]{Remark}
+\newtheorem{subrem}[example]{Remark}
+
+
+\DeclareMathOperator{\ad}{ad}
+\DeclareMathOperator{\Aut}{Aut}
+\DeclareMathOperator{\ch}{ch}
+\DeclareMathOperator{\col}{col}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\dimn}{dim}
+\DeclareMathOperator{\End}{End}
+\DeclareMathOperator{\ev}{ev}
+\def\f{\varphi}
+\def\half{\hbox{$\frac12$}}
+\DeclareMathOperator{\Hom}{Hom}
+\DeclareMathOperator{\img}{img}
+\DeclareMathOperator{\Inn}{Inn}
+\DeclareMathOperator{\id}{id}
+\DeclareMathOperator{\mdeg}{mdeg}
+\DeclareMathOperator{\rad}{rad}
+\DeclareMathOperator{\Rep}{Rep}
+\DeclareMathOperator{\row}{row}
+\DeclareMathOperator{\rk}{rank}
+\def\normeq{\trianglelefteq}
+\DeclareMathOperator{\nul}{nullity}
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\spn}{span}
+\DeclareMathOperator{\supp}{supp}
+\DeclareMathOperator{\Syl}{Syl}
+\DeclareMathOperator{\Sym}{Sym}
+\DeclareMathOperator{\tr}{tr}
+\def\vep{\varepsilon}
+\DeclareMathOperator{\lcm}{lcm}
+
+\DeclarePairedDelimiter{\norm}{\lVert}{\rVert}
+\DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
+\DeclarePairedDelimiter{\ang}{\langle}{\rangle}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
+\newcommand{\middlemid}{%
+  \ensuremath{\;\middle\vert\;}
+}
+
+\newcommand{\dblang}[1]{%
+  \ensuremath{\left\langle\!\left\langle#1\right\rangle\!\right\rangle}
+}
+
+\newcommand{\comment}[1]{%
+  \text{\phantom{(#1)}} \tag{#1}%
+}
+
+\newcommand{\commath}[1]{%
+  \phantom{(#1)} \tag{#1}%
+}
+
+
+\addbibresource{bibliography.bib}
+
+\makeindex
+
+\title{Thesis check-in}
+\author{Patrick Norton}
+
+\approvedforthe{Committee}
+\thedivisionof{The Established Interdisciplinary Committee for \\}
+\division{Mathematics and Computer Science}
+\department{Mathematics and Computer Science}
+\advisor{Zajj Daugherty}
+\altadvisor{Adam Groce}
+
+\begin{document}
+
+\maketitle
+
+\setcounter{chapter}{1}
+\chapter{Relativization}
+
+% TODO: Examples
+
+An important prerequisite to understanding algebrization is the similar, but
+simpler, concept of \emph{relativization}, also called \emph{oracle separation}.
+To do this, we first must define an \emph{oracle}.
+\begin{defn}[{\cite[Def.\ 2.1]{AW09}}]\label{def:oracle}\index{oracle}
+  An \emph{oracle} $A$ is a collection of Boolean functions
+  $A_{m}: \{0, 1\}^{m} \rightarrow \{0, 1\}$, one for each natural number $m$.
+\end{defn}
+There are several ways to think of an oracle; this will extend the most
+naturally when it comes time to define an extension oracle later on. Another way
+to think of an oracle is as a subset $A \subseteq \{0, 1\}^{*}$. This allows us to think
+of $A$ as a language. Since we can do this, it gives us the ability to think of
+the complexity of the oracle. If we want to think about the subset in terms of
+our functions, we can write $A$ as
+\begin{equation}
+  A = \bigcup_{m \in \mathbb{N}}\mleft\{x \in \{0, 1\}^{m} \mid A_{m}(x) = 1\mright\}.
+\end{equation}
+% FIXME: Will we actually do this?
+We will use the Iverson bracket defined earlier for this purpose: allowing us to
+think of $A$ as the set and $[A]$ as the function.
+
+\begin{example}\label{ex:oracle-function}
+  Let $m = 3$. The function
+  \begin{equation}
+    \begin{aligned}
+      f: \{0, 1\}^{3} &\rightarrow \{0, 1\} \\
+      abc &\mapsto b
+    \end{aligned}
+  \end{equation}
+  is an oracle function. We can think of $f$ as corresponding to the set
+  $\{010, 011, 110, 111\}$.
+\end{example}
+
+\begin{example}\label{ex:oracle-full}
+  For each $n \in \mathbb{N}$, define
+  \begin{equation}
+    \begin{aligned}
+      f_{n}: \{0, 1\}^{n} &\rightarrow \{0, 1\} \\
+      a_{1}a_{2} \cdots a_{n} &\mapsto a_{n}.
+    \end{aligned}
+  \end{equation}
+  Then the set $\{f_{n}\}$ forms an oracle, whose corresponding language is the
+  set of all binary representations of odd numbers.
+\end{example}
+
+% TODO: Example for oracle
+
+An oracle is not particularly interesting mathematical object on its own (after
+all, it is simply a set of arbitrary Boolean functions); its utility comes from
+when it interacts with a Turing machine. A normal Turing machine does not have
+the facilities to interact with an oracle, so we need to define a small
+extension to a standard Turing machine to allow for this.
+
+\begin{defn}[{\cite[Def.\ 3.6]{AB09}}]\label{def:tm-oracle}\index{Turing machine!with oracle}
+  A \emph{Turing machine with an oracle} is a Turing machine with an additional
+  tape, called the \emph{oracle tape}, as well as three special states:
+  $q_{\text{query}}$, $q_{\text{yes}}$, and $q_{\text{no}}$. Further, each
+  machine is associated with an oracle $A$. During the execution of the machine,
+  if it ever moves into the state $q_{\text{query}}$, the machine then (in one
+  step) takes the output of $A$ on the contents of the oracle tape, moving into
+  $q_{\text{yes}}$ if the answer is 1 and $q_{\text{no}}$ if the answer is 0.
+\end{defn}
+
+Of course, the question now becomes how we can effectively use an oracle in an
+algorithm. The previously-mentioned conception of an oracle as a set of strings
+is useful here. If we consider the set of strings as being a \emph{language} in
+its own right, then querying the oracle is the same as determining whether a
+string is in the langauge, just in one step. If the language is computationally
+hard, this means our machine can get a significant power boost from the right
+oracle.
+
+\begin{defn}[{\cite[Def.\ 2.1]{AW09}}]\label{def:oracle-class}
+  For any complexity class $\mathcal{C}$, the complexity class $\mathcal{C}^{A}$ is the class of all
+  languages determinable by a Turing machine with access to $A$ in the number of
+  steps defined for $\mathcal{C}$.
+\end{defn}
+
+We will be using this definition in many places, so we should take a moment to
+look at it in more depth. First, it is important to realize that $\mathcal{C}^{A}$ is a
+set of \emph{languages}, not \emph{machines}: despite the notation, augmenting
+$\mathcal{C}$ with an oracle does not modify any languages, it just adds new ones that are
+computable. Second, since a machine can always ignore its oracle, it follows
+that adding an oracle can only increase the number of languages in the class,
+never decrease it.
+
+\begin{lemma}\label{thm:relativizing-increases}
+  For any complexity class $\mathcal{C}$ and oracle $A$, $\mathcal{C} \subseteq \mathcal{C}^{A}$.
+\end{lemma}
+
+\begin{proof}
+  Let $L \in \mathcal{C}$ and $M$ be a machine that determines $L$. Then the oracle machine
+  $M'$ that simulates $M$ on its input and makes no queries to the oracle will
+  also accept exactly $L$. Since $M'$ is a $\mathcal{C}^{A}$ machine for any oracle $A$,
+  it follows that $L \in \mathcal{C}^{A}$ and hence $\mathcal{C} \in \mathcal{C}^{A}$.
+\end{proof}
+
+While the above lemma tells us that $\mathcal{C} \subseteq \mathcal{C}^{A}$ always, another interesting
+question is when $\mathcal{C} = \mathcal{C}^{A}$. We do have a notion for this, called
+\emph{lowness}. Lowness can be defined for both individual languages and
+complexity classes; we will define both here.
+
+% TODO: Cite all these
+\begin{defn}\label{def:low-class}\index{low}
+  A language $L$ is \emph{low} for a class $\mathcal{C}$ if $\mathcal{C}^{L} = \mathcal{C}$.
+\end{defn}
+
+\begin{defn}\label{def:low-lang}\index{low}
+  A complexity class $\mathcal{D}$ is \emph{low} for a class $\mathcal{C}$ if each language in $\mathcal{D}$
+  is low for $\mathcal{C}$.
+\end{defn}
+
+Of particular interest to us will be classes that are low for \emph{themselves}.
+We care about these classes because they can use other problems from the same
+class as a subroutine without issue; in particular recursion and iteration both
+work here. Thankfully, both $\P$ and $\PSPACE$ are low for themselves (it turns
+out $\NP$ is probably not); this allows us to easily write algorithms that
+recurse for classes in both of our most common classes.
+
+\begin{thm}\label{thm:p-low}
+  $\P$ is low for itself.
+\end{thm}
+
+\begin{proof}
+  % TODO: Rewrite?
+  Let $L \in \P$ and let $K \in \P^{L}$. Let $M(L)$ be the determiner of $L$ and
+  $M(K)$ be the determiner of $K$. Further, let $\hat{M}(K)$ be the determiner
+  of $K$ but with access to $L$ as an oracle. We aim to show $K \in \P$. Let
+  $p_{L}(n)$ be a polynomial upper bound of the runtime of $M(L)$ on an input of
+  length $n$, and let $p_{\hat{K}}(n)$ be similar. Since $M(K)$ can call $M(L)$ no
+  more than $p_{\hat{K}}(n)$ times, it follows that
+  $p_{K}(n) \le p_{\hat{K}}(p_{L}(n))$. Hence, the runtime of $M(K)$ is bounded
+  above by a polynomial, and thus $K \in P$.
+\end{proof}
+
+\begin{thm}\label{thm:pspace-low}
+  $\PSPACE$ is low for itself.
+\end{thm}
+
+\begin{proof}
+  The proof is very similar to that for \cref{thm:p-low}, but with space instead
+  of time.
+  % TODO
+\end{proof}
+
+\section{Defining relativization}
+
+We are now ready to define what relativization is. First, note that
+relativization is a statement about a \emph{result}: we talk about inclusions
+relativizing, not sets themselves.
+
+% TODO: Cite
+\begin{defn}\label{def:relativization}\index{relativization}
+  Let $\mathcal{C}$ and $\mathcal{D}$ be complexity classes such that $\mathcal{C} \subseteq \mathcal{D}$. We say the result
+  $\mathcal{C} \subseteq \mathcal{D}$ \emph{relativizes} if $\mathcal{C}^{A} \subseteq \mathcal{D}^{A}$ for all oracles $A$. Conversely,
+  if there exists $A$ such that $\mathcal{C} \nsubseteq \mathcal{D}$, we say that the result $\mathcal{C} \subseteq \mathcal{D}$
+  \emph{does not relativize}.
+\end{defn}
+
+\begin{defn}\label{def:relativization-ne}
+  Let $\mathcal{C}$ and $\mathcal{D}$ be complexity classes such that $\mathcal{C} \nsubseteq \mathcal{D}$. We say the result
+  $\mathcal{C} \nsubseteq \mathcal{D}$ \emph{relativizes} if $\mathcal{C}^{A} \nsubseteq \mathcal{D}^{A}$ for all oracles $A$. Conversely,
+  if there exists $A$ such that $\mathcal{C} \subseteq \mathcal{D}$, we say that the result $\mathcal{C} \nsubseteq \mathcal{D}$
+  \emph{does not relativize}.
+\end{defn}
+
+We start with a very straightforward example of a relativizing result.
+
+\begin{lemma}\label{lem:pa-subset-npa}
+  For any oracle $A$, $\P^{A} \subseteq \NP^{A}$. Equivalently, the result $\P \subseteq \NP$
+  relativizes.
+\end{lemma}
+
+\begin{proof}
+  Since any deterministic Turing machine is also a nondeterministic machine, it
+  follows that a machine that solves a $\P^{A}$ problem is also an $\NP^{A}$
+  machine. Hence, $\P^{A} \subseteq \NP^{A}$.
+\end{proof}
+
+This result tells us that not \emph{everything} is weird in the world of
+relativization (although we will soon do our best to find all the weird bits):
+if we have a machine that can do more operations without an oracle, it can still
+do more operations with an oracle. Further, for the question of $\P$ vs.\ $\NP$
+that we will discuss in \cref{sec:rel-p-np}, this means that the question we
+care about is whether $\NP \subseteq^{?} \P$ relativizes. As such, the question we are
+asking simplifies to determining where $\P^{A} = \NP^{A}$ and where
+$\P^{A} \subsetneq \NP^{A}$.
+
+Now that we have talked about set inclusions relativizing, we need to define the
+other side of the coin: \emph{proofs} can relativize as well as results.
+Unfortunately, this needs to be a somewhat informal definition as formally
+delineating different types of proof is far beyond the scope of this paper.
+However, the definition we offer here will be sufficient for our purposes.
+
+\begin{defn}\label{def:relativizing-result}
+  We say a \emph{proof relativizes} if it is not made invalid if the relevant
+  classes are replaced with oracle classes, i.e., a proof that $\mathcal{C} \subseteq \mathcal{D}$
+  \emph{relativizes} if the same proof can be used to show $\mathcal{C}^{A} \subseteq \mathcal{D}^{A}$ for
+  all oracles $A$ with minimal modifications.
+\end{defn}
+
+This gives us a reason to care about relativization as a concept: if our proofs
+are relativizing then we know not to try to use them to prove nonrelativizing
+results. In particular, we will show in \cref{sec:rel-p-np} that the famous $\P$
+vs.\ $\NP$ problem will not relativize regardless of the outcome, and then in
+\cref{sec:diag-relativizes} we will show that the common proof technique of
+diagonalization \emph{does} in fact relativize.
+
+Now that we have given ourselves a reason to care about oracles and how they
+interact with Turing machines, we now turn to the question of how a machine can
+gain information about the oracle it queries. We will do this with the notion of
+\emph{query complexity}.
+
+\section{Query complexity}\label{sec:query-complexity}
+
+The goal of query complexity is to ask questions about some Boolean function
+$A: \{0, 1\}^{n} \rightarrow \{0, 1\}$ by querying $A$ itself. For this, we will
+interchangeably think of $A$ as a \emph{function} as well as a bit string of
+length $N = 2^{n}$, where each string element is $A$ applied to the $i$th string
+of length $n$, arranged in some lexicographical order. % TODO: Better way to phrase this
+We can further think of the property itself as being a Boolean function; a
+function that takes as input the bit-string representation of $A$ and outputs
+whether or not $A$ has the given property. We will call the function
+representing the property $f$. When viewed like this, $f$ is a function from
+$\{0, 1\}^{N}$ to $\{0, 1\}$. We define three types of query complexity for
+three of the most common types of computing paradigms: deterministic,
+randomized, and quantum. Nondeterministic query complexity is interesting, but
+it is outside the scope of this paper.
+% TODO: Why on earth does this paper not define nondeterministic query complexity?
+
+% TODO: Find better source for these definitions
+% Perhaps rephrase in the style of AW09 Def. 4.1?
+\begin{defn}[{\cite[17]{AW09}}]\label{def:det-qc}\index{query complexity!deterministic}
+  Let $f: \{0, 1\}^{N} \rightarrow \{0, 1\}$ be a Boolean function. Then the
+  \emph{deterministic query complexity} of $f$, which we write $D(f)$, is the
+  minimum number of queries made by any deterministic algorithm with access to
+  an oracle $A$ that determines the value of $f(A)$.
+  % TODO: I don't quite understand the phrasing here; perhaps rephrase
+\end{defn}
+
+To make this more clear, let us give an example problem.
+
+\begin{defn}\label{def:or-problem}\index{OR@$\mathsf{OR}$}
+  The $\mathsf{OR}$ problem is the following oracle problem:
+  \begin{quote}
+    Let $A: \{0, 1\}^{n} \rightarrow \{0, 1\}$ be an oracle. The function $\mathsf{OR}(A)$
+    returns 1 if there exists a string on which $A$ returns 1, and $0$
+    otherwise.
+  \end{quote}
+\end{defn}
+
+The question is then what the deterministic query complexity of the
+$\mathsf{OR}$ function is.
+
+\begin{thm}
+  The $\mathsf{OR}$ problem has a deterministic query complexity of $2^{n}$.
+\end{thm}
+
+\begin{proof}
+  First, note that any algorithm that determines the $\mathsf{OR}$ problem can
+  stop as soon as it queries $A$ and gets an output of $1$. Hence, for any
+  algorithm $M$, let $\{s_{i}\}$ be the sequence of queries $M$ makes to $A$ on
+  the assumption that it always recieves a response of $0$. If
+  $\abs{\{s_{i}\}} \le 2^{n}$, there exists some $s \in \{0, 1\}^{n}$ not queried.
+  In that case, $M$ will not be able to distinguish the zero oracle from the
+  oracle that outputs $1$ only when given $s$. Hence, $M$ must query every
+  string of length $n$ and thus the query complexity is $2^{n}$.
+\end{proof}
+
+From this, we get that the $\mathsf{OR}$ problem cannot be solved any better
+than by enumerative checking. This makes intuitive sense because none of the
+results we get by querying $A$ imply anything about what $A$ will do on other
+values, since $A$ can be an arbitrary function. Later on (in
+\cref{sec:alg-query-complexity}), we will look at what happens when we give
+ourselves access to a \emph{polynomial}, where querying one point could tell us
+information about others.
+
+For the next two definitions, since their Turing machines include some element
+of randomness, we only require that they succeed with a $2/3$ probability. This
+is in line with most definitions of complexity classes involving random
+computers.
+
+\begin{defn}[{\cite[17]{AW09}}]\label{def:rand-qc}\index{query complexity!randomized}
+  Let $f: \{0, 1\}^{N} \rightarrow \{0, 1\}$ be a Boolean function. Then the
+  \emph{randomized query complexity} of $f$, which we write $D(f)$, is the
+  minimum number of queries made by any randomized algorithm with access to an
+  oracle $A$ that evaluates $f(A)$ with probability at least $2/3$.
+\end{defn}
+
+% TODO: Talk about how quantum oracles are weird?
+
+\begin{defn}[{\cite[17]{AW09}}]\label{def:quant-qc}\index{query complexity!quantum}
+  Let $f: \{0, 1\}^{N} \rightarrow \{0, 1\}$ be a Boolean function. Then the
+  \emph{quantum query complexity} of $f$, which we write $D(f)$, is the
+  minimum number of queries made by any quantum algorithm with access to an
+  oracle $A$ that evaluates $f(A)$ with probability at least $2/3$.
+\end{defn}
+% TODO: Examples
+
+\section{Relativization of $\P$ vs.\ $\NP$}\label{sec:rel-p-np}
+
+% TODO? move to relativization section as an example?
+An important example of relativization is that of $\P$ and $\NP$. While the
+question of if $\P = \NP$ is still open, we aim to show that \emph{regardless of
+the answer}, the result does not algebrize. To do this, we show that there are
+some oracles $A$ where $\P^{A} = \NP^{A}$, and some where $\P^{A} \ne \NP^{A}$.
+
+Additionally, it should be noted that the similarity of relativization to
+algebrization means that the structure of these proofs will return in
+\cref{sec:alg-p-np} when we show the algebrization of $\P$ and $\NP$.
+
+\subsection{Equality}
+
+The more straightforward of the two proofs is the oracle where
+$\P^{A} = \NP^{A}$, so we shall begin with that.
+
+\begin{thm}[{\cite[Theorem 2]{BGS75}}]\label{thm:p-np-rel}
+  There exists an oracle $A$ such that $\P^{A} = \NP^{A}$.
+\end{thm}
+
+\begin{proof}
+  For this, we can let $A$ be any $\PSPACE$-complete language. By letting our
+  machine in $\P$ be the reducer from $A$ to any other language in $\PSPACE$, we
+  therefore get that $\PSPACE \subseteq \P^{A}$. Similarly, if we have a problem in
+  $\NP^{A}$, we can verify it in polynomial space without talking to $A$ at all
+  (by having our machine include a determiner for $A$). Hence, we have that
+  $\NP^{A} \subseteq \NPSPACE$. Further, a celebrated result of Savitch~\cite{Sav70}
+  (which we briefly discussed as \cref{thm:savitch}) is that
+  $\PSPACE = \NPSPACE$. Combining all these results, we get the chain
+  \begin{equation}
+    \NP^{A} \subseteq \NPSPACE = \PSPACE \subseteq \P^{A} \subseteq \NP^{A}.
+  \end{equation}
+  This is a circular chain of subset relations, which means everything in the
+  chain must be equal. Hence, $\P^{A} = \NP^{A} = \PSPACE$.
+\end{proof}
+
+For a slightly more intuitive view of what this proof is doing, what we have
+done is found an oracle that is so powerful that it dwarfs any amount of
+computation our actual Turing machine can do. Hence, the power of our machine is
+really just the same as the power of our oracle, and since we have given both
+the $\P$ and $\NP$ machine the same oracle, they have the same power.
+
+\subsection{Inequality}
+
+Having shown that an oracle exists where $\P^{A} = \NP^{A}$, we now endeavor to
+find one where $\P^{A} \ne \NP^{A}$. This piece of the proof is less simple than
+the previous section, and it uses a diagonalization argument to construct the
+oracle. Before we dive in to the main proof, however, we need to define a few
+preliminaries.
+
+\begin{defn}[{\cite[436]{BGS75}}]\label{def:l(x)}\index{L(X)@$L(X)$}
+  Let $X$ be an oracle. The language $L(X)$ is the set
+  \begin{equation*}
+    L(X) = \{x \mid \text{there is } y \in X \text{ such that } \abs{y} = \abs{x}\}.
+  \end{equation*}
+\end{defn}
+
+\begin{example}\label{ex:l(x)-simple}
+  Consider the language $X = \{0, 11, 0100\}$. The language $L(X)$ is the
+  language consisting of all strings of length $1$, $2$, and $4$.
+\end{example}
+
+Our eventual goal will be to construct a language $X$ such that
+$L(X) \in \NP^{X} \setminus \P^{X}$. Of particular note is that we can rather nicely put a
+upper bound on the complexity of $L(X)$ when given $X$ as an oracle, regardless
+of the value of $X$. This fact is what gives us the freedom to construct $X$ in
+such a way that $L(X)$ will not be in $\P^{X}$.
+
+\begin{lemma}[{\cite[436]{BGS75}}]\label{lem:l(x)-in-np}
+  For any oracle $X$, $L(X) \in \NP^{X}$.
+\end{lemma}
+
+\begin{proof}
+  Let $S$ be a string of length $n$. If $S \in L(X)$, then a witness for $S$ is
+  any string $S'$ such that $\abs{S} = \abs{S'}$ and $S' \in X$. Since a machine
+  with query access to $X$ can query whether $S'$ is in $X$ in one step, it
+  follows that we can verify that $S \in L(X)$ in polynomial time.
+\end{proof}
+
+With this lemma as a base, we can now move on to our main theorem.
+
+\begin{thm}[{\cite[Theorem 3]{BGS75}}]\label{thm:p-np-nrel}
+  There exists an oracle $A$ such that $\P^{A} \ne \NP^{A}$.
+\end{thm}
+
+\begin{proof}
+  Our goal is to construct a set $B$ such that $L(B) \notin \P^{B}$. We shall
+  construct $B$ in an interative manner. We do this by taking a sequence
+  $\{P_{i}\}$ of all machines that recongize some language in $\P^{A}$, and then
+  constructing $B$ such that for each machine in the sequence, there is some
+  part of $L(B)$ it cannot recognize. This technique is called
+  \emph{diagonalization}, and it is used in many places in computer science
+  theory.\footnote{This argument style is named after \emph{Cantor's diagonal
+      argument}, which was originally used to prove that the real numbers are
+    uncountable~\cite[Thm. 2.14]{Ru76}.} Additionally, we define $p_{i}(n)$ to
+  be the maximum running time of $P_{i}$ on an input of length $n$. We give the
+  following algorithm to construct $B$:
+
+  \begin{algorithm}[H]
+    % FIXME: Do the P_i need to be P machines? Everybody is unclear on this
+    \KwIn{A sequence of $\P$ oracle machines $\{P_{i}\}_{i=1}^{\infty}$}
+    \KwOut{A set $B$ such that $L(B) \notin \P^{B}$}
+    % TODO: Define p_i(n)
+    $B(0) \leftarrow \varnothing$\;
+    $n_{0} \leftarrow 0$\;
+    \For{$i$ starting at $1$}{
+      Let $n > n_{i}$ be large enough that
+      $p_{i}(n) < 2^{n}$\;\nllabel{line:def-n}
+      Run $P_{i}^{B(i-1)}$ on input $0^{n}$\;\nllabel{line:computation}
+      \If{$P_{i}^{B(i-1)}$ rejects $0^{n}$}{
+        Let $x$ be a string of length $n$ not queried during the above
+        computation\;\nllabel{line:not-queried}
+        $B(i) \leftarrow B(i-1) \sqcup \{x\}$\;
+      }
+      $n_{i+1} \leftarrow 2^{n}$\;
+    }
+    $B \leftarrow \bigcup_{i}B(i)$\;
+    \caption{An algorithm for constructing $B$}\label{alg:construct-b}
+  \end{algorithm}
+
+  Now that we have presented the algorithm, let us demonstrate its soundness.
+  First, note that since $P_{i}$ runs in polynomial time, $p_{i}(n)$ is bounded
+  above by a polynomial, and hence there will always exist an $n$ as defined in
+  line~\ref{line:def-n}. Next, since there are $2^{n}$ strings of length $n$ and
+  since $p_{i}(n) < 2^{n}$, we know that there must be some $x$ to make
+  line~\ref{line:not-queried} well-defined. While our algorithm allows $x$ to be
+  any string, if it is necessary to be explicit in which we choose, then picking
+  $x$ to be the smallest string in lexicographic order is a standard choice.
+
+  We should also briefly mention that this algorithm does not terminate. This is
+  okay because we are only using it to construct the set $B$, which does not
+  need to be bounded. If this were to be made practical, since the sequence of
+  $n_{i}$s is monotonically increasing, the set could be constructed ``lazily''
+  on each query by only running the algorithm until $n_{i}$ is greater than the
+  length of the query.
+
+  % FIXME: Should this "end goal" section be moved to before the algorithm?
+  Next, we demonstrate that $L(B) \notin \P^{B}$. The end goal of our instruction is
+  a set $B$ such that if $P_{i}^{B}$ accepts $0^{n}$ then there are no strings
+  of length $n$ in $B$, and if $P_{i}^{B}$ rejects, then there is a string of
+  length $n$ in $B$. This means that no $P_{i}$ accepts $L(B)$, and hence
+  $L(B) \notin \NP^{B}$.
+
+  The central idea behind the proper functioning of our algorithm is that adding
+  strings to our oracle \emph{cannot change the output if they are not queried}.
+  This is what we do in line~\ref{line:def-n}: we need our input length to be
+  long enough to guarantee that a non-queried string exists. Since the number of
+  queried strings is no greater than $p_{i}(n)$, and there are $2^{n}$ strings
+  of length $n$, there must be some string not queried.
+
+  Next, we run $P_{i}^{B(i-1)}$ on all the strings we have already added. If it
+  accepts, then we want to make sure that no string of length $n$ is in $B$;
+  that is, $0^{n}$ is not in $L(B)$. Hence, in this particular loop we add
+  nothing to $B(i)$. If $P_{i}^{B(i-1)}$ rejects, we then need to make sure that
+  $0^{n} \in L(B)$ but in a way that does not affect the output of
+  $P_{i}^{B(i-1)}$. Hence, we find a string that $P_{i}^{B(i-1)}$ did not query
+  (and thus will not affect the result) and add it to $B(i)$.
+
+  Having done this, we then set $n_{i+1}$ to be $2^{n}$. Since
+  $p_{i}(n) < 2^{n}$, it follows that no previous machine could have queried any
+  strings of length $n_{i+1}$.\footnote{A word of caution: we only care about
+    what $P_{i}$ does on input $n_{i}$, \emph{not any other input}. This is
+    because we only need each machine to be incorrect for some $i$, not all
+    $i$.} This way, we ensure our previous machines do not accidentally have
+  their output change due to us adding a string they queried.
+
+  % TODO: Note about how it's fine that this doesn't actually halt b/c it's just
+  % in the construction of the set
+  Having run this over all polynomial-time Turing machines, we have a set $L(B)$
+  such that no machine in $\P^{B}$ accepts it, which tells us $L(B) \notin \P^{B}$.
+  But, \cref{lem:l(x)-in-np} already told us $L(B) \in \NP^{B}$. Hence,
+  $\P^{B} \ne \NP^{B}$.
+\end{proof}
+
+\section{Diagonalization relativizes}\label{sec:diag-relativizes}
+
+Of course, determining that $\P$ vs $\NP$ does not relativize is only important
+if the proof techniques used in practice \emph{do} in fact relativize. Rather
+unfortunately, it turns out that simple diagonalization is a relativizing
+result.
+
+% FIXME: Are there formal definitions of diagonalization?
+While diagonalization itself does not have a formal definition, we can still
+think about it informally. Looking at our construction of $B$, which we did
+using diagonalization, notice that our definition never really cared about how
+the $P_{i}$ worked, just about the results it produced. Hence, if it were to be
+possible to modify \cref{alg:construct-b} to construct $B \in \NP \setminus \P$, the proof
+would remain the same if we were to replace our sequence $\{P_{i}\}$ with a
+sequence of machines in $\P^{A}$ for some $\PSPACE$-complete $A$. However, this
+would lead to a contradiction, as we showed in \cref{thm:p-np-rel} that in that
+case, $\P^{A} = \NP^{A}$! This tells us that a simple diagonalization argument
+would not suffice to determine separation between $\P$ and $\NP$.
+
+\nocite{*}
+
+\printbibliography{}
+
+\end{document}
