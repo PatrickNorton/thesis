@@ -1,0 +1,432 @@
+\documentclass[xcolor={usenames,dvipsnames}]{beamer}
+
+\mode<presentation>
+{
+  \usetheme{default}      % or try Darmstadt, Madrid, Warsaw, ...
+  \usecolortheme{default} % or try albatross, beaver, crane, ...
+  \usefonttheme{default}  % or try serif, structurebold, ...
+  \setbeamertemplate{navigation symbols}{}
+  \setbeamertemplate{caption}[numbered]
+}
+
+\hypersetup{
+    colorlinks = true,
+    urlcolor=blue,
+}
+
+\usepackage[english]{babel}
+\usepackage{transparent}
+\usepackage[style=authoryear]{biblatex}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{complexity}
+\usepackage{pdfpc}
+\usepackage[absolute,overlay]{textpos}
+
+\hypersetup{hidelinks}
+
+\addbibresource{bibliography.bib}
+
+% Tikz stuff.
+\usepackage{tikz}
+\usepackage{tikz-cd}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.16}
+%\tikzstyle{ball} = [circle,shading=ball, ball color=black,
+%    minimum size=1mm,inner sep=1.3pt]
+%\usetikzlibrary{arrows.meta}
+%\tikzset{>={Latex[length=2mm,width=1.5mm]}}
+\usepgfplotslibrary{fillbetween}
+\usetikzlibrary{decorations.pathreplacing}
+\tikzset{
+      labr/.style={anchor=north, rotate=90, inner sep=.7mm}
+    }
+\tikzset{
+      labl/.style={anchor=south, rotate=90, inner sep=.7mm}
+    }
+\usetikzlibrary{positioning}
+%\usetikzlibrary{graphs,graphs.standard}
+\usetikzlibrary{decorations.pathmorphing}
+\usetikzlibrary{decorations.pathreplacing}
+\usetikzlibrary{arrows.meta,calc}
+\usetikzlibrary{bending}
+\usetikzlibrary{decorations.markings,shapes.geometric}
+\tikzset{->-/.style={decoration={markings, mark=at position #1 with
+{\arrow{>}}},postaction={decorate}}}
+\tikzset{-|-/.style={decoration={markings, mark=at position #1 with
+{\arrow{stealth}}},postaction={decorate}}}
+\tikzset{movearrow/.style 2 args ={
+    decoration={markings,
+      mark= at position {#1} with {\arrow{#2}} ,
+    },
+    postaction={decorate}
+  }
+}
+\tikzset{<--/.style={decoration={markings, mark=at position #1 with
+{\arrow{<}}},postaction={decorate}}}
+\tikzstyle{ball} = [circle,shading=ball, ball color=black,
+minimum size=1mm,inner sep=1.3pt]
+\tikzstyle{bball} = [circle,shading=ball, ball color=blue,
+minimum size=1mm,inner sep=1.3pt]
+\tikzstyle{miniball} = [circle,shading=ball, ball color=black,
+minimum size=1mm,inner sep=0.5pt]
+\tikzstyle{redminiball} = [circle,shading=ball, ball color=red,
+minimum size=1mm,inner sep=0.5pt]
+\tikzstyle{mminiball} = [circle,shading=ball, ball color=black,
+minimum size=0.6mm,inner sep=0.1pt]
+\tikzstyle{mycircle} = [draw,circle, minimum size=1mm,inner sep=1.3pt]
+
+\DeclareMathOperator{\Span}{\mathrm{Span}}
+\DeclareMathOperator{\rk}{\mathrm{rank}}
+\DeclareMathOperator{\id}{\mathrm{id}}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\rspace}{\mathrm{rowspace}}
+\DeclareMathOperator{\rrk}{\mathrm{rowrank}}
+\DeclareMathOperator{\cspace}{\mathrm{colspace}}
+\DeclareMathOperator{\crk}{\mathrm{colrank}}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\cok}{cok}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\GL}{GL}
+\DeclareMathOperator{\sgn}{\mathrm{sgn}}
+\DeclareMathOperator{\outdeg}{\mathrm{outdeg}}
+\DeclareMathOperator{\supp}{\mathrm{supp}}
+\DeclareMathOperator{\vol}{\mathrm{vol}}
+
+\definecolor{myblue}{rgb}{0.2,0.2,0.7}
+\definecolor{psucolor}{rgb}{0.43,0.55,0.14}
+\definecolor{reedcolor}{RGB}{169,14,19}
+\setbeamercolor{frametitle}{fg=reedcolor,bg=white}
+\setbeamertemplate{itemize item}{\color{reedcolor}$\blacktriangleright$}
+\setbeamertemplate{itemize subitem}{\color{reedcolor}$\blacktriangleright$}
+
+\DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
+
+\title[Algebrization]{\bf\huge \textcolor{reedcolor}{Algebrization}}
+\author{Patrick Norton}
+\date{\textcolor{reedcolor}{December 4, 2024}}
+%\titlegraphic{{\includegraphics[height=1.8in]{hyperplane_arrangement.png}}}
+\makeatletter
+\setbeamertemplate{title page}[default][left,colsep=-4bp,rounded=true,shadow=\beamer@themerounded@shadow]
+\makeatother
+
+\begin{document}
+
+% FIXME: Change citation link color
+
+% \usebackgroundtemplate{
+%   \vbox to \paperheight{\vfil\hbox to \paperwidth{\hfil
+%       {{\transparent{0.1}\includegraphics[height=4.5in]{quintics.png}}}
+%   \hfil}\vfil}
+% }
+
+\begin{frame}[label=titlepage]
+  \titlepage{}
+\end{frame}
+
+\usebackgroundtemplate{}
+
+\begin{frame}
+  \frametitle{Oracle}
+  ``Magic'' function: can solve some problem in a single step
+
+  \bigskip
+  Can be any function, but we care when the function is hard to compute
+\end{frame}
+
+\begin{frame}
+  \frametitle{Relativization}
+  % \begin{itemize}
+  %   \item A statement about \emph{theorems}: statements of the form $\mathcal{C} = \mathcal{D}$ or
+  %         $\mathcal{C} \ne \mathcal{D}$
+  %   \item The result $\mathcal{C} = \mathcal{D}$ \emph{relativizes} if $\mathcal{C}^{A} = \mathcal{D}^{A}$ for each
+  %         oracle $A$
+  %   \item The result $\mathcal{C} \subsetneq \mathcal{D}$ \emph{relativizes} if $\mathcal{C}^{A} \subsetneq \mathcal{D}^{A}$ for each
+  %         oracle $A$
+  %   \item Example: Since every deterministic TM is also a nondeterministic one,
+  %         $\P \subseteq \NP$, and for the same reason $\P^{A} \subseteq \NP^{A}$
+  % \end{itemize}
+
+  Statement about \emph{theorems}, not classes or problems
+
+  \bigskip
+  \begin{minipage}[t]{0.48\linewidth}
+    \begin{center}
+      $\mathcal{C} \subseteq \mathcal{D}$ algebrizes:
+
+      \bigskip
+      $\mathcal{C}^{A} \subseteq \mathcal{D}^{A}$
+    \end{center}
+  \end{minipage}\hfill
+  \begin{minipage}[t]{0.48\linewidth}
+      $\mathcal{C} \nsubseteq \mathcal{D}$ algebrizes:
+
+      \bigskip
+      $\mathcal{C}^{A} \nsubseteq \mathcal{D}^{A}$
+  \end{minipage}
+
+  \bigskip
+  \bigskip
+  for all oracles $A$ and extensions $\tilde{A}$
+\end{frame}
+
+\begin{frame}
+  \frametitle{Relativizing techniques}
+  % \begin{itemize}
+  %   \item Along with relativizing theorems, \emph{proof techniques} can also
+  %         relativize
+  %   \item What do we mean by this?
+  %   \item A proof technique relativizes if the logic is still valid when you
+  %         replace every class $\mathcal{C}$ with $\mathcal{C}^{A}$ for \emph{any} oracle $A$
+  %   \item Why do we care?  Well, if you have a proof \emph{technique}
+  %         that relativizes, you can only ever use it to prove a \emph{result}
+  %         that relativizes
+  % \end{itemize}
+  Not just theorems, also techniques!
+
+  \bigskip
+  Relativizes when logic is still valid
+
+  \bigskip
+  Replace $\mathcal{C}$ with $\mathcal{C}^{A}$ everywhere
+\end{frame}
+
+\begin{frame}
+  \frametitle{Diagonalization}
+  Goal: construct a language $L$ not in some class $\mathcal{C}$
+
+  \bigskip
+  Idea: go through every machine in $\mathcal{C}$ and make sure it's incorrect for some
+  string in $L$
+
+  \bigskip
+  Relativizing technique!
+\end{frame}
+
+\begin{frame}
+  \frametitle{$\P \ne \NP$ does not relativize}
+  \begin{itemize}
+    \item Idea: find an oracle powerful enough to make the difference between
+          $\P$ and $\NP$ disappear
+    \item If our oracle $A$ is $\PSPACE$-complete, $\P^{A} = \PSPACE = \NP^{A}$
+    % TODO
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{$\P = \NP$ does not relativize}
+    Time to diagonalize!
+
+    \bigskip
+    Goal: construct a language $L$ such that for some oracle $A$,
+          $L \in \NP^{A} \setminus \P^{A}$
+
+    \bigskip
+    Define
+    \[
+      L(A) = \{x \in \{0, 1\}^{*} \mid \text{there is } y \in A \text{ such that
+      } \abs{y} = \abs{x}\}
+    \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{$L(A) \in \NP^{A}$}
+  \begin{textblock*}{0.4\paperwidth}[0,0](0.6\textwidth,10pt)
+    \tiny
+    $\NP$: languages that can be verified in polynomial time
+
+    $\NP^{A}$: $\NP$ but with access to oracle $A$
+
+    $L(A)$: all strings with the same length as something in $A$
+  \end{textblock*}
+
+  Certificate: a string in $A$ of length $n$
+
+  \bigskip
+  Verify: Pass certificate to oracle $A$ and verify it outputs 1
+\end{frame}
+
+\begin{frame}
+  \frametitle{Diagonalizing $A$: definitions}
+  \begin{itemize}
+    \item Let $\{P_{i}\}$ be a sequence of all oracle machines in $\P$
+    \item For each $P_{i}$, let $p_{i}(n)$ be a polynomial upper bound on the
+          runtime of $P_{i}$ over all inputs of length $n$
+    % \item Define $A(i-1)$ to be all the strings queried by at least one $P_{j}$
+    %       on input $0^{j}$ for $j < i$
+    \item Next: construct $A$
+    \item Do this by constructing a chain
+          \[
+            A(1) \subseteq \cdots \subseteq A(i) \subseteq \cdots
+          \]
+    \item Each $A(i)$ corresponds to a machine $P_{i}$
+   \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Diagonalizing $A$}
+  \begin{itemize}
+    \item For each $P_{i}$:
+    \item Let $n_{i} > n_{i-1}$ such that $p_{i}(n_{i}) < 2^{n_{i}}$
+    \item This ensures $P_{i}$ will not query some string of length $n_{i}$
+
+    \item Further, it ensures we don't modify anything a previous machine
+          queries
+    \item Run $P_{i}$ on input $0^{n}$ with oracle $A(i-1)$
+    \item Now, we do different things depending on whether $P_{i}$ accepts
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{If $P_{i}$ accepts}
+  \begin{itemize}
+    \item We want to make sure that there are no strings of length $n_{i}$ in
+          $A$
+    \item Hence, we say $A(i) = A(i-1)$ and thus add nothing new
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{If $P_{i}$ rejects}
+  \begin{itemize}
+    \item This is the tricker half
+    \item Since $p_{i}(n_{i}) < 2^{n_{i}}$, we know there is some string $x$ of
+          length $n_{i}$ that $P_{i}$ never queried
+    \item Hence, if we add that string to $A(i)$, it won't affect the output of
+          $P_{i}$
+    \item So set $A(i) = A(i - 1) \sqcup \{x\}$
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Algebrization}
+  \begin{itemize}
+    \item While relativization was enough to rule out all techniques at the
+          time, new ones have come about since
+    \item Let's rule out all these new ones too
+    \item We can think of an oracle as being a collection of functions
+          $f_{n}: \{0, 1\}^{n} \rightarrow \{0, 1\}$ for each $n$
+    \item What if we extended $f$ to be over a finite field?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Algebrization}
+  \begin{itemize}
+    \item Ok, maybe that's a few too many functions
+    \item So, let's restrict to polynomials over finite fields
+    \item Formal definition: An extension $\tilde{A}$ of an oracle $A$ is a
+          collection of polynomials $\tilde{A}_{n,\mathbb{F}}$ such that
+          $A_{n}(x) = \tilde{A}_{n,\mathbb{F}}(x)$ for all $x \in \{0, 1\}^{n}$
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Algebrizing results}
+  Big difference: only {\color{blue}{one}} oracle gets extended
+  \bigskip
+  \bigskip
+
+  \begin{minipage}[t]{0.48\linewidth}
+    \begin{center}
+      $\mathcal{C} \subseteq \mathcal{D}$ algebrizes:
+
+      \bigskip
+      $\mathcal{C}^{A} \subseteq \mathcal{D}^{\color{blue}{\tilde{A}}}$
+    \end{center}
+  \end{minipage}\hfill
+  \begin{minipage}[t]{0.48\linewidth}
+      $\mathcal{C} \nsubseteq \mathcal{D}$ algebrizes:
+
+      \bigskip
+      $\mathcal{C}^{\color{blue}{\tilde{A}}} \nsubseteq \mathcal{D}^{A}$
+  \end{minipage}
+
+  \bigskip
+  \bigskip
+  for all oracles $A$ and extensions $\tilde{A}$
+\end{frame}
+
+\begin{frame}
+  \frametitle{Algebrizing theorems}
+  \begin{itemize}
+    \item Also like before, proof techniques can algebrize
+    \item A proof technique algebrizes if the logic is still valid when you
+          replace every class $\mathcal{C}$ with either $\mathcal{C}^{A}$ or $\mathcal{C}^{\tilde{A}}$, as
+          appropriate
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Why algebrization}
+  Good news! This is still enough to cause problems
+\end{frame}
+
+\begin{frame}
+  \frametitle{$\P \ne \NP$ does not algebrize}
+  \begin{itemize}
+    \item Idea: same as for relativization, we just need to make sure
+          $\NP^{\tilde{A}} = \PSPACE = \P^{A}$
+    \item From~\cite{BFL90}, if $A$ is $\PSPACE$-complete, then so is
+          $\tilde{A}$ so long as each polynomial in $\tilde{A}$ is multilinear
+
+    \item So we know $\NP^{\tilde{A}} = \PSPACE$ and from earlier, we know
+          $\P^{A} = \PSPACE$
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{$\P = \NP$ does not algebrize}
+  \begin{itemize}
+    \item Diagonalization returns!
+    \item Same as before: construct an $A$ such that $L(A) \in \NP^{A} \setminus \P^{\tilde{A}}$
+    \item What's different?
+    \item We have to ensure queries ``off the cube'' don't break
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{$\P = \NP$ does not algebrize}
+  Reuse definitions from before:
+
+  \begin{itemize}
+    \item $P_{i}$ a sequence of $P$ machines
+    \item Polynomial $p_{i}$ upper bound on running time of $P_{i}$
+    \item $n_{i}$ such that $p_{i}(n_{i}) < 2^{n_{i}}$
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{$\P = \NP$ does not algebrize}
+  \begin{textblock*}{\paperwidth}[0,0](0.6\textwidth,10pt)
+    \tiny
+    \begin{itemize}
+      \item $P_{i}$ a sequence of $P$ machines
+      \item Polynomial $p_{i}$ upper bound on running time of $P_{i}$
+      \item $n_{i}$ such that $p_{i}(n_{i}) < 2^{n_{i}}$
+    \end{itemize}
+  \end{textblock*}
+
+  Let $\mathcal{Y}_{\mathbb{F}}$ be the set of points queried by $P_{i}$ for some field
+  $\mathbb{F}$
+
+  \bigskip
+  The point $w$ is the string we want to be $1$
+
+  \bigskip
+  We want:
+  \begin{enumerate}
+    \item $\tilde{A}_{n,\mathbb{F}}(y) = 0$ for all $y \in \mathcal{Y}_{\mathbb{F}}$
+    \item $\tilde{A}_{n,\mathbb{F}}(w) = 1$
+    \item $\tilde{A}_{n,\mathbb{F}}(x) = 0$ for all $x \in \{0, 1\}^{n} \setminus \{w\}$
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{References}
+
+  \nocite{AW09}
+  \printbibliography{}
+\end{frame}
+
+\end{document}
