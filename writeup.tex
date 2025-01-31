@@ -174,7 +174,6 @@ will use this informalism as a base from which we can define our Turing machine
 variants intuitively, without needing to deal with the (potentially extremely
 convoluted) formalism.
 
-% TODO: Cite Church-Turing
 Another way we think about a Turing machine is as an algorithm. Perhaps the
 foundational paper of modern computer science theory, the \emph{Church-Turing
   thesis}~\cite{Tur36}, states that any actually-computable algorithm has an
@@ -184,7 +183,9 @@ into the context of a Turing machine. If we have explained the algorithm well
 enough that a reader can execute it (as we endeavor to do), then we know a
 Turing machine must exist.
 
-% TODO: Nondeterministic TM
+\begin{defn}\label{def:nondeterministic-tm}\index{Turing machine!nondeterministic}
+  A \emph{nondeterministic Turing machine} is % TODO
+\end{defn}
 
 \section{Complexity classes}
 
@@ -217,6 +218,7 @@ it into a complexity class.
 \begin{defn}\label{def:re}\index{RE@$\RE$}
   The class $\RE$ is the class of all Turing-recognizable languages.
 \end{defn}
+% TODO: Example (and non-example)
 
 For most other classes, we want our Turing machines to halt on \emph{all}
 inputs, not just those in the class. From a practical perspective, this is
@@ -304,6 +306,47 @@ $\NP$.
   can evaluate a Boolean formula efficiently, if we already have an accepting
   set of variables we can therefore verify it in $\P$.
 \end{example}
+
+The next step up from polynomial complexities is that of exponential
+complexities. For these, instead of having the classes bounded above by a
+polynomial, we have the classes bounded above by $2$ to the power of a
+polynomial. While we use $2$ as the base, the value of the base turns out not to
+matter since for any $a, b > 1$,
+\begin{equation}
+  a^{n^{c}} = b^{n^{c}\log_{b}(a)} \in O\mleft(b^{n^{c+1}}\mright).
+\end{equation}
+
+\begin{defn}[{\cite[\defaultS 2.6.2]{AB09}}]\label{def:exp}\index{EXP@$\EXP$}
+  The complexity class $\EXP$ is the class
+  \[
+    \EXP = \bigcup_{c > 0}\DTIME\mleft(2^{n^{k}}\mright).
+  \]
+\end{defn}
+
+\begin{defn}[{\cite[\defaultS 2.6.2]{AB09}}]\label{def:nexp}\index{NEXP@$\NEXP$}
+  The complexity class $\NEXP$ is the class
+  \[
+    \NEXP = \bigcup_{c > 0}\NTIME\mleft(2^{n^{k}}\mright).
+  \]
+\end{defn}
+
+It is immediate that $\P \subseteq \EXP$ and $\NP \subseteq \NEXP$ (since the exponential
+classes allow the use of more of the same resource). Of slightly less-trivial
+interest is the relationship between $\NP$ and $\NEXP$.
+
+\begin{thm}\label{thm:np-exp}
+  $\NP \subseteq \EXP$.
+\end{thm}
+
+\begin{proof}
+  If a nondeterministic machine solves a problem in $p(n)$ steps, it follows
+  that the total number of branches is less than $a^{p(n)}$, where $a$ is the
+  maximum number of branches for a node within the machine. Hence, we can
+  simulate the machine deterministically by simply enumerating every branch,
+  giving us a total computation time of $p(n)a^{p(n)}$, which is in
+  $O(2^{q(n)})$ for some other polynomial $q(n)$. Hence any $\NP$ problem is in
+  $\EXP$.
+\end{proof}
 
 \subsection{Space complexity}
 
@@ -894,8 +937,9 @@ recurse for classes in both of our most common classes.
 
 \begin{proof}
   The proof is very similar to that for \cref{thm:p-low}, but with space instead
-  of time.
-  % TODO
+  of time. Since memory usage is bounded above by some polynomial, and
+  polynomials are closed under composition, it follows that $\PSPACE$ is low for
+  itself.
 \end{proof}
 
 \section{Defining relativization}
@@ -1375,8 +1419,25 @@ As an example, let us look at the same $\mathsf{OR}$ problem we defined in
 \end{thm}
 
 \begin{proof}
-  % TODO
+  First note that $2^{n}$ is an upper bound for the number of queries necessary
+  since we can query every point in $\{0, 1\}^{n}$, of which there are $2^{n}$.
+
+  Let $M$ be a deterministic algorithm and let $\mathcal{Y}$ be the set of points queried
+  by $M$ in the case where $M$ always recieves $0$ as a response. So long as
+  $\abs{\mathcal{Y}} < 2^{n}$, there exists by \cref{thm:multiquad-extension} a
+  multiquadratic extension polynomial $\tilde{A}: \mathbb{F}^{n} \rightarrow \mathbb{F}$
+  such that $\tilde{A}(y) = 0$ for all $y \in \mathcal{Y}$ but $\tilde{A}(w) = 1$ for some
+  $w \in \{0, 1\}^{n}$. As such, if $M$ queries less than $2^{n}$ points then it
+  would not be able to tell the difference between $\tilde{A}$ and the zero
+  function. However, $\mathsf{OR}(A) = 1$ and $\mathsf{OR}(0) = 0$, so it would
+  get the incorrect answer for one of them. Hence if $M$ queries fewer than
+  $2^{n}$ points it cannot solve the $\mathsf{OR}$ problem.
 \end{proof}
+
+Note that this works even if $M$ is adaptive: if $M$ ever recieves a nonzero
+response it (correctly) knows $\mathsf{OR}(A) = 1$, so it can accept
+immediately. As such, we know that any contradiction must come when $M$ has only
+ever seen zeros as responses.
 
 This gives us a potentially counterintuitive property of algebraic query
 complexity: while it would seem that giving our machine a polynomial (and a
@@ -1420,10 +1481,6 @@ get a speedup.
 \end{proof}
 
 % TODO: Deterministic & nondeterministic AQC
-% TODO: Work through the result of Juma et al. (JKRS09) that the OR problem can
-% be solved with 1 query for multilinear polynomials? More generally, perhaps
-% use the JKRS proofs instead of the AW proofs if they're cleaner?
-% Ok yeah, having read it, I definitely want JKRS09 Thm 3 b/c it's so slick
 
 \section{Algebrization of $\P$ vs.\ $\NP$}\label{sec:alg-p-np}
 
@@ -1556,18 +1613,16 @@ begin with that.
 \end{thm}
 
 \begin{proof}
-  % TODO: Pull the lemma from BFL into this paper
   For this theorem, we use the same technique we did in our proof of
   \cref{thm:p-np-rel}: find a $\PSPACE$-complete language $A$ and work from
   there. If we let $\tilde{A}$ be the unique multilinear extension of $A$,
   \cref{lem:multilinear-is-pspace} tells us $\tilde{A}$ is $\PSPACE$-complete.
-  Hence, reusing our argument from \cref{thm:p-np-rel}, we have
+  Hence, as mentioned before, we have
+  $\NP^{\tilde{A}} \subseteq \NP^{\PSPACE} \subseteq \NPSPACE$, and since $\NPSPACE = \PSPACE$
+  and we know from \cref{thm:p-np-rel} that $\PSPACE \subseteq \P^{A}$, it follows
   \begin{equation}
     \NP^{\tilde{A}} = \NP^{\PSPACE} = \PSPACE = \P^{A}.
   \end{equation}
-  % TODO: Don't just say "reusing our argument": actually spell it out
-  % NOTE: This uses BFL90 which introduces concepts of MIP & such; how do we
-  % work that in with the MIP work later in the thesis?
 \end{proof}
 
 Now it is time for the other case.
@@ -1582,21 +1637,16 @@ Now it is time for the other case.
   recognize. Also like before, we will do this by constructing an oracle
   extension $\tilde{A}$ such that $L(A) \notin \P^{\tilde{A}}$. Since we only give an
   algebraic extension to $\P$ and not $\NP$, we can resuse the result from
-  \cref{lem:l(x)-in-np} that $L(B) \in \NP^{A}$. We shall construct $\tilde{A}$
+  \cref{lem:l(x)-in-np} that $L(A) \in \NP^{A}$. We shall construct $\tilde{A}$
   using the following algorithm:
-  % FIXME: Mention that until set, A_{n,F} outputs 0
   \begin{algorithm}[H]
-    % FIXME: Do the P_i need to be P machines? Everybody is unclear on this
     \KwIn{A sequence of $\P$ oracle machines $\{P_{i}\}_{i=1}^{\infty}$}
     \KwOut{An extension oracle $\tilde{A}$ such that $L(A) \notin \P^{\tilde{A}}$}
-    % TODO: Define p_i(n)
     $\tilde{A} \leftarrow \varnothing$\;
     $n_{0} \leftarrow 0$\;
     \For{$i$ starting at $1$}{
       Let $n > n_{i}$ be large enough that
       $p_{i}(n) < 2^{n}$\;
-      % TODO: Think of this as a collection of oracles instead of indices?
-      $T_{j} \leftarrow \bigcup_{j < i}S_{j}$\;
       Run $P_{i}^{\tilde{A}}$ on input $0^{n}$\;
       \eIf{$P_{i}^{B(i-1)}$ rejects $0^{n}$}{
         Let $\mathcal{Y}_{\mathbb{F}}$ be the set of all $y \in \mathbb{F}^{n_{i}}$ queried
@@ -1621,7 +1671,72 @@ Now it is time for the other case.
   \end{algorithm}
   As before, we will start by demonstrating soundness and then move on to why
   the constructed oracle provides the separation we seek.
-  % TODO
+
+  Perhaps the least intuitive section of the above algorithm is the section
+  beginning at line~\ref{line:def-w}. We want to leverage
+  \cref{lem:multiquad-adversary} to show that such a solution exists. We know
+  that $p_{i}(n) < 2^{n}$, and since $p_{i}(n)$ is an upper bound on the number
+  of total queries, this tells us that there is at least one
+  $w \in \{0, 1\}^{n_{i}}$ not queried. From the definition of $\mathcal{Y}_{\mathbb{F}}$,
+  we also therefore know that $\sum_{\mathbb{F}}\mathcal{Y}_{\mathbb{F}} < 2^{n}$. Further
+  setting up this lemma, we will let $f$ be the zero function and
+  $p_{\mathbb{F}}$ be the zero polynomial.
+
+  From the lemma, we know that there is some $B \in \{0, 1\}^{n}$ with
+  $\abs{B} < 2^{n}$ such that for all $f'$ agreeing with $f$ there exists a
+  series of $p_{\mathbb{F}}'$ extending $f'$ and agreeing with $p_{\mathbb{F}}$
+  on $\mathcal{Y}_{\mathbb{F}}$. As such, if we pick any $w \in \{0, 1\}^{n} \setminus B$, then the
+  function $f'(x) = [x = w]$ agrees with $f$ on $B$, and thus we know that there
+  exists a series of $p_{\mathbb{F}}'$ that agree with the zero polynomial on
+  $\mathcal{Y}_{\mathbb{F}}$ and each non-$w$ Boolean point.
+
+  Now, we know that such a solution exists, and \cref{eqn:p-prime} gives us an
+  explicit formula for our $A_{n_{i},\mathbb{F}}$; thus, we know that this is in
+  fact computable. Since this algorithm is simply for \emph{constructing} the
+  language, we do not care about time or space complexity, so the fact that it
+  is computable is enough. In terms of finding the $w$ we need, we can simply
+  iterate try the construction for each $w \in \{0, 1\}^{n}$ and stop as soon as
+  we are able to construct each polynomial.
+
+  The other component of soundness is determining how we can run $P_{i}$ with
+  the extension oracle $\tilde{A}$ when $\tilde{A}$ is not yet fully
+  constructed. What we do is when simulating $P_{i}$, we assume that any
+  $\tilde{A}_{n_{i},\mathbb{F}}$ that we have not yet queried returns zero on
+  all queried inputs. We then make sure that any time we set an
+  $\tilde{A}_{n_{i},\mathbb{F}}$, it also returns zero on any point that we
+  queried. Further, we ensure that each $n_{i}$ is large enough that no previous
+  machine would have queried any string of length $n_{i}$ on its respective
+  input; ergo modifying these polynomials would not have any affect on their
+  output.
+
+  Next, we show that $L(A)$ is not in $\P^{\tilde{A}}$. As we did in
+  \cref{thm:p-np-nrel}, the idea is that for each polynomial-time machine
+  $P_{i}$, that machine will return the incorrect result on the string
+  $0^{n_{i}}$. We do this in \cref{alg:construct-a-tilde} by simulating $P_{i}$
+  on the input, and then adjusting $\tilde{A}$ based on its output. We separate
+  this into two cases: the case where $P_{i}^{\tilde{A}}$ rejects $0^{n_{i}}$,
+  and the case where it accepts. We shall begin with the case where it accepts.
+
+  When $P_{i}^{\tilde{A}}$ accepts, we want to ensure that no strings of length
+  $n_{i}$ is in $A$. The unique low-degree extension of the zero function is the
+  zero polynomial; hence, we set $\tilde{A}_{n_{i},\mathbb{F}}$ to be $0$ for
+  all $\mathbb{F}$. This ensures $\tilde{A}(x) = 0$ for all
+  $x \in \{0, 1\}^{n_{i}}$, and thus $A \cap \{0, 1\}^{n_{i}} = \varnothing$. This
+  means $0^{n_{i}} \notin L(A)$ and thus $P_{i}^{\tilde{A}}$ is incorrect.
+
+  When $P_{i}^{\tilde{A}}$ accepts, we want to make sure that there is at least
+  some string $w \in A \cap \{0, 1\}^{n_{i}}$, but also to make sure that any
+  polynomials we add have their values align with what $P_{i}^{\tilde{A}}$
+  already saw. As we mentioned earlier, we know that such a polynomial exists,
+  and thus we construct it. Since our constructed polynomials tell us that
+  $w \in A$, it follows that $0^{n_{i}} \in L(A)$ and hence $P_{i}^{\tilde{A}}$ is
+  incorrect there as well.
+
+  Since our argument earlier told us that none of the $P_{i}$ machines would
+  have their output affected by any of the polynomials modified outside of the
+  corresponding iteration $i$, it follows that no machine $P_{i}$ could
+  recognize $L(A)$. Since $P_{i}$ includes every machine recognizing a
+  $\P^{\tilde{A}}$ language, it follows that $L(A) \notin \P^{\tilde{A}}$.
 \end{proof}
 
 \chapter{Interactive proof systems}\label{chap:ips}
@@ -1629,45 +1744,147 @@ Now it is time for the other case.
 \section{Single-prover systems}\label{sec:zero-prover}
 
 \begin{defn}[{\cite[Def.\ 4.2.1]{Go01}}]\label{def:interactive-tm}\index{Turing machine!interactive}
-  An \emph{interactive Turing machine} is
+  An \emph{interactive Turing machine} is a deterministic multi-tape Turing
+  machine with the following tapes:
+  \begin{itemize}
+    \item Input tape (read-only)
+    \item Output tape (write-only)
+    \item Two communication tapes (one read-only, one write-only)
+    \item One-cell switch tape (read-write)
+  \end{itemize}
+  In addition to these tapes, an interactive TM has a single bit $\sigma \in \{0, 1\}$
+  associated with it, called its \emph{identity}. When the content of the switch
+  tape is not equal to the machine's identity, it performs no computation and is
+  called \emph{idle}.
+  % TODO: Finish
+\end{defn}
+
+\begin{defn}[{\cite[Def.\ 4.2.2]{Go01}}]\label{def:linked-tms}\index{Turing machine!linked pair}
+  A pair of interactive Turing machines $(M, N)$ are \emph{linked} if the
+  following are true:
+  \begin{enumerate}
+    \item The identity of $M$ is distinct from the identity of $N$.
+    \item The switch tapes of $M$ and $N$ coincide (i.e., writing to one affects
+          the value in both).
+    \item The read-only communication tape of $M$ coincides with the write-only
+          communication tape of $N$.
+    \item The read-only communication tape of $N$ coincides with the write-only
+          communication tape of $M$.
+  \end{enumerate}
 \end{defn}
 
 \begin{defn}[{\cite[Def.\ 4.2.2]{Go01}}]\label{def:joint-comp}\index{joint computation}
   The \emph{joint computation} of a linked pair of interactive Turing machines
-  is
+  $(M, N)$ is, on a common input string $x$, is the series of computation states
+  for both $M$ and $N$ when each is given $x$ as its initial input tape and when
+  the initial value of the shared switch tape is $0$. The joint computation
+  halts when either machine halts and the halting machine is not idle.
 \end{defn}
 
+We will denote the joint computation of machines $M$ and $N$ on input $x$ by
+$\ang{M, N}(x)$. % TODO: Talk about how this is a random variable
+
 \begin{defn}[{\cite[Def.\ 4.2.4]{Go01}}]\label{def:ips}\index{interactive proof!single-prover}
-  An \emph{interactive proof system} is
+  An \emph{interactive proof system} is a pair of interactive machines $(P, V)$
+  such that $V$ is polynomial-time and the following holds:
+  \begin{itemize}
+    \item \emph{Completeness}: For every $x \in L$,
+          \[
+            \mathbb{P}[\ang{P, V}(x) = 1] \ge \frac{2}{3}.
+          \]
+    \item \emph{Soundness}: For every $x \notin L$ and every interactive machine $B$,
+          \[
+            \mathbb{P}[\ang{B, V}(x) = 1] \le \frac{1}{3}.
+          \]
+  \end{itemize}
 \end{defn}
 
 \begin{defn}[{\cite[Def.\ 4.2.5]{Go01}}]\label{def:ip}\index{IP@$\IP$}
-  The class $\IP$ is
+  The class $\IP$ is the class of all languages that have an interactive proof
+  system.
 \end{defn}
+
+% TODO: How much do I want to talk about this? (Scope creep)
+\begin{thm}[{\cite{Sha92}}]\label{thm:ip-is-pspace}
+  $\IP = \PSPACE$.
+\end{thm}
 
 \section{Multi-prover systems}\label{sec:multi-prover}
 
 % TODO: Find citations
-\begin{defn}\label{def:mps}\index{interactive proof!multi-prover}
-  A \emph{multi-prover interactive proof system} is
+% TODO: Should I define this for any n instead of just 2?
+\begin{defn}[{\cite[Def.\ 4.11.2]{Go01}}]\label{def:mps}\index{interactive proof!multi-prover}
+  A \emph{multi-prover interactive proof system} is a triplet of interactive
+  machines $(P_{1}, P_{2}, V)$ such that $V$ is probabilistic polynomial-time
+  and
+  \begin{itemize}
+    \item \emph{Completeness}: For every $x \in L$,
+          \[
+            \mathbb{P}[\ang{P_{1}, P_{2}, V}(x) = 1] \ge \frac{2}{3}.
+          \]
+    \item \emph{Soundness}: For every $x \notin L$ and every pair of interactive
+          machines $B_{1}$ and $B_{2}$,
+          \[
+            \mathbb{P}[\ang{B_{1}, B_{2}, V}(x) = 1] \le \frac{1}{3}.
+          \]
+  \end{itemize}
 \end{defn}
 
 \begin{defn}\label{def:mip}\index{MIP@$\MIP$}
-  The class $\MIP$ is
+  The class $\MIP$ is the class of languages that have a multi-prover
+  interactive proof system.
 \end{defn}
 
+\begin{lemma}\label{lem:ip-in-mip}
+  $\IP \subseteq \MIP$.
+\end{lemma}
+
+% https://www.math.toronto.edu/swastik/courses/rutgers/topics-S17/lec9.pdf
 \begin{thm}[{\cite{BFL90}}]\label{thm:mip-is-nexp}
   $\MIP = \NEXP$.
 \end{thm}
 
+\begin{proof}
+  % TODO
+\end{proof}
+
+% FIXME: Cite (where did this come from?)
+\begin{thm}\label{thm:mip-unchanged}
+  If we redefine $\MIP$ to have $m(n) = \poly(n)$ provers on an input of size
+  $n$, the class is unchanged.
+\end{thm}
+
+\begin{proof}
+  % TODO
+\end{proof}
+
 \section{Zero-knowledge proofs}\label{sec:zero-knowledge}
 
-\begin{defn}\label{def:zero-knowledge}\index{perfect zero-knowledge}
-  A proof system is \emph{perfect zero-knowledge} if
+\begin{defn}[{\cite[Def.\ 4.3.1]{Go01}}]\label{def:zero-knowledge}\index{perfect zero-knowledge}\index{perfect simulator}
+  A proof system $(P, V)$ for a language $L$ is \emph{perfect zero-knowledge} if
+  for each probabilistic polynomial-time interactive machine $V^{*}$ there
+  exists a probabilistic polynomial-time ordinary machine $M^{*}$ such that for
+  every $x \in L$ we have the following conditions hold:
+  \begin{enumerate}
+    \item With probability at most $1/2$ , on input $x$, machine $M^{*}$ outputs
+          a special symbol denoted $\bot$ (i.e.\ $\mathbb{P}[M^{*}(x) = \bot] \le 1/2$).
+    \item Let $m^{*}(x)$ be the random variable such that
+          \begin{equation}
+            \mathbb{P}[m^{*}(x) = \alpha] = \mathbb{P}[M^{*}(x) = \alpha \mid M^{*}(x) \ne \bot]
+          \end{equation}
+          for all $\alpha$. That is, let $m^{*}(x)$ be the distribution of non-$\bot$
+          values of $M^{*}$. Then $\ang{P, V^{*}}(x)$ and $m^{*}(x)$ are
+          identically distributed for all $x \in L$.
+  \end{enumerate}
+  In this case, we say the machine $M^{*}$ is a \emph{perfect simulator} for the
+  interaction of $V^{*}$ with $P$.
 \end{defn}
 
-\begin{defn}\label{def:pzk}\index{PZK@$\PZK$}
-  The class $\PZK$ is
+% TODO: Explain what this actually means
+
+\begin{defn}[{\cite[Def.\ 4.3.5]{Go01}}]\label{def:pzk}\index{PZK@$\PZK$}
+  The class $\PZK$ is the class of all languages with a perfect zero-knowledge
+  proof system.
 \end{defn}
 
 \section{Probabilistically-checkable proofs}\label{sec:pcp}
@@ -1677,7 +1894,8 @@ Now it is time for the other case.
 \end{defn}
 
 \begin{defn}\label{def:pcp}\index{PCP@$\PCP$}
-  The class $\PCP$ is
+  The class $\PCP$ is the class of all languages that have a
+  probabilistically-checkable proof.
 \end{defn}
 
 \chapter{Quantum computation}\label{chap:quantum}
@@ -1685,11 +1903,12 @@ Now it is time for the other case.
 \section{Quantum computers}\label{sec:quant-comp}
 
 \begin{defn}\label{def:qubit}\index{qubit}
-  A \emph{qubit} is
+  A \emph{qubit} is a unit vector in $\mathbb{C}^{2}$.
 \end{defn}
 
 \begin{defn}\label{def:operator}\index{operator}
-  A \emph{operator} is
+  A \emph{operator} is a linear function $A: V \rightarrow V$ such that
+  $v \cdot A \cdot v^{T} \ge 0$ for all $v \in V$.
 \end{defn}
 
 \begin{defn}\label{def:povm}\index{positive operator-valued measure}
