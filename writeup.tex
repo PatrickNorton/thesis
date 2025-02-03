@@ -1620,9 +1620,9 @@ begin with that.
   Hence, as mentioned before, we have
   $\NP^{\tilde{A}} \subseteq \NP^{\PSPACE} \subseteq \NPSPACE$, and since $\NPSPACE = \PSPACE$
   and we know from \cref{thm:p-np-rel} that $\PSPACE \subseteq \P^{A}$, it follows
-  \begin{equation}
+  \begin{equation*}
     \NP^{\tilde{A}} = \NP^{\PSPACE} = \PSPACE = \P^{A}.
-  \end{equation}
+  \end{equation*}
 \end{proof}
 
 Now it is time for the other case.
@@ -1889,13 +1889,57 @@ $\ang{M, N}(x)$. % TODO: Talk about how this is a random variable
 
 \section{Probabilistically-checkable proofs}\label{sec:pcp}
 
-\begin{defn}\label{def:prob-check}\index{probabilistically-checkable proof}
-  A \emph{probabilistically-checkable proof} is
+Alongside perfect zero-knowledge proofs, we will also make use of the notion of
+probabilistically-checkable proofs. The idea is that we have a proof (i.e.\ some
+bitstring of arbitrary length) that we have the ability to read a bounded number
+of bits from. Further, for each string in our language, there exists at least
+one ``correct'' proof---that is, our algorithm, when given a language and its
+associated correct proof, must always accept. Further, when given a string not
+in the language, our algorithm must reject with high probability, regardless of
+the proof (the algorithm cannot be reliably ``fooled'').
+
+\begin{defn}[{\cite[Def.\ 18.1]{AB09}}]\label{def:prob-check}\index{probabilistically-checkable proof}
+  % TODO: Add diagram of this
+  Let $L \subseteq \{0, 1\}^{n}$ be a language and $q, r: \mathbb{N} \rightarrow \mathbb{N}$. A
+  \emph{$(r(n), q(n))$-verifier} for $L$ is a polynomial-time probabilistic
+  algorithm $V$ such that
+  \begin{enumerate}
+    \item When given an input string $x \in \{0, 1\}^{n}$ and random access to a
+          string $\pi \in \{0, 1\}^{*}$, $V$ uses at most $r(n)$ random coins and
+          makes at most $q(n)$ non-adaptive queries to locations of $\pi$ before
+          either accepting or rejecting.
+    \item If $x \in L$ then there exists a $\pi \in \{0, 1\}^{*}$ such that $V$ will
+          always accept when given input $x$ and random string $\pi$.
+    \item If $x \notin L$ then $V$ will reject with probability $\ge 1/2$ for
+          \emph{all} random strings $\pi$.
+  \end{enumerate}
+  We call the random string $\pi$ the \emph{proof}. We denote the output of $V$ on
+  input $x$ and proof $\pi$ with $V^{\pi}(x)$.
 \end{defn}
 
-\begin{defn}\label{def:pcp}\index{PCP@$\PCP$}
-  The class $\PCP$ is the class of all languages that have a
-  probabilistically-checkable proof.
+\begin{defn}[{\cite[Def.\ 18.1]{AB09}}]\label{def:pcp}\index{PCP@$\PCP$}
+  For any $q, r: \mathbb{N} \rightarrow \mathbb{N}$, the class $\PCP(q(n), r(n))$ is the class of all
+  languages with a $(cq(n), dr(n))$-verifier for some $c, d \in \mathbb{N}$.
+\end{defn}
+
+\begin{thm}[{$\PCP$ theorem,~\cite{AS98}}]\label{thm:pcp-theorem}
+  Any problem in $\NP$ has a probabilistically-checkable proof of constant query
+  complexity and using a maximum of $O(\log n)$ random bits, and vice versa.
+  Equivalently, $\NP = \PCP(\log n, 1)$.
+\end{thm}
+
+\begin{proof}
+  % TODO
+\end{proof}
+
+\section{Interactive probabilistically-checkable proofs}\label{sec:ipcp}
+
+\begin{defn}[{\cite[\defaultS 1.1]{KR08}}]\label{defn:ipcp}\index{interactive PCP}
+  An \emph{interactive PCP} is % TODO
+\end{defn}
+
+\begin{defn}\label{defn:ipcp-class}\index{IPCP@$\mathsf{IPCP}$}
+  The class $\mathsf{IPCP}$ is % TODO
 \end{defn}
 
 \chapter{Quantum computation}\label{chap:quantum}
@@ -1936,6 +1980,195 @@ $\ang{M, N}(x)$. % TODO: Talk about how this is a random variable
 \begin{thm}[{\cite{JNVWY21}}]\label{thm:mip-star-is-re}
   $\MIP* = \RE$.
 \end{thm}
+
+% TODO: Rename chapter
+\chapter{Lifting $\mathsf{IPCP}$ to $\MIP*$}\label{chap:ipcp-to-mip}
+
+% TODO: Rename chapter
+\chapter{Low-degree $\mathsf{IPCP}$ with zero-knowledge}\label{chap:ipcp-zero-knowledge}
+
+\section{AQC of polynomial summation}\label{sec:aqc-poly-sum}
+
+\begin{lemma}[{\cite[Lemma 12.1]{CFGS22}}]
+  Let $\mathbb{F}$ be a field, $m, k, d, d' \in \mathbb{N}$, and $G, K, L$ be finite
+  subsets of $\mathbb{F}$ such that $K \subseteq L$, $d' \ge \abs{G} - 2$, and
+  $\abs{K} = d + 1$. If $S \subseteq \mathbb{F}^{m+k}$ is such that there exist matrices
+  $C \in \mathbb{F}^{L^{m} \times \ell}$ and $D \in \mathbb{F}^{S \times \ell}$ such that for
+  all $Z \in \mathbb{F}[X_{1, \ldots, m}^{\le d}, Y_{1, \ldots, k}^{\le d'}]$ and all
+  $i \in \{1, \ldots, \ell\}$
+  \begin{equation}
+    \sum_{\alpha \in L^{m}}C_{\alpha,i}\sum_{y \in G^{k}}Z(\alpha, y) = \sum_{q \in S}D_{q,i}Z(q),
+  \end{equation}
+  then $\abs{S} \ge \rk(BC)(\min(d' - \abs{G} + 2, \abs{G}))^{k}$, where
+  $B \in \mathbb{F}^{K^{m} \times L^{m}}$ is such that the column of $B$ indexed by $\alpha$
+  represents $Z(\alpha)$ in the basis $\{Z(\beta) \mid \beta \in K^{m}\}$.
+\end{lemma}
+
+\begin{proof}
+  % TODO
+\end{proof}
+
+\begin{cor}[{\cite[Corollary 12.2]{CFGS22}}]
+  Let $\mathbb{F}$ be a finite field, $G \subseteq \mathbb{F}$, and $d, d' \in \mathbb{N}$ with
+  $d' \ge 2(\abs{G} - 1)$. If $S \subseteq \mathbb{F}^{m+k}$ is such that there exist
+  $(c_{\alpha})_{\alpha \in \mathbb{F}^{m}}$ and $(d_{\beta})_{\beta \in \mathbb{F}^{m+k}}$ such that
+  \begin{enumerate}
+    \item for all $Z \in \mathbb{F}[X_{1, \ldots, m}^{\le d}, Y_{1, \ldots, k}^{\le d}]$ it
+          holds that
+          \begin{equation}
+            \sum_{\alpha \in \mathbb{F}^{m}}c_{\alpha}\sum_{y \in G^{k}}Z(\alpha, y) = \sum_{q \in S}d_{q}Z(q),
+          \end{equation}
+          and
+    \item there exists $Z' \in \mathbb{F}[X_{1, \ldots, m}^{\le d}, Y_{1, \ldots, k}^{\le d}]$
+          such that
+          \begin{equation}
+            \sum_{\alpha \in \mathbb{F}^{m}}c_{\alpha}\sum_{y \in G^{k}}Z'(\alpha, y) = 0,
+          \end{equation}
+  \end{enumerate}
+  then $\abs{S} \ge \abs{G}^{k}$.
+\end{cor}
+
+\begin{proof}
+  % TODO
+\end{proof}
+
+\begin{cor}[{\cite[Corollary 12.3]{CFGS22}}]
+  Let $\mathbb{F}$ be a finite field, $G \subseteq \mathbb{F}$, and $d, d' \in \mathbb{N}$ with
+  $d' \ge 2(\abs{G} - 1)$. Let $Q$ be a subset of $\mathbb{F}^{m+k}$ with
+  $\abs{Q} \le \abs{G}^{k}$, and let $Z$ be uniformly random in
+  $\mathbb{F}[X_{1, \ldots, m}^{\le d}, Y_{1, \ldots, k}^{\le d'}]$. Then, the random
+  % FIXME: Better notation for these
+  variables $(\sum_{y \in G^{k}}Z(\alpha, y))_{\alpha \in \mathbb{F}^{m}}$ and $(Z(q))_{q \in Q}$
+  are independent.
+\end{cor}
+
+\begin{proof}
+  % TODO
+\end{proof}
+
+\section{The sumcheck problem}
+
+\begin{defn}[{\cite{LFKN92}}]\index{sumcheck problem}\label{def:sumcheck}
+  % TODO: Should this be a theorem instead?
+  The \emph{sumcheck problem} is the following problem:
+  \begin{quote}
+    Let $H$ be a subset of a finite field $\mathbb{F}$, let
+    $F \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]$ a polynomial over $\mathbb{F}$, and let
+    $a \in \mathbb{F}$. Does $\sum_{x \in H^{m}}F(x) = a?$
+  \end{quote}
+  For this question, we give $H$ and $a$ to both the prover and verifier, but
+  only the prover gets access to $F$ as an algebraic oracle.
+\end{defn}
+
+\subsection{A non-zero-knowledge sumcheck protocol}
+
+\begin{algorithm}[H]
+  % NOTE: LFKN's algorithm officially calculates if per(A) = s, where per is the
+  % permanent of a matrix, but it should be easily modifiable
+  \caption{The standard sumcheck protocol~\cite{LFKN92}}\label{alg:sumcheck-std}
+\end{algorithm}
+
+\subsection{A weakly zero-knowledge sumcheck protocol}
+
+\begin{algorithm}[H]
+  % NOTE: LFKN's algorithm officially calculates if per(A) = s, where per is the
+  % permanent of a matrix, but it should be easily modifiable
+  \caption{A weakly zero-knowledge sumcheck protocol~\cite{BCFGRS17}}\label{alg:sumcheck-std}
+\end{algorithm}
+
+\subsection{Making the sumcheck protocol zero-knowledge}
+
+% \begin{thm}[{\cite{BCFGRS17}}]
+%   There exists a probabilistic algorithm $\mathcal{A}$ such that, for every finite field
+%   $\mathbb{F}$, $m, d \in \mathbb{N}$, $H \subseteq \mathbb{F}$, subset
+%   $S = \{(\alpha_{1}, \beta_{1}), \ldots, (\alpha_{\ell}, \beta_{\ell})\} \subseteq \mathbb{F}^{\le m} \times \mathbb{F}$,
+%   and $(\alpha, \beta) \in \mathbb{F}^{\le m} \times \mathbb{F}$,
+%   \begin{equation}
+%     \mathbb{P}[\mathcal{A}(\mathbb{F}, m, d, H, S, \alpha) = \beta] =
+%     \underset{R \leftarrow \mathbb{F}[X_{1, \ldots, m}^{\le d}]}{\mathbb{P}}\mleft[R(\alpha) = \beta \middlemid
+%       \begin{matrix}
+%         R(\alpha_{1}) = \beta_{1} \\
+%         \vdots \\
+%         R(\alpha_{\ell}) = \beta_{\ell}
+%       \end{matrix}
+%     \mright]
+%   \end{equation}
+%   Further, $\mathcal{A}$ runs in time
+%   $m(d\ell\abs{H} + d^{3}\ell^{3})\poly(\log(\abs{\mathbb{F}})) = \ell^{3}\poly(m, d, \abs{H}, \log(\abs{\mathbb{F}}))$.
+% \end{thm}
+
+\begin{proof}
+  % TODO
+\end{proof}
+
+% TODO: Cite location (\S 13 somewhere)
+\begin{thm}[{\cite{CFGS22}}]\index{zero-knowledge sumcheck protocol}\label{thm:zk-sumcheck}
+  % TODO
+  There exists a zero-knowledge variant of \cref{def:sumcheck}.
+\end{thm}
+
+\begin{proof}
+  % TODO
+\end{proof}
+
+\begin{algorithm}[H]
+  % TODO: Where exactly does G come from and who knows about its contents?
+  \KwIn{An instance $(H, a)$ to both $P$ and $V$}
+  \KwIn{A polynomial $F \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]$ as an oracle to $P$}
+  \KwOut{Whether $\sum_{x \in H^{m}}F(x) = a$}
+  $P$: draw uniformly random polynomials
+  $Z \in \mathbb{F}[X_{1, \ldots, m}^{\le d}, Y_{1, \ldots, m}^{\le 2\lambda}]$ and
+  $A \in \mathbb{F}[Y_{1, \ldots, k}^{\le 2\lambda}]$\;
+  $P$: send the polynomial
+  \[
+    O(W, X, Y) = W \cdot Z(X, Y) + (1 - W) \cdot A(Y)
+  \]
+  to $V$\footnote{Note that $Z = O(1, \cdot)$ and $A = O(0, 0, \cdot)$ so they can be
+    used directly by $V$ later.}\;
+  $P$: send $z = \sum_{a \in H^{m}}\sum_{\beta \in G^{k}}Z(\alpha, \beta)$ to $V$\;
+  $V$: draw a random element $\rho_{1} \in \mathbb{F} \setminus \{0\}$ and send to $P$\;
+  Run the standard sumcheck IP (\cref{alg:sumcheck-std}) on the statement
+  $\sum_{\alpha \in H^{m}}Q(a) = \rho_{1}a + z$, where
+  \[
+    Q(X_{1}, \ldots, X_{m}) = \rho_{1}F(X_{1}, \ldots, X_{m}) + \sum_{\beta \in G^{k}}Z(X_{1}, \ldots, X_{m}, \beta).
+  \]
+  % TODO: Format this better
+  We have $P$ play the prover and $V$ the verifier, with the following
+  modification: For $i = 1, \ldots, m$, in the $i$th round, $V$ samples its random
+  element $c_{i}$ from the set $I$ instead of from all of $\mathbb{F}$; if $P$
+  ever recieves $c_{i} \in \mathbb{F} \setminus I$, it immediately aborts. In particular,
+  in the $m$th round, $P$ sends a polynomial
+  \[
+    g_{m}(X_{m}) = \rho_{1}F(c_{1}, \ldots, c_{m-1}, X_{m}) + \sum_{\beta \in G^{k}}Z(c_{1}, \ldots, c_{m-1}, X_{m}, \beta)
+  \]
+  for some $c_{1}, \ldots, c_{m-1} \in I$.\;
+  $V$: send $c_{m} \in I$ to $P$\;
+  $P$: send $w \in \sum_{\beta \in G^{k}}Z(c, \beta)$ to $V$, where $c = (c_{1}, \ldots, c_{m})$\;
+  Both: engage in the weak-ZK sumcheck protocol with respect to the claim
+  $\sum_{\beta \in G^{k}}Z(c, \beta) = w$, using $A$ as the masking polynomial. If the
+  verifier in that protocol rejects, so does $V$\;
+  $V$: output the claim $F(c) = \frac{g_{m}(c_{m}) - w}{\rho_{1}}$\;
+  \caption{Strong zero-knowledge sumcheck~\cite[Construction 3]{CFGS22}}\label{alg:zk-sumcheck}
+\end{algorithm}
+
+\begin{algorithm}[H]
+  % TODO
+  \caption{An inefficient simulator for
+    \cref{alg:zk-sumcheck}~\cite[p.\ 15:33]{CFGS22}}\label{alg:zk-sumcheck-sim}
+\end{algorithm}
+
+\begin{algorithm}[H]
+  % TODO
+  \caption{An efficient variant of
+    \cref{alg:zk-sumcheck-sim}~\cite[p.\ 15:34]{CFGS22}}\label{alg:zk-sumcheck-fast}
+\end{algorithm}
+
+% TODO: Zero-knowledge sumcheck
+
+\section{Extending the sumcheck algorithm to $\NEXP$}
+
+% TODO: Rename chapter
+\chapter{Zero-knowledge PCPs for $\#\P$}\label{chap:zk-pcp-for-hp}
 
 \begin{appendices}
 
@@ -2030,7 +2263,7 @@ Finally, we simplify, bringing us to \cref{eqn:delta-poly-small}.
 \chapter{More on \cref{lem:multilinear-is-pspace}}\label[appendix]{app:bug-in-pspace}
 
 \begin{defn}\label{def:alternating-tm}\index{Turing machine!alternating}
-  An \emph{alternating Turing machine} is
+  An \emph{alternating Turing machine} is % TODO
 \end{defn}
 
 \begin{proof}[{Proof of \cref{lem:multilinear-is-pspace} as written in~\cite{BFL90}}]
@@ -2048,6 +2281,80 @@ Finally, we simplify, bringing us to \cref{eqn:delta-poly-small}.
   polynomial-time Turing machine, if $L$ is $\PSPACE$-robust then $g$ is
   Turing-reducible to $L$.
 \end{proof}
+
+% \begin{thm}[{\cite[Lemma 6.2]{BFL90}}]\label{thm:multilinear-robust}
+%   Every $\PSPACE$-robust language has a Turing-equivalent family of multilinear
+%   functions over the integers.
+% \end{thm}
+
+% \begin{proof}
+%   % TODO
+%   We use the following algorithm:
+
+%   \begin{algorithm}[H]
+%     \KwIn{$x_{1}, \ldots, x_{n} \in \mathbb{F}$} \KwOut{$g_{n}(x_{1}, \ldots, x_{n})$}
+%     Existentially guess some
+%     $z \in \mathbb{F}$\tcc*{$z = g_{n}(x_{1}, \ldots, x_{n})$}\nllabel{line:def-z}
+%     Existentially guess some linear
+%     $h_{1}(y)$\tcc*{$h_{1}(y) = g_{n}(y, x_{2}, \ldots, x_{n})$}\nllabel{line:def-h1}
+%     Verify $h_{1}(x_{1}) = z$\;
+%     \For{$i$ from $2$ to $n$}{
+%       Existentially guess some linear
+%       $h_{i}(y)$\tcc*{$h_{i}(y) = g_{n}(t_{1}, \ldots, t_{i-1}, y, x_{i+1}, \ldots, y_{n})$}\nllabel{line:def-hn}
+%       Verify $h_{i-1}(t_{i-1}) = h_{i}(x_{i})$\;\nllabel{line:verify-hi}
+%       Universally choose $t_{i} \in \{0, 1\}$\;
+%     }
+%     Verify $h_{n}(t_{n}) = [(t_{1}, \ldots, t_{n}) \in L]$\;
+%     \Return $z$\;
+%     \caption{An algorithm to compute $g_{n}$}\label{alg:compute-gn}
+%   \end{algorithm}
+
+%   % TODO: Put info about alternating TMs in thesis?
+%   First, we show that this is a polynomial-time alternating Turing machine. Any
+%   guess can be made in polynomial time, as can calculating the value of a linear
+%   function. We do this a polynomial number of times (specifically linear), so
+%   that is in polynomial time. Lastly, calculating whether
+%   $(t_{1}, \ldots, t_{n}) \in L$ is in $\PSPACE$, so by a theorem of Chandra, Kozen,
+%   and Stockmeyer~\cite[Corollary 3.6]{CKS81}, we can simulate it in polynomial
+%   time. Again by that theorem, the fact that \cref{alg:compute-gn} is a
+%   polynomial time alternating Turing machine means that the problem it computes
+%   is in $\PSPACE$.
+
+%   Next, we need to show that \cref{alg:compute-gn} actually computes the
+%   function it purports to. We have put in the comments some equations next to
+%   each line in which we existentially guess a value: we shall start by
+%   demonstrating that these equations hold for exactly the choices that lead to
+%   an accepting configuration.
+
+%   First, we show that the equations in line~\ref{line:def-h1}
+%   and~\ref{line:def-hn} hold. First, note that line~\ref{line:def-h1} is just
+%   the $i=1$ case of line~\ref{line:def-hn}; hence proving the general case will
+%   give us both equations. If we assume
+%   \begin{equation}\label{eqn:hi-is-restriction}
+%     h_{i}(y) = g_{n}(t_{1}, \ldots, t_{i-1}, y, x_{i+1}, \ldots, y_{n})
+%   \end{equation}
+%   for all $n$, then the expressions on each side of the equality in the
+%   verification on line~\ref{line:verify-hi} will simplify to
+%   \begin{equation}
+%     g_{n}(t_{1}, \ldots, t_{i-1}, x_{i}, \ldots, x_{n}).
+%   \end{equation}
+%   Since both sides simplify to the same equation, it follows that they are
+%   equal. For the converse, if we assume
+%   \begin{equation}
+%     h_{i}(y) \ne g_{n}(t_{1}, \ldots, t_{i-1}, y, x_{i+1}, \ldots, y_{n}),
+%   \end{equation}
+%   for at least one $i$, then either $h_{i-1}(t_{i-1})$ will not be equal to
+%   $h_{i}(x_{i})$, in which case line~\ref{line:verify-hi} will fail, or that
+%   check will succeed, in which case things get more complex. % TODO
+
+%   Next, we show that the equation in line~\ref{line:def-z} holds. Formatted
+%   mathematically, the statement we are making here is that of
+%   \cref{lem:multilinear-forces-unique}. Since we have already proved that that
+%   statement holds, it follows that line~\ref{line:def-z} does as well. Further,
+%   since the equation in line~\ref{line:def-z} is the same as the goal of
+%   \cref{alg:compute-gn}, it follows that the algorithm computes the value of
+%   $g_{n}$ for arbitrary inputs.
+% \end{proof}
 \end{appendices}
 
 \printbibliography[heading=bibintoc]{}
