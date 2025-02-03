@@ -101,6 +101,9 @@
   \phantom{(#1)} \tag{#1}%
 }
 
+\newclass{\IPCP}{IPCP}
+
+\newlang{\OR}{OR}
 
 \addbibresource{bibliography.bib}
 
@@ -1039,40 +1042,39 @@ it is outside the scope of this paper.
 
 To make this more clear, let us give an example problem.
 
-\begin{defn}\label{def:or-problem}\index{OR@$\mathsf{OR}$}
-  The $\mathsf{OR}$ problem is the following oracle problem:
+\begin{defn}\label{def:or-problem}\index{OR@$\OR$}
+  The $\OR$ problem is the following oracle problem:
   \begin{quote}
-    Let $A: \{0, 1\}^{n} \rightarrow \{0, 1\}$ be an oracle. The function $\mathsf{OR}(A)$
-    returns 1 if there exists a string on which $A$ returns 1, and $0$
-    otherwise.
+    Let $A: \{0, 1\}^{n} \rightarrow \{0, 1\}$ be an oracle. The function $\OR(A)$ returns
+    1 if there exists a string on which $A$ returns 1, and $0$ otherwise.
   \end{quote}
 \end{defn}
 
-The question is then what the deterministic query complexity of the
-$\mathsf{OR}$ function is.
+The question is then what the deterministic query complexity of the $\OR$
+function is.
 
 \begin{thm}
-  The $\mathsf{OR}$ problem has a deterministic query complexity of $2^{n}$.
+  The $\OR$ problem has a deterministic query complexity of $2^{n}$.
 \end{thm}
 
 \begin{proof}
-  First, note that any algorithm that determines the $\mathsf{OR}$ problem can
-  stop as soon as it queries $A$ and gets an output of $1$. Hence, for any
-  algorithm $M$, let $\{s_{i}\}$ be the sequence of queries $M$ makes to $A$ on
-  the assumption that it always recieves a response of $0$. If
+  First, note that any algorithm that determines the $\OR$ problem can stop as
+  soon as it queries $A$ and gets an output of $1$. Hence, for any algorithm
+  $M$, let $\{s_{i}\}$ be the sequence of queries $M$ makes to $A$ on the
+  assumption that it always recieves a response of $0$. If
   $\abs{\{s_{i}\}} \le 2^{n}$, there exists some $s \in \{0, 1\}^{n}$ not queried.
   In that case, $M$ will not be able to distinguish the zero oracle from the
   oracle that outputs $1$ only when given $s$. Hence, $M$ must query every
   string of length $n$ and thus the query complexity is $2^{n}$.
 \end{proof}
 
-From this, we get that the $\mathsf{OR}$ problem cannot be solved any better
-than by enumerative checking. This makes intuitive sense because none of the
-results we get by querying $A$ imply anything about what $A$ will do on other
-values, since $A$ can be an arbitrary function. Later on (in
-\cref{sec:alg-query-complexity}), we will look at what happens when we give
-ourselves access to a \emph{polynomial}, where querying one point could tell us
-information about others.
+From this, we get that the $\OR$ problem cannot be solved any better than by
+enumerative checking. This makes intuitive sense because none of the results we
+get by querying $A$ imply anything about what $A$ will do on other values, since
+$A$ can be an arbitrary function. Later on (in \cref{sec:alg-query-complexity}),
+we will look at what happens when we give ourselves access to a
+\emph{polynomial}, where querying one point could tell us information about
+others.
 
 For the next two definitions, since their Turing machines include some element
 of randomness, we only require that they succeed with a $2/3$ probability. This
@@ -1410,12 +1412,12 @@ an extension oracle of $A$, and second, that we can limit our $\tilde{A}$ in
 its maximum multidegree. For the most part, we will focus on equations with
 multidegree 2, which is enough to get the results we want.
 
-As an example, let us look at the same $\mathsf{OR}$ problem we defined in
+As an example, let us look at the same $\OR$ problem we defined in
 \cref{def:or-problem}.
 
 % FIXME:
 \begin{thm}[{\cite[Thm.\ 4.4]{AW09}}]\label{thm:or-algebraic}
-  $\tilde{D}_{\mathbb{F},2}(\mathsf{OR}) = 2^{n}$ for every field $\mathbb{F}$.
+  $\tilde{D}_{\mathbb{F},2}(\OR) = 2^{n}$ for every field $\mathbb{F}$.
 \end{thm}
 
 \begin{proof}
@@ -1429,15 +1431,15 @@ As an example, let us look at the same $\mathsf{OR}$ problem we defined in
   such that $\tilde{A}(y) = 0$ for all $y \in \mathcal{Y}$ but $\tilde{A}(w) = 1$ for some
   $w \in \{0, 1\}^{n}$. As such, if $M$ queries less than $2^{n}$ points then it
   would not be able to tell the difference between $\tilde{A}$ and the zero
-  function. However, $\mathsf{OR}(A) = 1$ and $\mathsf{OR}(0) = 0$, so it would
-  get the incorrect answer for one of them. Hence if $M$ queries fewer than
-  $2^{n}$ points it cannot solve the $\mathsf{OR}$ problem.
+  function. However, $\OR(A) = 1$ and $\OR(0) = 0$, so it would get the
+  incorrect answer for one of them. Hence if $M$ queries fewer than $2^{n}$
+  points it cannot solve the $\OR$ problem.
 \end{proof}
 
 Note that this works even if $M$ is adaptive: if $M$ ever recieves a nonzero
-response it (correctly) knows $\mathsf{OR}(A) = 1$, so it can accept
-immediately. As such, we know that any contradiction must come when $M$ has only
-ever seen zeros as responses.
+response it (correctly) knows $\OR(A) = 1$, so it can accept immediately. As
+such, we know that any contradiction must come when $M$ has only ever seen zeros
+as responses.
 
 This gives us a potentially counterintuitive property of algebraic query
 complexity: while it would seem that giving our machine a polynomial (and a
@@ -1449,7 +1451,7 @@ we restrict our oracles to being simply \emph{multilinear} polynomials, we do
 get a speedup.
 
 \begin{thm}[{\cite[Thm. 3]{JKRS09}}]\label{thm:or-multilinear}
-  $\tilde{D}_{\mathbb{F},1}(\mathsf{OR}) = 1$ for every field $\mathbb{F}$ with
+  $\tilde{D}_{\mathbb{F},1}(\OR) = 1$ for every field $\mathbb{F}$ with
   characteristic not equal to $2$.
 \end{thm}
 
@@ -1938,8 +1940,8 @@ the proof (the algorithm cannot be reliably ``fooled'').
   An \emph{interactive PCP} is % TODO
 \end{defn}
 
-\begin{defn}\label{defn:ipcp-class}\index{IPCP@$\mathsf{IPCP}$}
-  The class $\mathsf{IPCP}$ is % TODO
+\begin{defn}\label{defn:ipcp-class}\index{IPCP@$\IPCP$}
+  The class $\IPCP$ is % TODO
 \end{defn}
 
 \chapter{Quantum computation}\label{chap:quantum}
@@ -1982,10 +1984,10 @@ the proof (the algorithm cannot be reliably ``fooled'').
 \end{thm}
 
 % TODO: Rename chapter
-\chapter{Lifting $\mathsf{IPCP}$ to $\MIP*$}\label{chap:ipcp-to-mip}
+\chapter{Lifting $\IPCP$ to $\MIP*$}\label{chap:ipcp-to-mip}
 
 % TODO: Rename chapter
-\chapter{Low-degree $\mathsf{IPCP}$ with zero-knowledge}\label{chap:ipcp-zero-knowledge}
+\chapter{Low-degree $\IPCP$ with zero-knowledge}\label{chap:ipcp-zero-knowledge}
 
 \section{AQC of polynomial summation}\label{sec:aqc-poly-sum}
 
