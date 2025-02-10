@@ -315,22 +315,22 @@
 }
 
 @article{JNVWY21,
-author = {Ji, Zhengfeng and Natarajan, Anand and Vidick, Thomas and Wright, John and Yuen, Henry},
-title = {MIP* = RE},
-year = {2021},
-issue_date = {November 2021},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
-volume = {64},
-number = {11},
-issn = {0001-0782},
-url = {https://dl.acm.org/doi/10.1145/3485628},
-doi = {10.1145/3485628},
-abstract = {Note from the Research Highlights Co-Chairs: A Research Highlights paper appearing in Communications is usually peer-reviewed prior to publication. The following paper is unusual in that it is still under review. However, the result has generated enormous excitement in the research community, and came strongly nominated by SIGACT, a nomination seconded by external reviewers.The complexity class NP characterizes the collection of computational problems that have efficiently verifiable solutions. With the goal of classifying computational problems that seem to lie beyond NP, starting in the 1980s complexity theorists have considered extensions of the notion of efficient verification that allow for the use of randomness (the class MA), interaction (the class IP), and the possibility to interact with multiple proofs, or provers (the class MIP). The study of these extensions led to the celebrated PCP theorem and its applications to hardness of approximation and the design of cryptographic protocols.In this work, we study a fourth modification to the notion of efficient verification that originates in the study of quantum entanglement. We prove the surprising result that every problem that is recursively enumerable, including the Halting problem, can be efficiently verified by a classical probabilistic polynomial-time verifier interacting with two all-powerful but noncommunicating provers sharing entanglement. The result resolves long-standing open problems in the foundations of quantum mechanics (Tsirelson's problem) and operator algebras (Connes' embedding problem).},
-journal = {Commun. ACM},
-month = oct,
-pages = {131–138},
-numpages = {8}
+  author = {Ji, Zhengfeng and Natarajan, Anand and Vidick, Thomas and Wright, John and Yuen, Henry},
+  title = {MIP* = RE},
+  year = {2021},
+  issue_date = {November 2021},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  volume = {64},
+  number = {11},
+  issn = {0001-0782},
+  url = {https://dl.acm.org/doi/10.1145/3485628},
+  doi = {10.1145/3485628},
+  abstract = {Note from the Research Highlights Co-Chairs: A Research Highlights paper appearing in Communications is usually peer-reviewed prior to publication. The following paper is unusual in that it is still under review. However, the result has generated enormous excitement in the research community, and came strongly nominated by SIGACT, a nomination seconded by external reviewers.The complexity class NP characterizes the collection of computational problems that have efficiently verifiable solutions. With the goal of classifying computational problems that seem to lie beyond NP, starting in the 1980s complexity theorists have considered extensions of the notion of efficient verification that allow for the use of randomness (the class MA), interaction (the class IP), and the possibility to interact with multiple proofs, or provers (the class MIP). The study of these extensions led to the celebrated PCP theorem and its applications to hardness of approximation and the design of cryptographic protocols.In this work, we study a fourth modification to the notion of efficient verification that originates in the study of quantum entanglement. We prove the surprising result that every problem that is recursively enumerable, including the Halting problem, can be efficiently verified by a classical probabilistic polynomial-time verifier interacting with two all-powerful but noncommunicating provers sharing entanglement. The result resolves long-standing open problems in the foundations of quantum mechanics (Tsirelson's problem) and operator algebras (Connes' embedding problem).},
+  journal = {Commun. ACM},
+  month = oct,
+  pages = {131–138},
+  numpages = {8}
 }
 
 @article{Sha92,
@@ -401,4 +401,64 @@ numpages = {8}
   numpages = {12},
   location = {Reykjavik, Iceland},
   series = {ICALP '08}
+}
+
+@article{Pra75,
+  author = {Pratt, Vaughan R.},
+  title = {Every Prime Has a Succinct Certificate},
+  journal = {SIAM Journal on Computing},
+  volume = {4},
+  number = {3},
+  pages = {214-220},
+  year = {1975},
+  doi = {10.1137/0204018},
+  URL = {https://doi.org/10.1137/0204018},
+  eprint = {https://doi.org/10.1137/0204018},
+  abstract = { To prove that a number n is composite, it suffices to exhibit the working for the multiplication of a pair of factors. This working, represented as af string, is of length bounded by a polynomial in \$\log \_2 n\$. We show that the same property holds for the primes. It is noteworthy that almost no other set is known to have the property that short proofs for membership or nonmembership exist for all candidates without being known to have the property that such proofs are easy to come by. It remains an open problem whether a prime n can be recognized in only \$\log \_2^\alpha n\$ operations of a Turing machine for any fixed \$\alpha \$.The proof system used for certifying primes is as follows.Axiom. \$(x,y,1)\$.Inference Rules. \[ R\_1 :\quad(p,x,a),q \vdash (p,x,qa)\quad\text{provided }x^{(p - 1)/q} \not\equiv 1(\bmod p)\text{ and }q | (p - 1). \]\[ R\_2 :\quad(p,x,p - 1) \vdash p\quad\text{provided } x^{p - 1} \equiv 1(\bmod p). \]Theorem 1. pis a theorem\$\equiv p\$is a prime.Theorem 2. pis a theorem\$\supset p\$has a proof of\$\lceil {4\log \_2 p} \rceil \$lines. }
+}
+
+@article{JNVWY20,
+  author       = {Zhengfeng Ji and Anand Natarajan and Thomas Vidick and John Wright and Henry Yuen},
+  title        = {Quantum soundness of the classical low individual degree test},
+  journal      = {CoRR},
+  volume       = {abs/2009.12982},
+  year         = {2020},
+  url          = {https://arxiv.org/abs/2009.12982},
+  eprinttype   = {arXiv},
+  eprint       = {2009.12982},
+  timestamp    = {Wed, 30 Sep 2020 16:16:22 +0200},
+  biburl       = {https://dblp.org/rec/journals/corr/abs-2009-12982.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{BF91,
+  author={Babai, L{\'a}szl{\'o} and Fortnow, Lance},
+  title={Arithmetization: A new method in structural complexity theory},
+  journal={computational complexity},
+  year={1991},
+  month={Mar},
+  day={01},
+  volume={1},
+  number={1},
+  pages={41-66},
+  abstract={We introduce a technique of arithmetization of the process of computation in order to obtain novel characterizations of certain complexity classes viamultivariate polynomials. A variety of concepts and tools of elementary algebra, such as the degree of polynomials and interpolation, becomes thereby available for the study of complexity classes.},
+  issn={1420-8954},
+  doi={10.1007/BF01200057},
+  url={https://link.springer.com/article/10.1007/BF01200057},
+}
+
+@inproceedings{Has97,
+  author = {H\r{a}stad, Johan},
+  title = {Some optimal inapproximability results},
+  year = {1997},
+  isbn = {0897918886},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  url = {https://doi.org/10.1145/258533.258536},
+  doi = {10.1145/258533.258536},
+  booktitle = {Proceedings of the Twenty-Ninth Annual ACM Symposium on Theory of Computing},
+  pages = {1–10},
+  numpages = {10},
+  location = {El Paso, Texas, USA},
+  series = {STOC '97}
 }
