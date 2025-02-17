@@ -18,6 +18,7 @@
 \usepackage{microtype}
 \usepackage{tikz}
 \usepackage{csquotes}
+\usepackage{fewerfloatpages}
 
 % FIXME: Really bad hack to get cleveref working
 % This is unnecessary on literally every other LaTeX setup except mine
@@ -161,7 +162,7 @@
 
 \makeindex[intoc]
 
-\title{Thesis Draft: Algebrization}
+\title{Extending Zero-Knowledge PCPs Beyond NP}
 \author{Patrick Norton}
 
 \approvedforthe{Committee}
@@ -176,6 +177,8 @@
 \maketitle
 
 \tableofcontents
+
+\listofalgorithms
 
 % TODO: Abstract
 
@@ -429,6 +432,7 @@ It is perhaps illustrative to see an example of a problem in $\NEXP$. % TODO
 \begin{proof}
   We present the following non-deterministic algorithm to determine if
   $(r, s, B) \in \OSAT$:
+
   \begin{algorithm}[H]
     \KwIn{A triplet $(r, s, B)$}
     \KwOut{Whether or not $(r, s, B) \in \OSAT$}
@@ -444,12 +448,23 @@ It is perhaps illustrative to see an example of a problem in $\NEXP$. % TODO
     \KwRet{1}\;
     \caption{A $\NEXP$-time algorithm for determining $\OSAT$}\label{alg:osat-nexp}
   \end{algorithm}
-  % TODO: Explain why this is NEXP
-  % FIXME: There's something *extremely* sus here: I think this is in AP since
-  % we can nondeterministically choose z, b1, b2, b3 and then the only
-  % substantial computation is of B--why does that not mean O3SAT \in EXP and hence
-  % EXP = NEXP?
-  % Wait... even more sus: AP = PSPACE so that implies PSPACE = NEXP
+
+  First, we need to show that \cref{alg:osat-nexp} is in $\NEXP$.
+  Nondeterministically choosing a function from $\{0, 1\}^{s}$ can be done in
+  time $2^{s}$; and the two loops will run a total of $2^{r}2^{s}$ times,
+  respectively. Computation of a function can be done in polynomial time
+  relative to its length; hence the runtime of this function is in exponential
+  time relative to $r + s$.
+
+  One might be tempted to think that since we are given a function $B$ as input,
+  that our function $A$ can be no longer than $\poly(\abs{B})$, but this is not
+  necessarily true. We are given $B$ in $3\SAT$ form, and thus there are
+  expressions of $B$ that are polynomial with respect to $r + s$. Despite this,
+  there are polynomial-length $B$ instances whose $A$ is \emph{not} polynomial
+  in length (since that is an arbitrary function); since runtime complexity is
+  about the worst case there thus exist inputs that cannot be computed in
+  polynomial time relative to their length.
+  % TODO
 \end{proof}
 
 \subsection{Space complexity}\index{space complexity}
@@ -1401,10 +1416,10 @@ With this lemma as a base, we can now move on to our main theorem.
   theory.\footnote{This argument style is named after \emph{Cantor's diagonal
       argument}, which was originally used to prove that the real numbers are
     uncountable~\cite[Thm. 2.14]{Ru76}.} Additionally, we define $p_{i}(n)$ to
-  be the maximum running time of $P_{i}$ on an input of length $n$. We give the
-  following algorithm to construct $B$:
+  be the maximum running time of $P_{i}$ on an input of length $n$. We aim to
+  show that \cref{alg:construct-b} constructs $B$.
 
-  \begin{algorithm}[H]
+  \begin{algorithm}[htbp]
     % FIXME: Do the P_i need to be P machines? Everybody is unclear on this
     \KwIn{A sequence of $\P$ oracle machines $\{P_{i}\}_{i=1}^{\infty}$}
     \KwOut{A set $B$ such that $L(B) \notin \P^{B}$}
@@ -1426,11 +1441,11 @@ With this lemma as a base, we can now move on to our main theorem.
     \caption{An algorithm for constructing $B$}\label{alg:construct-b}
   \end{algorithm}
 
-  Now that we have presented the algorithm, let us demonstrate its soundness.
-  First, note that since $P_{i}$ runs in polynomial time, $p_{i}(n)$ is bounded
-  above by a polynomial, and hence there will always exist an $n$ as defined in
-  line~\ref{line:def-n}. Next, since there are $2^{n}$ strings of length $n$ and
-  since $p_{i}(n) < 2^{n}$, we know that there must be some $x$ to make
+  To begin, let us demonstrate the algorithm's soundness. First, note that since
+  $P_{i}$ runs in polynomial time, $p_{i}(n)$ is bounded above by a polynomial,
+  and hence there will always exist an $n$ as defined in line~\ref{line:def-n}.
+  Next, since there are $2^{n}$ strings of length $n$ and since
+  $p_{i}(n) < 2^{n}$, we know that there must be some $x$ to make
   line~\ref{line:not-queried} well-defined. While our algorithm allows $x$ to be
   any string, if it is necessary to be explicit in which we choose, then picking
   $x$ to be the smallest string in lexicographic order is a standard choice.
@@ -1746,7 +1761,7 @@ Instead, we present our own proof of the above lemma.
   \end{equation}
   is a polynomial-time reduction from $L$ to $L'$.
 
-  \begin{algorithm}[H]
+  \begin{algorithm}[htbp]
     \KwIn{$(x_{1}, \ldots, x_{n}, z) \in \mathbb{F}^{n+1}$}
     \KwOut{Whether $\tilde{A}(x_{1}, \ldots, x_{n}) = z$}
     $z' \leftarrow 0$\;
@@ -1769,11 +1784,12 @@ Instead, we present our own proof of the above lemma.
     \caption{Determiner for $\tilde{L}$}\label{alg:l-tilde-det}
   \end{algorithm}
 
-  This algorithm simply calculates the value of $\tilde{A}(x_{1}, \ldots, x_{n})$
-  directly, from the explicit definition we gave in
-  \cref{cor:low-degree-boolean}, and then compares it to the value of $z$.
+  Next, consider \cref{alg:l-tilde-det}. This algorithm simply calculates the
+  value of $\tilde{A}(x_{1}, \ldots, x_{n})$ directly, from the explicit definition
+  we gave in \cref{cor:low-degree-boolean}, and then compares it to the value of
+  $z$. As such, this is a determiner for $L$.
 
-  First, we demonstrate that the above algorithm runs in $\P^{L}$. From the
+  We now demonstrate that \cref{alg:l-tilde-det} runs in $\P^{L}$. From the
   definition of $\PSPACE$-robustness, we know that we only need to show that the
   algorithm runs in $\PSPACE^{L}$, a much weaker bound. The inner for-loop runs
   in polynomial \emph{time}, hence it must run in polynomial space. The outer
@@ -1852,7 +1868,7 @@ Now it is time for the other case.
   algebraic extension to $\P$ and not $\NP$, we can resuse the result from
   \cref{lem:l(x)-in-np} that $L(A) \in \NP^{A}$. We shall construct $\tilde{A}$
   using the following algorithm:
-  \begin{algorithm}[H]
+  \begin{algorithm}[htbp]
     \KwIn{A sequence of $\P$ oracle machines $\{P_{i}\}_{i=1}^{\infty}$}
     \KwOut{An extension oracle $\tilde{A}$ such that $L(A) \notin \P^{\tilde{A}}$}
     $\tilde{A} \leftarrow \varnothing$\;
@@ -2140,7 +2156,7 @@ theorem:
 \end{thm}
 % NOTE: See also A Formalization of Pratt’s Primality Certificates (Wimmer, Noschinski)
 
-\begin{algorithm}[H]
+\begin{algorithm}[htbp]
   % TODO
   \caption{An interactive proof for the language $\Prime$}\label{alg:prime-ip}
 \end{algorithm}
@@ -2233,6 +2249,25 @@ with three-prover systems at all in this paper beyond this proof.
   % TODO
 \end{proof}
 
+\section{Commitment schemes}
+
+\begin{defn}[{\cite[Def.\ 4.4.1]{Go01}}]\label{def:commitment-scheme}\index{commitment scheme}
+  A \emph{bit-commitment scheme} is a pair of interactive probabilistic
+  polynomial-time machines $(S, R)$, such that:
+  \begin{enumerate}
+    \item Both machines recieve an integer $n$ in unary,
+    \item $S$ recieves a single bit $v$,
+    \item For any PPT machine $R'$, the output of $\ang{S(0), R'}$ and
+          $\ang{S(1), R'}$ are computationally indistinguishable over all inputs
+          $n$, and
+    \item % TODO
+  \end{enumerate}
+\end{defn}
+
+\begin{defn}\label{def:alg-comm-scheme}\index{commitment scheme!algebraic}
+  An \emph{algebraic commitment scheme} is % TODO
+\end{defn}
+
 \section{Zero-knowledge proofs}\label{sec:zero-knowledge}
 
 Zero-knowledge proofs are a variant of interactive proofs that have certain
@@ -2264,7 +2299,9 @@ knowledge of the language. However, a simulator would have access to the
 randomly-chosen value, and thus it could construct a response immediately with
 no reference to the problem to be solved.
 
-\begin{defn}[{\cite[Def.\ 4.3.1]{Go01}}]\label{def:zero-knowledge}\index{perfect zero-knowledge}\index{perfect simulator}
+\begin{defn}[{\cite[Def.\ 4.3.1]{Go01}}]\label{def:zero-knowledge}
+  \index{perfect zero-knowledge}\index{perfect simulator}
+  \index{zero-knowledge proof!perfect}
   A proof system $(P, V)$ for a language $L$ is \emph{perfect zero-knowledge} if
   for each probabilistic polynomial-time interactive machine $V^{*}$ there
   exists a probabilistic polynomial-time ordinary machine $M^{*}$ such that for
@@ -2372,13 +2409,22 @@ probabilistically-checkable proofs (as seen in \cref{sec:pcp}). Since we can
 model a PCP as an interaction between between a verifier and a proof (instead of
 a prover), we can model this interaction as being zero-knowledge as well.
 
+Unlike interactive proofs, we cannot achieve \emph{arbitrary} zero-knowledge
+guarantees: since the proof is non-interactive, we have no recourse against an
+attacker who simply reads the entire proof end-to-end. As such, we introduce a
+\emph{query bound}\index{query bound}: we limit our verifier to a certain number
+of queries, under which we retain the standard zero-knowledge restrictions.
+
 \begin{defn}[{\cite[Def.\ 8.6]{GOS24}}]\label{def:pzkpcp}\index{perfect-zero knowledge PCP}
-  A probabilistically-checkable proof system is \emph{zero-knowledge} if there
-  exists a probabilistic polynomial-time simulator $S$ such that on input $x$,
-  $S$ can simulate every interaction of $V$ with the associated proof of
-  $x$.\footnote{To clarify, $S$ does \emph{not} have access to the proof of $x$,
-    just $x$ itself.}
+  A probabilistically-checkable proof system is \emph{zero-knowledge} with query
+  bound $q$ if for any verifier $V'$ such that $V'$ makes no more than $O(q(n))$
+  queries on an input of length $n$, there exists a probabilistic
+  polynomial-time simulator $S$ such that on input $x$, $S$ can simulate every
+  interaction of $V'$ with the associated proof of $x$.\footnote{To clarify, $S$
+    does \emph{not} have access to the proof of $x$, just $x$ itself.}
 \end{defn}
+
+% TODO: Why do we parameterize over the verifier here?
 
 \begin{defn}\label{def:pzkpcp-class}\index{PZK-PCP@$\PZKPCP$}
   The class $\PZKPCP$ is the class of all languages that have a perfect
@@ -2401,7 +2447,7 @@ during which the verifier can access the proof as an oracle.
   \emph{interactive probabilistically-checkable proof} for $L$ is an interactive
   protocol as follows:
 
-  \begin{algorithm}[H]
+  \begin{algorithm}[htbp]
     \KwIn{To both $P$ and $V$: a string $x$ of length $n$}
     \KwIn{To $P$ alone: A string $w$}
     \KwOut{Whether $x \in L$}
@@ -2576,7 +2622,7 @@ notation.\footnote{Having said that, there are still a lot of lines in this
   $b \ge 2(q+1)md + 3$, then the $\MIP*$ $(P_{1}, P_{2}, V)$ is zero-knowledge.
 \end{thm}
 
-\begin{algorithm}[H]
+\begin{algorithm}[htbp]
   $V$: Choose a random $r \in \{0, 1\}$\;
   \eIf{$V = 0$}{
     $V$: Perform the low multidegree test from \cref{thm:quantum-low-degree}\;
@@ -2598,7 +2644,7 @@ notation.\footnote{Having said that, there are still a lot of lines in this
 
 \subsection{\Cref{alg:mip-from-ipcp} preserves zero-knowledge}
 
-\begin{algorithm}[H]
+\begin{algorithm}[htbp]
   % TODO
   \caption{A simulator for \cref{alg:mip-from-ipcp}~\cite[\defaultS 9.4]{CFGS22}}\label{alg:sim-mip}
 \end{algorithm}
@@ -2606,16 +2652,22 @@ notation.\footnote{Having said that, there are still a lot of lines in this
 % TODO: Rename chapter
 \chapter{Low-degree $\IPCP$ with zero-knowledge}\label{chap:ipcp-zero-knowledge}
 
+% TODO: Should this be moved to the AQC section?
+% Should AQC become its own chapter?
 \section{AQC of polynomial summation}\label{sec:aqc-poly-sum}
 
+% TODO: This is an extremely obtuse and technical lemma and it would be nice if
+% there were a concise explanation of why we care
+
 \begin{lemma}[{\cite[Lemma 12.1]{CFGS22}}]
+  % TODO: Better notation for matrices (more standard M_{r,c}(\mathbb{F}))
   Let $\mathbb{F}$ be a field, $m, k, d, d' \in \mathbb{N}$, and $G, K, L$ be finite
   subsets of $\mathbb{F}$ such that $K \subseteq L$, $d' \ge \abs{G} - 2$, and
   $\abs{K} = d + 1$. If $S \subseteq \mathbb{F}^{m+k}$ is such that there exist matrices
   $C \in \mathbb{F}^{L^{m} \times \ell}$ and $D \in \mathbb{F}^{S \times \ell}$ such that for
   all $Z \in \mathbb{F}[X_{1, \ldots, m}^{\le d}, Y_{1, \ldots, k}^{\le d'}]$ and all
   $i \in \{1, \ldots, \ell\}$
-  \begin{equation}
+  \begin{equation}\label{eqn:polynomial-sum}
     \sum_{\alpha \in L^{m}}C_{\alpha,i}\sum_{y \in G^{k}}Z(\alpha, y) = \sum_{q \in S}D_{q,i}Z(q),
   \end{equation}
   then $\abs{S} \ge \rk(BC)(\min(d' - \abs{G} + 2, \abs{G}))^{k}$, where
@@ -2624,7 +2676,107 @@ notation.\footnote{Having said that, there are still a lot of lines in this
 \end{lemma}
 
 \begin{proof}
-  % TODO
+  First, if $d' = \abs{G} - 2$, then $d' - \abs{G} + 2 = 0$; hence our bound
+  simplifies to
+  \begin{align*}
+    \abs{S} &\ge \rk(BC)\min(0, \abs{G})^{k} \\
+            &\ge 0\rk(BC) \\
+            &\ge 0,
+  \end{align*}
+  which is true regardless of $S$.
+
+  % FIXME: Explain exactly why this works (see notes)
+  Otherwise, we can rewrite the left-hand side of \cref{eqn:polynomial-sum} as
+  follows:
+  \begin{equation}\label{eqn:poly-sum-constant}
+    \sum_{\alpha \in L^{m}}C_{\alpha,i}\sum_{y \in G^{k}}Z(\alpha,y) = \sum_{\alpha \in L^{m}}C_{m,i}\sum_{\beta \in K^{m}}b_{\beta,\alpha}\sum_{y \in G^{k}}Z(\beta,y).
+  \end{equation}
+  Then, define $B \in M_{K^{m},L^{m}}(\mathbb{F})$ to be the matrix whose
+  $(i,j)$-entry is $\beta_{i,j}$, and define $C' = BC \in M_{K^{m},\ell}(\mathbb{F})$.
+  From that, \cref{eqn:poly-sum-constant} simplifies to
+  \begin{equation}\label{eqn:poly-sum-prime}
+    \sum_{\alpha \in L^{m}}C_{m,i}\sum_{\beta \in K^{m}}b_{\beta,\alpha}\sum_{y \in G^{k}}Z(\beta,y) = \sum_{\beta \in K^{m}}C'_{\beta,i}\sum_{y \in G^{k}}Z(\beta,y).
+  \end{equation}
+  % TODO: Explain what H is and why we want it
+  Next, define $H \subseteq G$ such that $\abs{H} = \min(d' - \abs{G} + 2, \abs{G})$.
+  Further, let
+  \[
+    P_{0} = \{p \in \mathbb{F}[X_{1, \ldots, m}^{\le d}, Y_{1, \ldots, k}^{\le \abs{H} - 1}]
+      \mid p(q) = 0 \text{ for all } q \in S\}.
+  \]
+  We can write $P_{0}$ as the kernel of the linear function
+  $F_{S}: \mathbb{F}[X_{1, \ldots, m}^{\le d}, Y_{1, \ldots, k}^{\le \abs{H} - 1}] \rightarrow \mathbb{F}^{S}$
+  defined by $(F_{S}(p))_{s} = p(s)$. By the rank-nullity theorem, this means
+  \[
+    \dim(P_{0}) \ge (d+1)^{m}\abs{H}^{m} - \abs{S}.
+  \]
+
+  Let $A_{0} \in M_{n,(K^{m} \times H^{k})}(\mathbb{F})$ (for some arbitrary $n$) be a
+  matrix whose rows form a basis for
+  % TODO: Give this a name so we can use it in the later proof
+  \[
+    \hat{P}_{0} = \{(p(\alpha,y))_{\alpha \in K^{m},y \in H^{k}} \mid p \in P_{0}\}.
+  \]
+  % TODO: Rephrase
+  The dimension of $\hat{P}_{0}$ is exactly the dimension of $P_{0}$; since two
+  distinct polynomials of degree $n$ can agree at no more than $n$ points,
+  polynomials in $P$ have maximum degree $d^{m}(\abs{H}-1)^{k}$, and each vector
+  in $\hat{P}_{0}$ has $\abs{K^{m} \times H^{k}} = (d+1)^{m}\abs{H}^{k}$ points, it
+  follows that the map from $p$ to its corresponding vector in $\hat{P}_{0}$ is
+  a bijection and thus dimension is preserved.
+
+  For any $y_{0} \in H^{k}$, let $A_{y_{0}} \in M_{n,K^{m}}(\mathbb{F})$ be the
+  submatrix of $A_{0}$ consisting only of rows where $y = y_{0}$.
+  Since $A_{0}$'s columns form a basis, it has full rank. Further, the set of
+  all $A_{y_{0}}$s span the row space of $A_{0}$; hence
+  \[
+    n = \rk(A_{0}) \le \sum_{y_{0} \in H^{k}}\rk(A_{y_{0}}).
+  \]
+  Hence, there exists a $y_{0}$ such that
+  \[
+    \dim(A_{y_{0}}) \ge \frac{\rk(A_{m})}{\abs{H^{k}}}
+    \ge \frac{(d+1)^{m}\abs{H^{k}} - \abs{S}}{\abs{H^{k}}} = (d+1)^{m} - \frac{\abs{S}}{\abs{H^{k}}}.
+  \]
+
+  Let $q \in \mathbb{F}[Y_{1, \ldots, k}^{\ge \abs{G} - 1}]$ be the polynomial such that
+  $q(y_{0}) = 1$ and $q(y) = 0$ for all $y \in G^{k} \setminus \{y_{0}\}$ (as per
+  \cref{thm:low-deg-ext-exists}). Then, for all $i \in \{1, \ldots, n\}$ and
+  $j \in \{1, \ldots, k\}$ it holds that
+  \begin{equation}
+    (A_{y_{0}}C')_{ij} = \sum_{\beta \in K^{m}}C'_{\beta,j}p_{i}(\beta, y_{0})
+  \end{equation}
+  where $p_{i}(\alpha, \beta)$ is the element of $A_{0}$ in row $i$ and column $(\alpha,\beta)$.
+  This comes from the definition of matrix multiplication and $A_{y_{0}}$. Next,
+  the definition of $q$ gives us
+  \begin{equation}
+    \sum_{\beta \in K^{m}}C'_{\beta,j}p_{i}(\beta, y_{0}) = \sum_{\beta \in K^{m}}C'_{\beta,j}\sum_{y \in G^{k}}q(y)p_{i}(\beta,y).
+  \end{equation}
+  Now, since $p_{i}$ is a row of $A_{0}$ and the rows of $A_{0}$ form a basis
+  for the space of all outputs of polynomials in $P_{0}$, we can simply treat
+  $p_{i}$ as a polynomial in $P_{0}$.
+
+  Note that $qp_{i} \in \mathbb{F}[X_{1, \ldots, k}^{\ge d}, Y_{1, \ldots, k}^{\ge d'}]$ (from
+  the definitions of $q$ and $p_{i}$). Hence, \cref{eqn:poly-sum-prime} tells us
+  that
+  \begin{equation}\label{eqn:sum-qpi}
+    \sum_{\beta \in K^{m}}C'_{\beta,j}\sum_{y \in G^{k}}q(y)p_{i}(\beta,y) = \sum_{s \in S}D_{s,i}(qp_{i})(s).
+  \end{equation}
+  Since $s \in Q$, the definition of $P_{0}$ tells us that $p_{i}(s) = 0$; hence
+  the entire sum in \cref{eqn:sum-qpi} is equal to zero and thus
+  $A_{y_{0}}C' = 0$.
+
+  Lastly, we can apply Sylvester's rank inequality:
+  \begin{align*}
+    \rk(A_{y_{0}}) + \rk(C') - (d+1)^{m} &\le \rk(0) \\
+    (d+1)^{m} - \rk(C') &\ge rk(A_{y_{0}}) \\
+    (d+1)^{m} - \rk(C') &\ge (d+1)^{m} - \abs{S}/\abs{H}^{k} \\
+    \abs{S} &\ge \rk(C')\abs{H}^{k}.
+  \end{align*}
+  From the definition of $H$, this means
+  \[
+    \abs{S} \ge \rk(C')(\min(d' - \abs{G} + 2, \abs{G}))^{k},
+  \]
+  as desired.
 \end{proof}
 
 \begin{cor}[{\cite[Corollary 12.2]{CFGS22}}]
@@ -2648,6 +2800,20 @@ notation.\footnote{Having said that, there are still a lot of lines in this
 \end{cor}
 
 \begin{proof}
+  % TODO
+\end{proof}
+
+\begin{cor}[{\cite[Corollary 12.3]{CFGS22}}]
+  Let $\mathbb{F}$ be a finite field, $G \subseteq \mathbb{F}$, and $d, d' \in \mathbb{N}$ with
+  $d' \ge 2(\abs{G} - 1)$. Let $Q$ be a subset of $\mathbb{F}^{m+k}$ with
+  $\abs{Q} \le \abs{G}^{k}$, and let $Z$ be uniformly random in
+  $\mathbb{F}[X_{1, \ldots, m}^{\le d}, Y_{1, \ldots, k}^{\le d'}]$. Then, the random
+  % FIXME: Better notation for these
+  variables $(\sum_{y \in G^{k}}Z(\alpha, y))_{\alpha \in \mathbb{F}^{m}}$ and $(Z(q))_{q \in Q}$
+  are independent.
+\end{cor}
+
+\begin{proof}
   We will leverage \cref{thm:lin-indep-stat-indep} that we proved earlier. Now,
   consider the vector space
   \begin{equation} % FIXME: Holy cow this is *ugly* (and exceptionally unclear)
@@ -2664,23 +2830,16 @@ notation.\footnote{Having said that, there are still a lot of lines in this
   % TODO
 \end{proof}
 
-\begin{cor}[{\cite[Corollary 12.3]{CFGS22}}]
-  Let $\mathbb{F}$ be a finite field, $G \subseteq \mathbb{F}$, and $d, d' \in \mathbb{N}$ with
-  $d' \ge 2(\abs{G} - 1)$. Let $Q$ be a subset of $\mathbb{F}^{m+k}$ with
-  $\abs{Q} \le \abs{G}^{k}$, and let $Z$ be uniformly random in
-  $\mathbb{F}[X_{1, \ldots, m}^{\le d}, Y_{1, \ldots, k}^{\le d'}]$. Then, the random
-  % FIXME: Better notation for these
-  variables $(\sum_{y \in G^{k}}Z(\alpha, y))_{\alpha \in \mathbb{F}^{m}}$ and $(Z(q))_{q \in Q}$
-  are independent.
-\end{cor}
-
-\begin{proof}
-  % TODO
-\end{proof}
-
 % TODO: Additional theorem that links this to algebraic query complexity somehow
 
 \section{The sumcheck problem}
+
+Central to our upcoming work will be a nice answer to the \emph{sumcheck
+  problem}, a computational problem about verifying whether or not the sum of a
+polynomial over some subset of a field is equal to a provided value. This will
+prove useful to us in arithmetizing our problems: if we can turn our boolean
+formulae into a question in the sumcheck format, then we can delegate to the
+protocol to complete our proof.
 
 \begin{defn}[{\cite{LFKN92}}]\index{sumcheck problem}\label{def:sumcheck}
   % TODO: Should this be a theorem instead?
@@ -2688,7 +2847,7 @@ notation.\footnote{Having said that, there are still a lot of lines in this
   \begin{quote}
     Let $H$ be a subset of a finite field $\mathbb{F}$, let
     $F \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]$ a polynomial over $\mathbb{F}$, and let
-    $a \in \mathbb{F}$. Does $\sum_{x \in H^{m}}F(x) = a?$
+    $a \in \mathbb{F}$. Does $\sum_{x \in H^{m}}F(x) = a$?
   \end{quote}
   For this question, we give $H$ and $a$ to both the prover and verifier, but
   only the prover gets access to $F$ as an algebraic oracle.
@@ -2696,53 +2855,137 @@ notation.\footnote{Having said that, there are still a lot of lines in this
 
 \subsection{A non-zero-knowledge sumcheck protocol}
 
-\begin{algorithm}[H]
-  % NOTE: LFKN's algorithm officially calculates if per(A) = s, where per is the
-  % permanent of a matrix, but it should be easily modifiable
-
-  % FIXME: Modify to actually be a polynomial & not the permanent
-  \KwIn{A polynomial $A$ and number $s$}
-  \KwOut{Whether $\per(A) = s$}
-  \tcc{Except where specified, this protocol is written from the perspective of
-    the verifier $V$.}
-  $P$: pick a prime $p$ and convince $V$ that it is prime using
-  \cref{alg:prime-ip}\;
-  \tcc{All arithmetic in the remainder of this algorithm is done modulo $p$}
-  % TODO: Replace with an until loop
-  \While{$L \ne \ang{(B, q)}$ for any $1 \times 1$ matrix $B$}{
-    \tcp{``Expand'' phase}
-    \eIf{$L$ contains exactly one pair $(B, q)$}{
-      $r \leftarrow \dim(B)$\;
-      \For{$i$ from $1$ to $r$}{
-        $B_{i} \leftarrow B_{1,i}$\tcp*[l]{Matrix minor}
-        Ask $P$ for the permanent of $B_{i}$\;
-        \If{$\sum_{i=1}^{r}b_{1i}q_{i} \ne q$}{
-          \KwRet{0}\;
-        }
-      }
-      $L \leftarrow \ang{(B_{1}, q_{1}), \ldots, (B_{r}, q_{r})}$\;
-    }{
-      \tcp{``Shrink'' phase}
-      Pick two pairs $(C, c)$ and $(D, d)$ from $L$\;
-      Ask $P$ for the $r+1$ coefficient of $f(x) = \per(C + x(D - C))$\;
-      Construct $g(x)$ from that coefficient\; % FIXME: How???
-      \If{$g(0) = c$ or $g(1) = d$}{
-        \KwRet{0}\;
-      }
-      Choose random $a \in \mathbb{Z}_{p}$\;
-      Send $a$ to $P$\;
-      Replace $(C, c)$ and $(D, d)$ with $(C + a(D - C), g(a))$\;
+\begin{algorithm}[htbp]
+  % TODO: This looks very similar to algorithm 3.1; can I make a connection there?
+  \KwIn{A polynomial $F \in \mathbb{F}[X_{1, \ldots, n}^{\le d}]$, subset $H \subseteq \mathbb{F}$, and number $a$}
+  \KwOut{Whether $\sum_{x \in H^{m}}F(x) = a$}
+  $P$: send the polynomial $F_{1}(x_{1}) = \sum_{X \in \{0, 1\}^{n-1}}F(x_{1}, X)$\;
+  $V$: check if $a = \sum_{x \in H}F_{1}(x)$\;\nllabel{line:init-sumcheck}
+  $V$: choose random $r_{1} \in \mathbb{F}$ and send to $P$\;
+  \For{$i$ from $2$ to $n$}{
+    $P$: send the polynomial
+    \[
+      F_{i}(x_{i}) = \sum_{X \in H^{m-i}}F(r_{1}, \ldots, r_{i-1}, x_{i}, X)
+    \]
+    to $V$\;\nllabel{line:equation-sent}
+    $V$: check $F_{i-1}(r_{i-1}) = \sum_{x \in H}F_{i}(x)$\;\nllabel{line:seq-sumcheck}
+    \If{$i \ne n$}{
+      $V$: choose random $r_{i} \in \mathbb{F}$ and send to $P$\;
     }
   }
-  \KwRet{$q = \per(B)$}\;
+  $V$: choose random $r_{n} \in \mathbb{F}$\;
+  $V$: check $F_{n}(r_{n}) = F(r_{1}, \ldots, r_{n})$\;\nllabel{line:final-check}
   \caption{The standard sumcheck protocol~\cite[Thm.\ 1]{LFKN92}}\label{alg:sumcheck-std}
 \end{algorithm}
 
+\begin{thm}\label{thm:sumcheck-ip}
+  The sumcheck problem is in $\IP$.
+\end{thm}
+
+\begin{proof}
+  We show this by implementing an interactive protocol for sumcheck in
+  \cref{alg:sumcheck-std}. We need to start by showing that this algorithm will
+  correctly answer the sumcheck question. First, if $\sum_{x \in H^{m}}F(x) = a$ and
+  $P$ is honest, then $V$s check in line~\ref{line:init-sumcheck} will succeed
+  if and only if the question is correct. Again assuming an honest $P$, from the
+  definition of each $F_{i}$,
+  \[
+    F_{i-1}(r_{i-1}) = \sum_{X \in H^{m-i+1}}F(r_{1}, \ldots, r_{i-2}, r_{i-1}, X)
+  \]
+  and
+  \[
+    \sum_{x \in H}\sum_{x \in H^{m-i}}F(r_{1}, \ldots, r_{i-1}, x, X) = \sum_{X \in H^{m-i+1}}F(r_{1}, \ldots, r_{i-1}, X).
+  \]
+  Hence, line~\ref{line:seq-sumcheck} will always succeed with an honest $P$.
+  Finally, if $P$ has been honest in the last iteration,
+  line~\ref{line:final-check} will always succeed since the sum in the equation
+  in line~\ref{line:equation-sent} is now over a single object.
+
+  If $P$ is dishonest, then we show soundness by induction on $n$. If $n = 1$
+  then there is only one message sent. Two distinct $n$-variable polynomials of
+  degree $d$ can be equal at most $d^{n}$ points, as such in the $n = 1$ case
+  the probability of incorrectly passing the check in
+  line~\ref{line:final-check} is at most $d/\abs{\mathbb{F}}$.
+
+  Next, assume the $(n - 1)$-variable case has soundness error at most
+  $(n - 1)d/\abs{\mathbb{F}}$. Let
+  \[
+    G_{1}(x_{1}) = \sum_{X \in H^{n-1}}F(x_{1}, X),
+  \]
+  i.e.\ the ``correct'' value of $F_{1}$ (were $P$ not to lie). If
+  $F_{1} \ne G_{1}$, then as we saw before, $F_{1}(r_{1}) \ne G_{1}(r_{1})$ with
+  probability $1 - d/\abs{\mathbb{F}}$. If this is the case, then in the rest of
+  the loop, the system is attempting to prove the claim
+  \[
+    F_{1}(r_{1}) = \sum_{X \in H^{n-1}}F(r_{1}, X),
+  \]
+  which we know to be false. $F(r_{1}, \cdot)$ is an $(n - 1)$-variable polynomial
+  of multidegree $d$; by induction this has soundness error
+  $(r - 1)d/\abs{\mathbb{F}}$. Thus, $V$ will reject with probability
+  \[
+    1 - \mathbb{P}[F_{1}(r_{1}) \ne G_{1}(r_{1})] - \mathbb{P}[V \text{ rejects in round } j > 1 \mid F_{1}(r_{1}) \ne G_{1}(r_{1})]
+  \]
+  which, by substituting in our definitions, gives us probability at least
+  \[
+    1 - \frac{d}{\abs{\mathbb{F}}} - \frac{d(n - 1)}{\mathbb{F}} = 1 - \frac{dn}{\abs{\mathbb{F}}}.
+  \]
+  % FIXME: Why is this good enough? (only works for low degree?)
+
+  The only other step is to show that $V$ runs in polynomial time. Since each
+  loop iteration only requires checking a sum over $H$, we only need to compute
+  the various $F_{i}$s (which are themselves only polynomially larger than the
+  original $F$) a total of $nH$ times; computing $F_{i}$ is also in polynomial
+  time. Thus, $V$ overall runs in polynomial time.
+\end{proof}
+
 \subsection{A weakly zero-knowledge sumcheck protocol}
 
-\begin{algorithm}[H]
-  \caption{A weakly zero-knowledge sumcheck protocol~\cite{BCFGRS17}}\label{alg:sumcheck-wzk}
+% TODO: I've "inlined" this into the fully zero-knowledge algorithm, so I think
+% I can remove this section now? The question remains whether I need to do this
+% for the simulator as well, I think
+Now that we have a non-zero-knowledge interactive protocol for the sumcheck
+problem, we need to turn it into a zero-knowledge protocol. While we would very
+much like to jump straight from \cref{alg:sumcheck-std} to a perfect
+zero-knowledge algorithm, we need to go through one intermediate step first. We
+first construct \cref{alg:sumcheck-wzk}, which is only \emph{weakly}
+zero-knowledge: while an outside observer to the protocol can learn
+\emph{something}, it will only learn a limited amount about the polynomial in
+question. Only once we have this will we be able to proceed to the fully
+zero-knowledge algorithm.
+
+\begin{defn}\label{def:weak-zk}\index{weak zero-knowledge}\index{zero-knowledge proof!weak}
+  A sumcheck protocol is \emph{weak zero-knowledge} if any verifier that makes
+  $q$ queries to $R$ learns at most $q$ evaluations of $F$.
+\end{defn}
+
+\begin{thm}
+  There exists a weakly zero-knowledge algorithm for the sumcheck protocol.
+\end{thm}
+
+\begin{algorithm}[htbp]
+  % FIXME: This is a model where both also get access to a polynomial R as an
+  % oracle
+  \KwIn{A subset $H \subseteq \mathbb{F}$ and integer $a$}
+  \KwIn{A polynomial $F$, as an algebraic oracle to $P$}
+  \KwOut{Whether $\sum_{x \in H^{m}}F(x) = a$}
+  $z \leftarrow \sum_{\alpha \in H^{m}}R(a)$\;
+  $P$: send $z$ to $V$\;
+  $V$: draw random $\rho \in \mathbb{F}$\;
+  $V$: send $\rho$ to $P$\;
+  $Q \leftarrow \rho F + R$\;
+  Both: run \cref{alg:sumcheck-std} on the statement $\sum_{\alpha \in H^{m}}Q(\alpha) = \rho v + z$\;
+  \caption{A weakly zero-knowledge sumcheck protocol~\cite[Construction
+    5.4]{BCFGRS17}}\label{alg:sumcheck-wzk}
 \end{algorithm}
+
+\begin{proof}
+  We describe the weakly zero-knowledge algorithm in \cref{alg:sumcheck-wzk}. We
+  begin by showing this algorithm implements the sumcheck protocol. Notice that
+  this protocol is a very small wrapper around \cref{alg:sumcheck-std}; hence we
+  only need to demonstrate that the modified statement will always have the same
+  result as the original.
+  % TODO
+\end{proof}
 
 \subsection{Making the sumcheck protocol zero-knowledge}
 
@@ -2770,16 +3013,16 @@ notation.\footnote{Having said that, there are still a lot of lines in this
 % \end{proof}
 
 % TODO: Cite location (\S 13 somewhere)
-\begin{thm}[{\cite{CFGS22}}]\index{zero-knowledge sumcheck protocol}\label{thm:zk-sumcheck}
+% TODO: Mention that in 7.1, both P and V get F, but here only P does (for
+% zero-knowledge)
+% TODO: Note that this isn't /perfect/ zero-knowledge: a single evaluation of F
+% is leaked as part of the protocol
+\begin{thm}[{\cite{CFGS22}}]\index{zero-knowledge proof!for sumcheck}\label{thm:zk-sumcheck}
   % TODO
   There exists a zero-knowledge variant of \cref{alg:sumcheck-wzk}.
 \end{thm}
 
-\begin{proof}
-  % TODO
-\end{proof}
-
-\begin{algorithm}[H]
+\begin{algorithm}[htbp]
   % TODO: Where exactly does G come from and who knows about its contents?
   \KwIn{An instance $(H, a)$ to both $P$ and $V$}
   \KwIn{A polynomial $F \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]$ as an oracle to $P$}
@@ -2794,39 +3037,109 @@ notation.\footnote{Having said that, there are still a lot of lines in this
   to $V$\;
   \tcp{Note that $Z = O(1, \cdot)$ and $A = O(0, 0, \cdot)$, so $V$ can use both $Z$ and
     $A$ later}
-  $P$: send $z = \sum_{a \in H^{m}}\sum_{\beta \in G^{k}}Z(\alpha, \beta)$ to $V$\;
-  $V$: draw a random element $\rho_{1} \in \mathbb{F} \setminus \{0\}$ and send to $P$\;
+  $P$: send $z = \sum_{\alpha \in H^{m}}\sum_{\beta \in G^{k}}Z(\alpha, \beta)$ to $V$\;
+  $V$: draw a random element $\rho_{1} \in \mathbb{F}^{\times}$ and send to $P$\;
   Run the standard sumcheck IP (\cref{alg:sumcheck-std}) on the statement
-  $\sum_{\alpha \in H^{m}}Q(a) = \rho_{1}a + z$, where
+  $\sum_{\alpha \in H^{m}}Q(\alpha) = \rho_{1}a + z$, where
   \[
     Q(X_{1}, \ldots, X_{m}) = \rho_{1}F(X_{1}, \ldots, X_{m}) + \sum_{\beta \in G^{k}}Z(X_{1}, \ldots, X_{m}, \beta).
   \]
   % TODO: Format this better
   We have $P$ play the prover and $V$ the verifier, with the following
   modification: For $i = 1, \ldots, m$, in the $i$th round, $V$ samples its random
-  element $c_{i}$ from the set $I$ instead of from all of $\mathbb{F}$; if $P$
-  ever recieves $c_{i} \in \mathbb{F} \setminus I$, it immediately aborts. In particular,
+  element $r_{i}$ from the set $I$ instead of from all of $\mathbb{F}$; if $P$
+  ever recieves $r_{i} \in \mathbb{F} \setminus I$, it immediately aborts. In particular,
   in the $m$th round, $P$ sends a polynomial
   \[
     g_{m}(X_{m}) = \rho_{1}F(c_{1}, \ldots, c_{m-1}, X_{m}) + \sum_{\beta \in G^{k}}Z(c_{1}, \ldots, c_{m-1}, X_{m}, \beta)
   \]
-  for some $c_{1}, \ldots, c_{m-1} \in I$.\;
+  for some $c_{1}, \ldots, c_{m-1} \in I$\;\nllabel{line:sumcheck-1}
   $V$: send $c_{m} \in I$ to $P$\;
   $P$: send $w \in \sum_{\beta \in G^{k}}Z(c, \beta)$ to $V$, where $c = (c_{1}, \ldots, c_{m})$\;
-  Both: engage in the weak-ZK sumcheck protocol with respect to the claim
-  $\sum_{\beta \in G^{k}}Z(c, \beta) = w$, using $A$ as the masking polynomial. If the
-  verifier in that protocol rejects, so does $V$\;
-  $V$: output the claim $F(c) = \frac{g_{m}(c_{m}) - w}{\rho_{1}}$\;
+  % Both: engage in the weak-ZK sumcheck protocol (\cref{alg:sumcheck-wzk}) with
+  % respect to the claim $\sum_{\beta \in G^{k}}Z(c, \beta) = w$, using $A$ as the masking
+  % polynomial. If the verifier in that protocol rejects, so does $V$\;
+  $z' \leftarrow \sum_{\alpha \in H^{m}}A(\alpha)$\;
+  $P$: send $z$ to $V$\;
+  $V$: draw random $\rho \in \mathbb{F}^{\times}$\;
+  $V$: send $\rho$ to $P$\;
+  $Q'(x) \leftarrow \rho Z(c, x) + A$\;
+  Both: run \cref{alg:sumcheck-std} on the statement $\sum_{\alpha \in H^{m}}Q'(\alpha) = \rho w + z'$\;
+  $V$: output the claim $F(c) = \frac{g_{m}(c_{m}) - w}{\rho_{1}}$\;\nllabel{line:sumcheck-2}
   \caption{Strong zero-knowledge sumcheck~\cite[Construction 3]{CFGS22}}\label{alg:zk-sumcheck}
 \end{algorithm}
 
-\begin{algorithm}[H]
+\begin{proof}
+  % TODO
+  We describe the algorithm in \cref{alg:zk-sumcheck}, and then show it is
+  zero-knowledge by constructing a simulator in \cref{alg:zk-sumcheck-fast}.
+
+  If $P$ is honest in \cref{alg:zk-sumcheck}, then both sumcheck protocols will
+  pass if and only if $(F, H, a)$ is valid. From the various definitions in the
+  program, we have
+  \begin{align*}
+    \sum_{\alpha \in H^{m}}Q(a) &= \rho_{1}a + z \\
+    \sum_{\alpha \in H^{m}}\mleft(\rho_{1}F(\alpha) + \sum_{\beta \in G^{k}}Z(\alpha, \beta)\mright) &= \rho_{1}a + \sum_{\alpha \in H^{m}}\sum_{\beta \in G^{k}}Z(\alpha, \beta) \\
+    \sum_{\alpha \in H^{m}}\rho_{1}F(a) + \sum_{a \in H^{m}}\sum_{\beta \in G^{k}}Z(\alpha, \beta) &= \rho_{1}a + \sum_{\alpha \in H^{m}}\sum_{\beta \in G^{k}}Z(\alpha, \beta) \\
+    \rho_{1}\sum_{a \in H^{m}}F(a) &= \rho_{1}a \\
+    \sum_{a \in H^{m}}F(a) &= a.
+  \end{align*}
+  Since $\rho_{1} \ne 0$, all of these transformations are biconditionally true;
+  hence the sumcheck protocol in line~\ref{line:sumcheck-1} will pass if and
+  only if $(F, H, a)$ is valid. The modification does not affect this
+  correctness since all it does is limit the set of elements we can randomly
+  sample from---since we know this works for all $r_{i} \in \mathbb{F}$, it will
+  also be true for all $r_{i} \in I$.
+
+  For the second sumcheck (in line~\ref{line:sumcheck-2}), we have
+  \begin{align*}
+    \sum_{\alpha \in H^{m}}Q'(\alpha) &= \rho w + z \\
+    \sum_{\alpha \in H^{m}}\mleft(\rho Z(c, \alpha) + A(\alpha)\mright) &= \rho w + \sum_{\alpha \in H^{m}}A(\alpha) \\
+    \sum_{\alpha \in H^{m}}\rho F(\alpha) + \sum_{\alpha \in H^{m}}A(\alpha) &= \rho w + \sum_{\alpha \in H^{m}}A(\alpha) \\
+    \rho\sum_{\alpha \in H^{m}}F(\alpha) &= \rho w \\
+    \sum_{\alpha \in H^{m}}F(\alpha) &= w.
+  \end{align*}
+  As before, these transformations are all biconditionally true; hence an honest
+  $P$ will always cause the sumcheck in line~\ref{line:sumcheck-2} to succeed if
+  and only if $(F, H, a)$ is valid.
+
+  If $P$ is dishonest, things get trickier.
+  % TODO
+\end{proof}
+
+\begin{algorithm}[htbp]
+  Draw $Z_{s} \in \mathbb{F}[X_{1, \ldots, m}^{\le d}, Y_{1, \ldots, k}^{\le 2\lambda}]$\;
+  Run the weak-ZK sumcheck simulator\; % FIXME: Which algorithm is this?
+  Begin simulating $\tilde{V}$, answering its oracle queries with $Z_{s}$ and
+  the simulated $A$\;
+  Send $z_{s} = \sum_{\alpha \in H^{m}}\sum_{\beta \in G^{k}}Z_{s}(\alpha, \beta)$\;
+  Recieve $\tilde{\rho}$\; % FIXME: What is this?
+  Draw $Q_{s} \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]$ such that
+  $\sum_{\alpha \in H^{m}}Q_{s}(\alpha) = \tilde{\rho}\alpha + z_{s}$\;
+  Engage in the sumcheck protocol (\cref{alg:sumcheck-std}) on the claim
+  $\sum_{\alpha \in H^{m}}Q_{s}(\alpha) = \tilde{\rho}\alpha + z_{s}$\;
+  \If{$\tilde{V}$ sends $c_{i} \notin I$ as a challenge in the above protocol}{
+    abort\;
+  }
+  Let $c \in I^{m}$ be the point chosen by $\tilde{V}$\;
+  Query $F(c)$\;
+  $w_{s} \leftarrow Q_{s}(c) - \tilde{\rho}F(c)$\;
+  Send $w_{s}$\;
+  Draw $Z_{s}' \in \mathbb{F}[X_{1, \ldots, m}^{\le d}, Y_{1, \ldots, k}^{\le 2\lambda}]$ such that
+  % FIXME: Why are the line numbers disappearing?
+  \begin{itemize}
+    \item $\sum_{\beta \in G^{k}}Z_{s}'(c, \beta) = w_{s}$
+    \item $Z_{s}'(\gamma) = Z_{s}(\gamma)$ for all previous queries $\gamma$\;
+  \end{itemize}
+  Use $S'$ to simulate the sumcheck protocol for the claim
+  $\sum_{\beta \in G^{k}}Z_{s}'(c, \beta) = w_{s}$\;
+  Output the view of the simulated $\tilde{V}'$\;
   % TODO
   \caption{An inefficient simulator for
     \cref{alg:zk-sumcheck}~\cite[p.\ 15:33]{CFGS22}}\label{alg:zk-sumcheck-sim}
 \end{algorithm}
 
-\begin{algorithm}[H]
+\begin{algorithm}[htbp]
   % TODO
   \caption{An efficient variant of
     \cref{alg:zk-sumcheck-sim}~\cite[p.\ 15:34]{CFGS22}}\label{alg:zk-sumcheck-fast}
@@ -2839,6 +3152,10 @@ notation.\footnote{Having said that, there are still a lot of lines in this
 % FIXME: CFGS22 claims BFL90 has a IPCP for NEXP, but IPCPs weren't invented
 % until 18 years after BFL90 was published?
 
+Armed with our sumcheck algorithm, we are ready to take on the fight of the rest
+of $\NEXP$. Like so many other theorems, we will do this with a $\NEXP$-complete
+problem, and as before our problem of choice is $\OSAT$.
+
 \begin{thm}[{\cite[Thm.\ 14.2]{CFGS22}}]\label{thm:pzkipcp-for-nexp}
   There exists a $c \in \mathbb{N}$ such that for any query-bound function $b(n)$,
   $d(n) \in \Omega(n^{c})$, $m(n) \in O(n^{c}\log(b))$, and any sequence of fields
@@ -2850,7 +3167,7 @@ notation.\footnote{Having said that, there are still a lot of lines in this
   which is zero-knowledge with query bound $b$.
 \end{thm}
 
-\begin{algorithm}[H]
+\begin{algorithm}[htbp]
   \Repeat{$\sum_{\beta \in G^{k}}Z(\alpha, \beta) = A(\gamma_{2}(\alpha))$ for all $\alpha \in H^{m_{2}}$}{
     $P$: Draw a random
     $Z \in \mathbb{F}[X_{1, \ldots, m}^{\le \abs{H} + 2}, Y_{1, \ldots, m}^{\le 2\abs{H}}]$\;
@@ -3010,7 +3327,7 @@ Finally, we simplify, bringing us to \cref{eqn:delta-poly-small}.
 %   % TODO
 %   We use the following algorithm:
 
-%   \begin{algorithm}[H]
+%   \begin{algorithm}[htbp]
 %     \KwIn{$x_{1}, \ldots, x_{n} \in \mathbb{F}$} \KwOut{$g_{n}(x_{1}, \ldots, x_{n})$}
 %     Existentially guess some
 %     $z \in \mathbb{F}$\tcc*{$z = g_{n}(x_{1}, \ldots, x_{n})$}\nllabel{line:def-z}
