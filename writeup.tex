@@ -1,4 +1,4 @@
-\documentclass[english]{reedthesis}
+\documentclass[english,12pt]{reedthesis}
 
 \usepackage[T1]{fontenc}
 \usepackage{babel}
@@ -29,6 +29,12 @@
 \usepackage[capitalize,noabbrev]{cleveref}
 
 \usetikzlibrary{arrows.meta}
+\usetikzlibrary{shapes.geometric}
+\usetikzlibrary{trees}
+
+\setlength{\headheight}{14.5pt}
+
+\hyphenation{prob-a-bilis-ti-cal-ly}
 
 %%% Theorems %%%---------------------------------------------------------
 \theoremstyle{plain}
@@ -68,6 +74,8 @@
 \DeclareMathOperator{\Inn}{Inn}
 \DeclareMathOperator{\id}{id}
 \DeclareMathOperator{\mdeg}{mdeg}
+\DeclareMathOperator{\out}{out}
+\DeclareMathOperator{\oin}{in}
 \DeclareMathOperator{\rad}{rad}
 \DeclareMathOperator{\Rep}{Rep}
 \DeclareMathOperator{\row}{row}
@@ -116,7 +124,7 @@
   \mleft[{\footnotesize\begin{array}{r l}
     \text{round complexity:} & #1 \\
     \text{PCP length:} & #2 \\
-    \text{communication complexity:} & #3 \\
+    \text{comm.\ complexity:} & #3 \\
     \text{query complexity:} & #4 \\
     \text{soundness error:} & #5
   \end{array}}\mright]%
@@ -127,7 +135,7 @@
   \mleft[{\footnotesize\begin{array}{r l}
     \text{round complexity:} & #1 \\
     \text{PCP length:} & #2 \\
-    \text{communication complexity:} & #3 \\
+    \text{comm.\ complexity:} & #3 \\
     \text{query complexity:} & #4 \\
     \text{oracle:} & #5 \\
     \text{soundness error:} & #6
@@ -139,8 +147,18 @@
   \mleft[{\footnotesize\begin{array}{r l}
     \text{number of provers:} & #1 \\
     \text{round complexity:} & #2 \\
-    \text{communication complexity:} & #3 \\
+    \text{comm.\ complexity:} & #3 \\
     \text{soundness error:} & #4
+  \end{array}}\mright]%
+}
+
+\newcommand{\pcpr}[4]{%
+  \ensuremath%
+  \mleft[{\footnotesize\begin{array}{r l}
+    \text{query complexity:} & #1 \\
+    \text{random complexity:} & #2 \\
+    \text{robustness parameter:} & #3 \\
+    \text{robust-soundness error:} & #4
   \end{array}}\mright]%
 }
 
@@ -152,10 +170,15 @@
 \newcommand{\PZKIPCP}{%
   \PZK\complexity@hyphenleft\IPCP
 }
+\newcommand{\PZKMIP}{%
+  \PZK\complexity@hyphenleft\MIP
+}
 \makeatother
 
+\newlang{\CktSAT}{CktSAT}
 \newlang{\OR}{OR}
 \newlang{\OSAT}{O3SAT}
+\newlang{\PCPP}{PCPP}
 \newlang{\Prime}{Prime}
 
 \addbibresource{bibliography.bib}
@@ -243,6 +266,10 @@ Turing machine must exist.
 
 \begin{defn}\label{def:nondeterministic-tm}\index{Turing machine!nondeterministic}
   A \emph{nondeterministic Turing machine} is % TODO
+\end{defn}
+
+\begin{defn}\label{def:multitape-tm}\index{Turing machine!multitape}
+  A \emph{multitape Turing machine} is
 \end{defn}
 
 \section{Complexity classes}
@@ -1412,12 +1439,12 @@ With this lemma as a base, we can now move on to our main theorem.
   $\{P_{i}\}$ of all machines that recongize some language in $\P^{A}$, and then
   constructing $B$ such that for each machine in the sequence, there is some
   part of $L(B)$ it cannot recognize. This technique is called
-  \emph{diagonalization}, and it is used in many places in computer science
-  theory.\footnote{This argument style is named after \emph{Cantor's diagonal
-      argument}, which was originally used to prove that the real numbers are
-    uncountable~\cite[Thm. 2.14]{Ru76}.} Additionally, we define $p_{i}(n)$ to
-  be the maximum running time of $P_{i}$ on an input of length $n$. We aim to
-  show that \cref{alg:construct-b} constructs $B$.
+  \emph{diagonalization},\index{diagonalization} and it is used in many places
+  in computer science theory.\footnote{This argument style is named after
+    \emph{Cantor's diagonal argument}, which was originally used to prove that
+    the real numbers are uncountable~\cite[Thm. 2.14]{Ru76}.} Additionally, we
+  define $p_{i}(n)$ to be the maximum running time of $P_{i}$ on an input of
+  length $n$. We aim to show that \cref{alg:construct-b} constructs $B$.
 
   \begin{algorithm}[htbp]
     % FIXME: Do the P_i need to be P machines? Everybody is unclear on this
@@ -1515,6 +1542,19 @@ case, $\P^{A} = \NP^{A}$! This tells us that a simple diagonalization argument
 would not suffice to determine separation between $\P$ and $\NP$.
 
 \section{Arithmetization does not relativize}\label{sec:arith-non-rel}
+
+While we know that diagonalization relativizes, in the years since the Baker,
+Gill, and Solovay paper researchers have discovered proof techniques that do not
+in fact relativize. One of these techniques is
+\emph{arithmetization}\index{arithmetization}, introduced by~\cite{BF91}.
+
+The idea behind arithmetization is that we want to be able to reduce
+computational problems to algebraic ones. More specifically, we would like to
+reduce our problems to ones involving low-degree polynomials over a finite field
+(such as those seen in \cref{sec:polynomial}). In this paper, we will care about
+arithmetization for two reasons: because it is a non-relativizing technique (as
+we are about to see) and because we will be using it later on in this paper as
+an important part of several proofs. % TODO: List proofs
 
 % TODO
 
@@ -1947,9 +1987,9 @@ Now it is time for the other case.
   and the case where it accepts. We shall begin with the case where it accepts.
 
   When $P_{i}^{\tilde{A}}$ accepts, we want to ensure that no strings of length
-  $n_{i}$ is in $A$. The unique low-degree extension of the zero function is the
-  zero polynomial; hence, we set $\tilde{A}_{n_{i},\mathbb{F}}$ to be $0$ for
-  all $\mathbb{F}$. This ensures $\tilde{A}(x) = 0$ for all
+  $n_{i}$ are in $A$. The unique low-degree extension of the zero function is
+  the zero polynomial; hence, we set $\tilde{A}_{n_{i},\mathbb{F}}$ to be $0$
+  for all $\mathbb{F}$. This ensures $\tilde{A}(x) = 0$ for all
   $x \in \{0, 1\}^{n_{i}}$, and thus $A \cap \{0, 1\}^{n_{i}} = \varnothing$. This
   means $0^{n_{i}} \notin L(A)$ and thus $P_{i}^{\tilde{A}}$ is incorrect.
 
@@ -1970,6 +2010,13 @@ Now it is time for the other case.
 
 \section{Arithmetization algebrizes}\label{sec:arith-algebrizes}
 
+In \cref{sec:arith-non-rel}, we mentioned arithmetization as an example of a
+technique that does not relativize. One might in fact hope that we can continue
+that logic here as well, and show that arithmetization is non-algebrizing.
+Unfortunately, this is not the case.\footnote{This is no
+  coincidence---algebrization was created pretty much entirely to break this
+  technique.}
+
 % TODO
 
 \chapter{Interactive proof systems}\label{chap:ips}
@@ -1987,10 +2034,18 @@ Interactive proof systems turn out to be surprisingly powerful---while the
 verifier only runs in polynomial time, it turns out that the interaction with
 the untrustworthy computer is still enough to boost the power significantly.
 
-\section{Single-prover systems}\label{sec:zero-prover}
+\section{Interactive Turing machines}\label{sec:interactive-tm}
 
-The simplest form of an interactive proof system is when there is one prover and
-one verifier.
+% TODO: Mention randomness
+
+The central mechanism underlying all of the interactive proof systems we will
+work with is the interactive Turing machine. This machine is a variant of a
+standard Turing machine, but it has the ability to communicate with another
+machine as part of its work. When multiple interactive machines work together,
+they can produce a joint computation in the same way that a single
+non-interactive machine can. From there, an interactive proof is just a pair of
+interactive machines working together, with some particular constraints on what
+they are allowed to do.
 
 \begin{defn}[{\cite[Def.\ 4.2.1]{Go01}}]\label{def:interactive-tm}\index{Turing machine!interactive}
   An \emph{interactive Turing machine} is a deterministic multi-tape Turing
@@ -2003,19 +2058,19 @@ one verifier.
     \item Work tape (read-write)
   \end{itemize}
   In addition to these tapes, an interactive TM has a single bit $\sigma \in \{0, 1\}$
-  associated with it, called its \emph{identity}. When the content of the switch
-  tape is not equal to the machine's identity, it performs no computation and is
-  called \emph{idle}.
+  associated with it, called its \emph{identity}.\index{Turing machine!identity}
+  When the content of the switch tape is not equal to the machine's identity, it
+  performs no computation and is called \emph{idle}.
   % TODO: Finish
 \end{defn}
 
 Of course, a single interactive Turing machine is not worth much: in order to do
 work with these we need to define how a pair of them interact. The chief
-mechanism of interacting Turing machines is that of shared tapes. Shared tapes
-are tapes where any modifications can be seen by both Turing machines
-immediately. While the tapes themselves are shared, the \emph{heads} are not:
-the two machines are perfectly capable of looking at different entries at the
-same time.
+mechanism of interacting Turing machines is that of \emph{shared
+  tapes}.\index{shared tape} Shared tapes are tapes where any modifications can
+be seen by both Turing machines immediately. While the tapes themselves are
+shared, the \emph{heads} are not: the two machines are perfectly capable of
+looking at different entries at the same time.
 
 \begin{defn}[{\cite[Def.\ 4.2.2]{Go01}}]\label{def:linked-tms}\index{Turing machine!linked pair}
   A pair of interactive Turing machines $(M, N)$ are \emph{linked} if the
@@ -2094,12 +2149,16 @@ have an arrow pointing to them.
 We will denote the joint computation of machines $M$ and $N$ on input $x$ by
 $\ang{M, N}(x)$. % TODO: Talk about how this is a random variable
 
+\section{Single-prover systems}\label{sec:single-prover}
+
 Now that we have a model for letting two machines talk to each other, we can
-define the requirements for an interactive proof. To do this, we need three
-pieces: to restrict the complexity of the verifier (lest it simply compute the
-problem itself), to require the verifier to generally accept whenever the input
-is in the language, and to require the verifier to generally reject whenever the
-input is not in the language.
+define the requirements for an interactive proof. We will begin with the
+simplest form---that where there is only one prover and one verifier. To make sure
+our proof system is useful, we need three restrictions on the machines: to
+restrict the complexity of the verifier (lest it simply compute the problem
+itself without communication), to require the verifier to generally accept
+whenever the input is in the language, and to require the verifier to generally
+reject whenever the input is not in the language.
 
 \begin{defn}[{\cite[Def.\ 4.2.4]{Go01}}]\label{def:ips}\index{interactive proof!single-prover}
   An \emph{interactive proof system} is a pair of interactive machines $(P, V)$
@@ -2136,6 +2195,17 @@ improperly-formatted or nonsense input from its prover, it will reject
 immediately. Similarly to what we do for ordinary Turing machines parsing their
 input, we will not explicitly write out that $V$ should reject if it recieves
 a poorly-formatted response, as it serves little but to provide clutter.
+
+It is also worth mentioning that we do not care how $V$ fares if $x \in L$ and $P$
+is not the correct verifier. This is because neither insisting the protocol fail
+or insisting the protocol succeed will be a reasonable restriction. Since
+$x \in L$, an alternative $P'$ could give messages arbitrarily close to the
+correct $P$ (and in some cases even send identical messages, which would be
+impossible to distinguish), so we cannot insist $L$ reject, even with high
+probability. However, if $L$ could accept even in the face of an arbitrarily
+malicious verifier, it would mean that $L$ would have some means of computing
+the problem on its own; hence we would only ever be able to accept languages in
+$\BPP$ (since $L$ is a $\BPP$ machine).
 
 As with all of our interactive-proof variants, we will also define a complexity
 class corresponding to the set of languages with the given proof. Once we have a
@@ -2176,13 +2246,16 @@ language has a standard interactive protocol if and only if it is in $\PSPACE$.
 
 \section{Multi-prover systems}\label{sec:multi-prover}
 
-We have now seen quite a bit of single-prover interactive proofs. Having seen
-this, the question might arise of how things would change if we were to add more
-machines. Since our verifiers are trusted, increasing the number of verifiers is
-not useful since any pair of verifiers we would simply be able to simulate with
-a single verifier working twice as hard (which would keep it polynomial).
+We have now seen quite a bit of single-prover interactive proofs. A natural
+extension of the standard interactive proof format is to add more machines to
+the interaction. Since our verifiers are trusted, increasing the number of
+verifiers is not useful since any pair of verifiers could simply be simulated
+with a single verifier working twice as hard (which would keep it polynomial).
 However, increasing the number of provers to two turns out to give us more power
 than we would get with a single prover.
+
+% TODO: BGKW88 says that any MIP has a variant that is complete (if x \in L then V
+% always accepts)
 
 % TODO: Should I define this for any n instead of just 2?
 \begin{defn}[{\cite[Def.\ 4.11.2]{Go01}}]\label{def:mps}\index{interactive proof!multi-prover}
@@ -2213,14 +2286,29 @@ information from times where they lie in \emph{different} ways: where each
 prover individually could say something plausible, but in combination, the
 provers' responses contradict.
 
+Later on, we will see what can happen if the computers are allowed a limited
+form of communication: the class $\MIP*$, which uses quantum provers that can
+share entangled bits, will be defined in \cref{sec:quant-interactive} and then
+explored in more detail in \cref{chap:ipcp-to-mip}.
+
 \begin{defn}\label{def:mip}\index{MIP@$\MIP$}
   The class $\MIP$ is the class of languages that have a multi-prover
   interactive proof system.
 \end{defn}
 
+The first question about a class like $\MIP$ is how it relates to other
+complexity classes we have already seen. First, if we have a single-prover
+system we can always convert it into a multi-prover system by simply having the
+verifier ignore $P_{2}$ completely; thus we get the following.
+
 \begin{lemma}\label{lem:ip-in-mip}
   $\IP \subseteq \MIP$.
 \end{lemma}
+
+A groundbreaking result by Babai, Fortnow, and Lund~\cite{BFL90} is that $\MIP$
+is exactly equal to $\NEXP$. Since it is known that $\NP \ne \NEXP$~\cite{Cook73},
+this tells us that adding multiple provers gives an actual boost in
+computational power over just having one.
 
 % https://www.math.toronto.edu/swastik/courses/rutgers/topics-S17/lec9.pdf
 \begin{thm}[{\cite{BFL90}}]\label{thm:mip-is-nexp}
@@ -2249,25 +2337,6 @@ with three-prover systems at all in this paper beyond this proof.
   % TODO
 \end{proof}
 
-\section{Commitment schemes}
-
-\begin{defn}[{\cite[Def.\ 4.4.1]{Go01}}]\label{def:commitment-scheme}\index{commitment scheme}
-  A \emph{bit-commitment scheme} is a pair of interactive probabilistic
-  polynomial-time machines $(S, R)$, such that:
-  \begin{enumerate}
-    \item Both machines recieve an integer $n$ in unary,
-    \item $S$ recieves a single bit $v$,
-    \item For any PPT machine $R'$, the output of $\ang{S(0), R'}$ and
-          $\ang{S(1), R'}$ are computationally indistinguishable over all inputs
-          $n$, and
-    \item % TODO
-  \end{enumerate}
-\end{defn}
-
-\begin{defn}\label{def:alg-comm-scheme}\index{commitment scheme!algebraic}
-  An \emph{algebraic commitment scheme} is % TODO
-\end{defn}
-
 \section{Zero-knowledge proofs}\label{sec:zero-knowledge}
 
 Zero-knowledge proofs are a variant of interactive proofs that have certain
@@ -2285,13 +2354,19 @@ reproduce the entire message log between $P$ and $V$ for any input.
 
 This definition shows that no knowledge has been released because we are able to
 reproduce all the public information of the proof with relatively little work.
+If non-trivial knowledge were released by the proof, we would not be able to
+recreate the interaction faithfully without access to the
+prover.\footnote{Exception: if $L \in \P$ then we can trivially recreate the
+  interaction no matter what, but that case is not particularly interesting for
+  the purpose of zero-knowledge proofs.}
+
 Having said that, it is not particularly obvious that there are \emph{any}
 languages that are outside of $\P$ with perfect zero-knowledge
 proofs.\footnote{To some extent, showing that there are languages \emph{truly}
   outside of $\P$ would require a proof that $\P \ne \NP$ (which is unfortunately
   beyond the scope of this paper), but there are lots of languages strongly
-  believed to be outside of $\P$ with zero-knowledge proofs.} Despite this, it
-turns out that these languages do in fact exist (and are reasonably common).
+  believed to be outside of $\P$ with zero-knowledge proofs.} It turns out,
+however, that these languages do in fact exist (and are reasonably common).
 Abstractly, the idea behind why many of these work is that the verifier can
 perform a transformation on some random value, such that undoing the
 transformation and reliably recovering the original value is only possible with
@@ -2299,8 +2374,9 @@ knowledge of the language. However, a simulator would have access to the
 randomly-chosen value, and thus it could construct a response immediately with
 no reference to the problem to be solved.
 
-\begin{defn}[{\cite[Def.\ 4.3.1]{Go01}}]\label{def:zero-knowledge}
-  \index{perfect zero-knowledge}\index{perfect simulator}
+% TODO: Rewrite this to be more in line with the other definitions
+\begin{defn}[{\cite[Def.\ 4.3.1]{Go01}}]\label{def:zero-knowledge}%
+  \index{perfect zero-knowledge}\index{perfect simulator}%
   \index{zero-knowledge proof!perfect}
   A proof system $(P, V)$ for a language $L$ is \emph{perfect zero-knowledge} if
   for each probabilistic polynomial-time interactive machine $V^{*}$ there
@@ -2321,6 +2397,21 @@ no reference to the problem to be solved.
   interaction of $V^{*}$ with $P$.
 \end{defn}
 
+% FIXME: Super-perfect zero-knowledge proofs now exist
+Looking at this definition, one might wonder why we would want the ability for
+$M^{*}$ to output $\bot$. This is a reasonable thing to wonder, because we do not
+actually want this. However, we do not know of any non-trivial proof systems
+that do not actually output $\bot$ at least some of the time, although~\cite{GT20}
+has made significant inroads on this problem.\footnote{More specifically, they
+  have shown that all of $\NP$ has a zero-knowledge proof without use of $\bot$,
+  which includes nontrivial problems in the (generally expected) case that
+  $\NP \ne \BPP$.} Thankfully, we can make $\mathbb{P}[\bot]$ aribitrarily small (bounded
+above by $2^{-\poly(\abs{n})}$), but we cannot make it truly perfect. We can do
+this by simply re-running the simulator every time we get a $\bot$ until we get a
+valid answer.
+
+% TODO: More
+
 As with other interactive proof systems, zero-knowledge proofs are
 probabilistic; in particular this means they do \emph{not} function as proofs in
 the mathematical sense.
@@ -2331,6 +2422,61 @@ the mathematical sense.
 \end{defn}
 
 % TODO: Example
+
+\subsection{Commitment schemes}
+
+It should not come as too much of a surprise to learn that most ``intuitive''
+proofs for a given problem are not in fact zero-knowledge.\footnote{As an
+  example, I would certainly hope that the proofs in this text have, in fact,
+  imparted at least some knowledge on the reader.} As such, we will want the
+assistance of a few techniques that, once understood, will allow us to build
+zero-knowledge proofs more easily. The first of these is a \emph{bit-commitment
+  scheme}.
+
+Abstractly, a bit-commitment scheme allows a machine to ``commit to'' a given
+single bit, with the intent of revealing it later on to a verifier. To do this,
+we need two important things: first, that the bit is not revealed to the
+verifier at commitment time, and second, that if the revealed bit is not equal
+to the committed bit, the verifier will be able to know (that is, the committer
+will not be able to change its choice once it has committed).
+
+Before we can define a bit-commitment scheme formally, we do need a few
+preliminaries.
+% TODO: More
+
+% TODO: Define view (somewhere common to all the things that care about views)
+\begin{defn}\label{def:possible-commit}\index{possible commitment}
+  Let $\sigma \in \{0, 1\}$. A reciever's view of an interaction $(r, m)$ is an
+  \emph{possible $\sigma$-commmitment} if there exists a string $s$ such that $m$
+  describes the messages received by $R$ when $R$ uses local coins $r$ and
+  interacts with machine $S$ that uses local coins $s$ and has input
+  $(\sigma, 1^{n})$.
+\end{defn}
+
+\begin{defn}\label{def:ambiguous-view}\index{ambiguous view}
+  A reciever's view is \emph{ambiguous} if it is both a possible $0$-commitment
+  and a possible $1$-commitment.
+\end{defn}
+
+\begin{defn}[{\cite[Def.\ 4.4.1]{Go01}}]\label{def:commitment-scheme}\index{commitment scheme}
+  A \emph{bit-commitment scheme} is a pair of interactive probabilistic
+  polynomial-time machines $(S, R)$, such that:
+  \begin{enumerate}
+    \item Both machines recieve an integer $n$ in unary,
+    \item $S$ recieves a single bit $v$,
+    \item For any PPT machine $R'$, the output of $\ang{S(0), R'}$ and
+          $\ang{S(1), R'}$ are computationally indistinguishable over all inputs
+          $n$, and
+    \item For almost all coin tosses of $R$, there exists no sequence of
+          messages from $S$ such that the view of $R$ is ambiguous.
+  \end{enumerate}
+\end{defn}
+
+% TODO: More explanation & potentially an example?
+
+\begin{defn}\label{def:alg-comm-scheme}\index{commitment scheme!algebraic}
+  An \emph{algebraic commitment scheme} is % TODO
+\end{defn}
 
 \section{Probabilistically-checkable proofs}\label{sec:pcp}
 
@@ -2364,39 +2510,58 @@ the algorithm must reliably (but not necessarily always) reject.
   input $x$ and proof $\pi$ with $V^{\pi}(x)$.
 \end{defn}
 
+The first piece of this definition to notice is that if $x \in L$ we require $L$
+to accept unconditionally for $x$'s corresponding proof, despite the fact that
+$L$ has access to randomness. We want this because we want to construct
+verifiers that look for inconsistencies in the purported proof and reject if
+they find them---a correct proof should not contain any inconsistency at all so we
+should accept every time.
+
+On the other hand, while an incorrect proof should still be noticeable
+\emph{most} of the time (otherwise this would not be a particularly useful
+definition), if we are only querying a limited number of bits from a proof it is
+impossible to prevent scenarios where we only query bits that are identical to
+the original proof. In this case, it would be impossible for any algorithm to
+distinguish correct proofs from incorrect ones (outside of ignoring the proof
+completely and just solving the problem itself) and as such we do not require
+$V$ to always correctly reject.
+
 So far, all of our proof-complexity classes have just had a single class for all
 languages with the proof, regardless of internal complexity, but for
 probabilistically-checkable proofs we actually stratify the class further. This
 is for multiple reasons: first, we can actually get astonishingly tight bounds
-on the parameters for PCPs, and second, because these are ``access'' complexity
-(i.e.\ we measure the number of preexisting bits actually read by the
-algorithm), they are actually independent of computational model, so the need
-for polynomial equivalence is negated.
+on the parameters for PCPs (as we will see in \cref{thm:pcp-theorem}), and
+second, because these are ``access'' complexity (i.e.\ we measure the number of
+preexisting bits actually read by the algorithm), they are actually independent
+of computational model, so the need for polynomial equivalence is negated.
 
 \begin{defn}[{\cite[Def.\ 18.1]{AB09}}]\label{def:pcp}\index{PCP@$\PCP$}
   For any $q, r: \mathbb{N} \rightarrow \mathbb{N}$, the class $\PCP(q(n), r(n))$ is the class of all
   languages with a $(cq(n), dr(n))$-verifier for some $c, d \in \mathbb{N}$.
 \end{defn}
 
-We would be remiss if we were not to mention the PCP theorem, by far the most
-important theorem relating to probabilistically-checkable proofs.
+% TODO: Example
 
-\begin{thm}[{$\PCP$ theorem,~\cite{AS98}}]\label{thm:pcp-theorem}\index{PCP theorem@$\PCP$ theorem}
-  Any problem in $\NP$ has a probabilistically-checkable proof of constant query
-  complexity and using a maximum of $O(\log n)$ random bits, and vice versa.
-  Equivalently, $\NP = \PCP(\log n, 1)$.
-\end{thm}
+\subsection{$\PCP$s of proximity}\label{sec:pcpp}
 
-\begin{proof}
-  % TODO
-\end{proof}
-
-
-
-\begin{thm}[{\cite{Has97}}]\label{thm:pcp-max-queries}
-  Any language in $\NP$ has a $\PCP$ that queries a maximum of $3$ bits of the
-  proof and uses $O(\log n)$ random bits.
-\end{thm}
+\begin{defn}[{\cite[Def.\ 2.2]{GOS25}}]\label{def:pcpp}\index{PCPP@$\PCPP$}
+  For $\delta: \mathbb{N} \rightarrow [0, 1]$, a \emph{probabilistically-checkable proof of proximity}
+  for a language $L$ consisting of ordered pairs $(x, y)$ with proximity
+  parameter $\delta$ consists of a prover $P$ and verifier $V$ such that the
+  following holds for all $(x, y)$:
+  \begin{enumerate}
+    \item If $(x, y) \in L$,
+          \[
+            \mathbb{P}_{\pi \leftarrow P(x, y)}[V^{(y, \pi)}(x) = 1] = 1
+          \]
+    % TODO: Define \delta-far
+    \item If $y$ is $\delta$-far from the set $L(x) = \{y \mid (x, y) \in L\}$, then for
+          every oracle $\pi^{*}$,
+          \[
+            \mathbb{P}[V^{(y, \pi^{*})}(x) = 1] \le \frac{1}{2}.
+          \]
+  \end{enumerate}
+\end{defn}
 
 \section{Zero-knowledge probabilistically-checkable proofs}\label{sec:pzkpcp}
 
@@ -2423,6 +2588,17 @@ of queries, under which we retain the standard zero-knowledge restrictions.
   interaction of $V'$ with the associated proof of $x$.\footnote{To clarify, $S$
     does \emph{not} have access to the proof of $x$, just $x$ itself.}
 \end{defn}
+
+The first thing to notice here is that for \emph{validity} of PCPs, we
+parameterize over the proof (i.e.\ the one verifier should remain valid for all
+proofs $\pi$), for \emph{zero-knowledge} we parameterize over the verifier $V$.
+This is because for zero-knowledge proofs we care about not revealing any
+information from the proof, no matter how clever we are about asking questions
+with the verifier. In that way, outside of the ``happy path'' (where $x \in L$ and
+the given string is the proof of $x$), the two notions are somewhat orthogonal:
+a $\PCP$ cares about how we react when $x \notin L$ but $V$ is trusted, while
+zero-knowledge cares about what happens when $V$ is not trusted, but the proof
+is.
 
 % TODO: Why do we parameterize over the verifier here?
 
@@ -2495,6 +2671,228 @@ notation.\footnote{Having said that, there are still a lot of lines in this
   notation, but this is the best we can do.}
 
 % TODO: Examples
+
+\chapter{The $\PCP$ theorem}\label{chap:pcp-theorem}
+
+\begin{thm}[{$\PCP$ theorem,~\cite{AS98}}]\label{thm:pcp-theorem}\index{PCP theorem@$\PCP$ theorem}
+  Any problem in $\NP$ has a probabilistically-checkable proof of constant query
+  complexity and using a maximum of $O(\log n)$ random bits, and vice versa.
+  Equivalently, $\NP = \PCP(\log n, 1)$.
+\end{thm}
+
+% TODO
+% NOTE: Somewhere I need a section on low-degree tests
+
+\section{Algebraic circuits}\label{sec:alg-circuit}
+
+% TODO: Mention what the size of an algebraic circuit is
+
+\begin{defn}[{\cite[\defaultS 14.1]{AB09}}]\label{def:alg-circuit}\index{algebraic circuit}
+  An \emph{algebraic circuit} is a directed acyclic graph such that
+  \begin{enumerate}
+    \item each leaf (called an \emph{input node}) takes values in some field
+          $F$,
+    \item each internal node (called a \emph{gate}) is labeled with either $+$
+          or $\cdot$ (the two field operations),
+    \item there is one output node, and
+    \item each gate has in-degree no more than $2$.
+  \end{enumerate}
+  Optionally, there may be input nodes labeled $1$ and $-1$ as well.
+\end{defn}
+
+\begin{figure}
+  \begin{center}
+    \begin{tikzpicture}[>=stealth,every node/.style={minimum size=0.75cm},scale=2]
+      \node [diamond,draw] (R) at  (0,0) {$+$};
+      \node [rectangle,draw] (A1) at  (-0.5,1) {$\times$};
+      \node [diamond,draw] (A2) at  (0.5,1) {$+$};
+      \node [diamond,draw] (B1) at  (-1,2) {$+$};
+      \node [rectangle,draw] (B2) at  (0,2) {$\times$};
+      \node [diamond,draw] (B3) at  (1,2) {$+$};
+      \node [rectangle,draw] (C1) at  (-0.5,3) {$\times$};
+      \node [diamond,draw] (C2) at  (0.5,3) {$+$};
+      \node [circle,draw] (X1) at  (-1.5,4) {$x_{1}$};
+      \node [circle,draw] (X2) at  (-0.5,4) {$x_{2}$};
+      \node [circle,draw] (X3) at  (0.5,4) {$x_{3}$};
+      \node [circle,draw] (X4) at  (1.5,4) {$x_{4}$};
+
+      \draw[->] (X1) to (B1);
+      \draw[->] (X2) to (C1);
+      \draw[->] (X2) to (C2);
+      \draw[->] (X3) to (C1);
+      \draw[->] (X3) to [bend left=15] (B3);
+      \draw[->] (X3) to (C2);
+      \draw[->] (X4) to (B3);
+      \draw[->] (C1) to (B2);
+      \draw[->] (C2) to [bend left] (A1);
+      \draw[->] (C2) to (B1);
+      \draw[->] (C2) to (B2);
+      \draw[->] (B3) to (A2);
+      \draw[->] (B1) to (A1);
+      \draw[->] (B2) to (A2);
+      \draw[->] (A1) to (R);
+      \draw[->] (A2) to (R);
+    \end{tikzpicture}
+  \end{center}
+  \caption{An algebraic circuit}\label{fig:algebraic-circuit}
+\end{figure}
+
+We give an example of an algebraic circuit in \cref{fig:algebraic-circuit}.
+Notice in particular that unlike the in-degree, the out-degree is unbounded (the
+rightmost node in the second row has out-degree three, for example).
+
+% TODO: More
+
+\begin{defn}\label{def:alg-circuit}\index{satisfying assignment!algebraic circuit}
+  An algebraic circuit has a \emph{satisfying assignment} when there exists a
+  labeling of its input nodes such that the value computed by the output node is
+  $1$.
+\end{defn}
+
+\begin{figure} % TODO: Make clear nodes' original operation
+  \begin{center}
+    \begin{tikzpicture}[>=stealth,every node/.style={minimum size=0.75cm},scale=2]
+      \node [diamond,draw] (R) at (0,0) {$1$};
+      \node [rectangle,draw] (A1) at (-0.5,1) {$5$};
+      \node [diamond,draw] (A2) at (0.5,1) {$4$};
+      \node [diamond,draw] (B1) at (-1,2) {$3$};
+      \node [rectangle,draw] (B2) at (0,2) {$6$};
+      \node [diamond,draw] (B3) at (1,2) {$4$};
+      \node [rectangle,draw] (C1) at (-0.5,3) {$2$};
+      \node [diamond,draw] (C2) at (0.5,3) {$3$};
+      \node [circle,draw]  (X1) at (-1.5,4) {$3$};
+      \node [circle,draw]  (X2) at (-0.5,4) {$2$};
+      \node [circle,draw]  (X3) at (0.5,4) {$1$};
+      \node [circle,draw]  (X4) at (1.5,4) {$3$};
+
+      \draw[->] (X1) to (B1);
+      \draw[->] (X2) to (C1);
+      \draw[->] (X2) to (C2);
+      \draw[->] (X3) to (C1);
+      \draw[->] (X3) to [bend left=15] (B3);
+      \draw[->] (X3) to (C2);
+      \draw[->] (X4) to (B3);
+      \draw[->] (C1) to (B2);
+      \draw[->] (C2) to [bend left] (A1);
+      \draw[->] (C2) to (B1);
+      \draw[->] (C2) to (B2);
+      \draw[->] (B3) to (A2);
+      \draw[->] (B1) to (A1);
+      \draw[->] (B2) to (A2);
+      \draw[->] (A1) to (R);
+      \draw[->] (A2) to (R);
+    \end{tikzpicture}
+  \end{center}
+  \caption{A satisfying assignment to \cref{fig:algebraic-circuit} over $\mathbb{Z}/7\mathbb{Z}$}\label{fig:sat-assignment}
+\end{figure}
+
+We give a satisfying assignment to \cref{fig:algebraic-circuit} as an example in
+\cref{fig:sat-assignment}. Notice that we have kept the shapes of the nodes from
+the original in order to communicate the underlying operation.
+
+% TODO: More
+
+\begin{defn}\label{def:cktsat}\index{CktSAT@$\CktSAT$}
+  The language $\CktSAT$ is the language of all algebraic circuits with a
+  satisfying assignment.
+\end{defn}
+
+\begin{thm}\label{thm:cktsat-np-complete}
+  $\CktSAT$ is $\NP$-complete.
+\end{thm}
+
+\begin{proof}
+  First, we need that $\CktSAT \in \NP$. Evaluating a circuit can be done in
+  polynomial time relative to its size, so a certificate that is simply the
+  values of each input node in the satisfying assignment will suffice.
+
+  Next, we need that there is a reduction from every problem in $\NP$ to
+  $\CktSAT$. We will use the fact that we already know normal $\SAT$ is
+  $\NP$-complete for this. First, consider the \emph{boolean circuit problem}:
+  similar to algebraic circuits but where the operators are boolean formulae
+  instead of the field operators. We can construct a boolean circuit from a
+  boolean formula by replacing every variable with an input node and every
+  boolean operator with a gate corresponding to its formula.
+
+  From there, we can transform a boolean circuit into an algebraic circuit over
+  the field $\mathbb{Z}/2\mathbb{Z}$. Multiplication in $\mathbb{Z}/2\mathbb{Z}$ is exactly an AND gate, so that is
+  simply a one-to-one replacement. OR gates are slightly trickier, however. We
+  would like the replacement to be as simple as multiplication: mapping $x \vee y$
+  to $x + y$. However, $T \vee T = T$ but $1 + 1 = 0$ in $\mathbb{Z}/2\mathbb{Z}$. Instead, we map
+  $x \vee y$ to $(x + y) + (x \times y)$, which gives the answer we seek. Lastly, we map
+  NOT gates to $x + 1$.
+
+  We have shown $\CktSAT \in \NP$ and we have shown a polynomial-time reduction
+  from $\SAT$ to $\CktSAT$; hence $\CktSAT$ is $\NP$-complete.
+\end{proof}
+
+\section{Robust verifiers}\label{sec:robust-verifier}
+
+\begin{defn}[{\cite[Def.\ 2.6]{BGHSV06}}]\label{def:robust-verifer}\index{robust verifier}
+  Let $s, \rho: \mathbb{N} \rightarrow [0, 1]$. A PCP verifier $V$ has \emph{robust-soundness error}
+  $s$ with \emph{robustness parameter} $\rho$ if for all $x \notin L$, the bits read by
+  $V$ are $\rho$-close to being accepted with probability strictly less than $s$.
+\end{defn}
+
+We will denote robust PCP classes with
+\[
+  \PCP\pcpr{q(n)}{r(n)}{s(n)}{\rho(n)}.
+\]
+
+\section{The composition theorem}\label{sec:comp-theorem}
+
+% NOTE: I believe this replaces 2.1 (outer/inner verifiers) from ALMSS98
+\begin{thm}[{\cite[Theorem 2.7]{BGHSV06}}]\label{thm:composition}
+  Let
+  \begin{align*}
+    r_{\out}, r_{\oin}, d_{\out}, d_{\oin}, q_{\oin}&: \mathbb{N} \rightarrow \mathbb{N} \\
+    \varepsilon_{\out}, \varepsilon_{\oin}, \rho_{\out}, \delta_{\oin}&: \mathbb{N} \rightarrow [0, 1]
+  \end{align*}
+  be functions such that the following holds:
+  % TODO: Put in IPCP-style bracket notation
+  \begin{enumerate}
+    % TODO: Do we care about decision complexity? If so, define it
+    \item The language $L$ has a robust PCP verifier $V_{\out}$ with randomness
+          complexity $r_{\out}$, decision complexity $d_{\out}$,
+          robust-soundness error $1 - \varepsilon_{\out}$, and robustness parameter
+          $\rho_{\out}$.
+          % TODO: Define Circuit-Value problem
+    \item $\lang{CV}$ has a PCPP verifier $V_{\oin}$ with randomness complexity
+          $r_{\oin}$, query complexity $q_{\oin}$, decision complexity
+          $d_{\oin}$, proximity parameter $\delta_{\oin}$, and soundness error
+          $1 - \varepsilon_{\oin}$.
+    \item For every $n \in \mathbb{N}$, $\delta_{\oin}(d_{\out}(n)) \le \rho_{\out}(n)$.
+  \end{enumerate}
+  % TODO: More bracket notation
+  Then $L$ has a standard PCP $V_{\operatorname{comp}}$ with
+  \begin{enumerate}[label=\alph*.]
+    \item randomness complexity $r_{\out}(n) + r_{\oin}(d_{\out}(n))$,
+    \item query complexity $q_{\oin}(d_{\out}(n))$,
+    \item decision complexity $d_{\oin}(d_{\out}(n))$, and
+    \item soundness error $1 - \varepsilon_{\out}(n)\varepsilon_{\oin}(d_{\out}(n))$.
+  \end{enumerate}
+  % TODO: Still another paragraph here
+\end{thm}
+
+\begin{algorithm}[htbp]
+  % TODO
+  \caption{A composed PCP~\cite[Theorem 2.7]{BGHSV06}}\label{alg:composed-pcp}
+\end{algorithm}
+
+\begin{proof}
+  We show the validity of the proof and verifier described in
+  \cref{alg:composed-pcp}.
+  % TODO
+\end{proof}
+
+% TODO: Rest of proof
+
+\section{An upper bound on $\PCP$ queries}\label{sec:pcp-query-complexity}
+
+\begin{thm}[{\cite{Has97}}]\label{thm:pcp-max-queries}
+  Any language in $\NP$ has a $\PCP$ that queries a maximum of $3$ bits of the
+  proof and uses $O(\log n)$ random bits.
+\end{thm}
 
 \chapter{Quantum computation}\label{chap:quantum}
 
@@ -2592,8 +2990,56 @@ notation.\footnote{Having said that, there are still a lot of lines in this
   \end{equation*}
 \end{thm}
 
+\begin{algorithm}[htbp]
+  % TODO: Any bounds on s?
+  \KwIn{An honest oracle $R \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]$ and string $s$}
+  \KwOut{Whether or not $s \in L_{(P, V)}$}
+  $V'$: choose random $r \in \mathbb{F}^{m}$\;
+  $V'$: choose $S \subseteq \mathbb{F}$ with $\abs{S} < q$\; % FIXME: Is this random or predetermined?
+  $V'$: choose random $t \in \mathbb{F} \setminus S$\;
+  % FIXME: What is meant by curve (polynomial?)
+  % NOTE: A is "query set" of V on input S
+  $V'$: compute curve $\gamma: \mathbb{F} \rightarrow \mathbb{F}^{m}$ of degree $q$ such that
+  $\{\gamma(s)\}_{s \in S} = A$ and $\gamma(t) = r$\;
+  $V'$: Send $\gamma$ to $P'$\;
+  $P'$: Reply with the coefficients of the polynomial
+  $\rho: \mathbb{F} \rightarrow \mathbb{F}$ with $\deg(\rho) < mdq$ that is the restriction of
+  $R$ to $\gamma$\;
+  $V$: query $R$ at $r$ and recieve answer $a$\; % FIXME: Should this be V'?
+  \If{$a \ne \rho(t)$}{\nllabel{line:check-rho}
+    reject\;
+  }
+  % FIXME: TypeError: Should be \rho(A)?
+  $V'$: Simulate $V(x)$, answering all queries $a \in A$ with $\gamma(A)$\;
+  \KwRet{the result of $V(x)$}\;
+  \caption{A single-query, zero-knowledge transformation of an
+    IPCP~\cite[Construction 4]{CFGS22}}\label{alg:single-query}
+\end{algorithm}
+
 \begin{proof}
+  We describe the result of $T$ in \cref{alg:single-query}. First, note that
+  this algorithm is not $T$ directly, but the result of $T(P, V)$. So, what we
+  require is to show that $L_{T(P, V)} = L_{(P, V)}$, and to briefly demonstrate
+  why $V'$ runs in polynomial time.
+
+  To show $V'$ runs in polynomial time, % TODO: Complexity of the random choice
   % TODO
+
+  When $P'$ is honest, then this will simulate $V$ answering all its queries via
+  $\rho$ (which gives the correct answer to every value in $A$); hence $V$ will
+  gave the correct answer by definition.
+
+  When $P'$ is dishonest, then we know $\rho$ is a univariate polynomial with
+  degree at most $dq$ (since $\rho = R\gamma$). Further note that our random choice of
+  both $t$ and $\gamma$ means that $\gamma(t)$ is uniformly distributed over
+  $\mathbb{F}^{m}$. Since $\rho$ is a univariate polynomial with degree at most
+  $dq$, then it can agree with $R\gamma$ at most $mdq$ distinct points without being
+  equal. Hence, since we query it at a random point in $\mathbb{F} \setminus S$, if the
+  check in line~\ref{line:check-rho} passes with at probability bigger than
+  $\frac{mdq}{\abs{\mathbb{F}} - q}$, it must mean that $\rho = R\gamma$ on more than
+  $mdq$ points. Thus, $\rho = R\gamma$ and so we will get the correct answer for all of
+  our queries on $A$. If it passes with a lower probability, then we are within
+  our soundness error overall and so the result does not matter.
 \end{proof}
 
 \begin{thm}[{\cite[Prop.\ 9.2]{CFGS22}}]\label{thm:one-query-pzk}
@@ -2603,7 +3049,14 @@ notation.\footnote{Having said that, there are still a lot of lines in this
 \end{thm}
 
 \begin{proof}
-  % TODO
+  We again look at \cref{alg:single-query}. First, notice that if we make a
+  query $r \in \gamma(\mathbb{F})$, since $\rho = R\gamma$ we could replace our call to $R$
+  with a call to $\rho(\gamma^{-1}(r))$, and this would no longer count towards our
+  query bound. Further, from what we know of the degree of $\rho$, we know that in
+  the worst case, we would only need $mdq + 1$ queries to $R$ to effectively
+  replicate $\rho$. Hence, if we reduce our query bound by $mdq + 1$, it follows
+  that we can still effectively simulate the interaction of $P'$ and $V'$, since
+  we know $P$ and $V$ have a perfect simulator.
 \end{proof}
 
 \section{A lifting algorithm}
@@ -2611,7 +3064,7 @@ notation.\footnote{Having said that, there are still a lot of lines in this
 \begin{thm}[{\cite[Lemma 9.1]{CFGS22}}]\label{thm:lift-ipcp-mip}
   Let $L$ be a language, let $m, d, q \in \mathbb{N}$, and let $\mathbb{F}$ be a finite
   field of size $\poly(m, d, q)$ sufficiently large. Then, there exists a
-  transformation $T$
+  transformation
   \begin{equation*}
     T: \IPCP\ldipcp{r}{\ell}{c}{q}{\mathbb{F}[X_{1, \ldots, m}^{\le d}]}{\varepsilon}
     \rightarrow \MIP*\mipstar{2}{r+1}{c}{1 - \frac{1}{\poly(m, d)}}.
@@ -2624,7 +3077,7 @@ notation.\footnote{Having said that, there are still a lot of lines in this
 
 \begin{algorithm}[htbp]
   $V$: Choose a random $r \in \{0, 1\}$\;
-  \eIf{$V = 0$}{
+  \eIf{$r = 0$}{
     $V$: Perform the low multidegree test from \cref{thm:quantum-low-degree}\;
   }{
     \tcp{IPCP emulation}
@@ -2652,12 +3105,42 @@ notation.\footnote{Having said that, there are still a lot of lines in this
 % TODO: Rename chapter
 \chapter{Low-degree $\IPCP$ with zero-knowledge}\label{chap:ipcp-zero-knowledge}
 
+Now that we can construct a zero-knowledge $\MIP*$ instance from a
+zero-knowledge IPCP, all that remains is to show that $\NEXP \subseteq \PZKIPCP$. From
+there, we will be able to leverage \cref{thm:lift-ipcp-mip} to demonstrate
+$\NEXP \subseteq \PZKMIP*$.
+
 % TODO: Should this be moved to the AQC section?
 % Should AQC become its own chapter?
 \section{AQC of polynomial summation}\label{sec:aqc-poly-sum}
 
-% TODO: This is an extremely obtuse and technical lemma and it would be nice if
-% there were a concise explanation of why we care
+We first need to define the \emph{polynomial summation problem}. We will want a
+lower bound on the algebraic query complexity of this problem, similar to the
+examples we saw in \cref{sec:alg-query-complexity}.
+% TODO: More examples
+
+\begin{defn}\label{def:poly-sum}\index{polynomial summation problem}
+  The \emph{polynomial summation problem} is the following:
+  \begin{quote}
+    Let $\mathbb{F}$ be a field with $G \subseteq \mathbb{F}$. Let $m, k, d, d' \in \mathbb{N}$ and
+    let $Z \in \mathbb{F}[X_{1, \ldots, m}^{\le d}, Y_{1, \ldots, k}^{\le d'}]$.
+    % TODO: A few more bounds here as per Lemma 7.1.2?
+    What is the value of the polynomial
+    \[
+      R(X) = \sum_{\beta \in G^{k}}Z(X, \beta) \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]?
+    \]
+  \end{quote}
+\end{defn}
+
+We will need a lower bound on the algebraic query complexity of this problem
+(where $Z$ functions as the oracle) later on in order to help demonstrate
+zero-knowledge. We will do this with one additional restriction---we will also
+need $d'$ to be sufficiently large relative to $G$, but this will not hamper us
+in practice. In brief, the lower bound will tell us that so long as we limit
+our total queries, we will not recieve \emph{any} information about $R(X)$.
+% TODO: What exactly will this allow us to do?
+
+% TODO: Define the polynomial summation problem
 
 \begin{lemma}[{\cite[Lemma 12.1]{CFGS22}}]
   % TODO: Better notation for matrices (more standard M_{r,c}(\mathbb{F}))
@@ -2803,6 +3286,11 @@ notation.\footnote{Having said that, there are still a lot of lines in this
   % TODO
 \end{proof}
 
+From here, we get that the algebraic query complexity of polynomial summation is
+at least $\abs{G}^{k}$. That is, if we query $Z$ no more than $\abs{G}^{k}$
+times, then we we will recieve \emph{no information} about the polynomial
+$R(X) = \sum_{\beta \in G^{k}}Z(X, \beta)$.
+
 \begin{cor}[{\cite[Corollary 12.3]{CFGS22}}]
   Let $\mathbb{F}$ be a finite field, $G \subseteq \mathbb{F}$, and $d, d' \in \mathbb{N}$ with
   $d' \ge 2(\abs{G} - 1)$. Let $Q$ be a subset of $\mathbb{F}^{m+k}$ with
@@ -2854,6 +3342,11 @@ protocol to complete our proof.
 \end{defn}
 
 \subsection{A non-zero-knowledge sumcheck protocol}
+
+We begin with an interactive protocol for sumcheck that does not have any
+zero-knowledge characteristics. While this protocol itself does not preserve
+anything, it will form an essential building block for the zero-knowledge
+protocols we will construct later.
 
 \begin{algorithm}[htbp]
   % TODO: This looks very similar to algorithm 3.1; can I make a connection there?
@@ -2937,6 +3430,14 @@ protocol to complete our proof.
   original $F$) a total of $nH$ times; computing $F_{i}$ is also in polynomial
   time. Thus, $V$ overall runs in polynomial time.
 \end{proof}
+
+\begin{figure}[htbp]
+  % TODO
+  \caption{An example computation of \cref{alg:sumcheck-std}}\label{fig:sumcheck-ex}
+\end{figure}
+
+To illustrate this, in \cref{fig:sumcheck-ex} we provide an example of an
+iteration of the protocol when the answer is affirmative and $P$ is honest.
 
 \subsection{A weakly zero-knowledge sumcheck protocol}
 
@@ -3152,6 +3653,8 @@ zero-knowledge algorithm.
 % FIXME: CFGS22 claims BFL90 has a IPCP for NEXP, but IPCPs weren't invented
 % until 18 years after BFL90 was published?
 
+% TODO: Define PZK-IPCP
+
 Armed with our sumcheck algorithm, we are ready to take on the fight of the rest
 of $\NEXP$. Like so many other theorems, we will do this with a $\NEXP$-complete
 problem, and as before our problem of choice is $\OSAT$.
@@ -3180,7 +3683,23 @@ problem, and as before our problem of choice is $\OSAT$.
   \caption{A low-degree IPCP for $\OSAT$~\cite[p.\ 15:36]{CFGS22}}\label{alg:ipcp-o3sat}
 \end{algorithm}
 
+\begin{algorithm}[htbp]
+  Draw a random polynomial
+  $Z_{s} \in \mathbb{F}[X_{1, \ldots, m_{2}}^{\le \abs{H}+2}, Y_{1, \ldots, k}^{\le 2\abs{H}}]$\;
+  TODO\; % Step 2 is weird
+  Recieve $x, y \in \mathbb{F}^{3s + r}$ from $\tilde{V}$\;
+  TODO\; % Step 4 is also weird
+  \For{$i \in \{1, 2, 3\}$}{
+    % TODO: Simulation is a little strange and I want to check what the shared
+    % secret polynomial is
+  }
+  \caption{A simulator for \cref{alg:ipcp-o3sat}~\cite[p.\ 15.37]{CFGS22}}\label{alg:o3sat-simulator}
+\end{algorithm}
+
 \begin{proof}
+  We demonstrate this through an algorithm for $\OSAT$, which we have laid out
+  in \cref{alg:ipcp-o3sat}. We will show this is zero-knowledge by implementing
+  a simulator in \cref{alg:o3sat-simulator}.
   % TODO
 \end{proof}
 
@@ -3194,17 +3713,71 @@ problem, and as before our problem of choice is $\OSAT$.
   run \cref{alg:ipcp-o3sat}.
 \end{proof}
 
+\section{Zero-knowledge $\MIP*$ for $\NEXP$}\label{sec:zk-mipstar-nexp}
+
 % TODO: Rename chapter
 \chapter{Zero-knowledge PCPs for $\#\P$}\label{chap:zk-pcp-for-hp}
 
+\section{Constraint location}\label{sec:constraint-loc}
+
+\section{ZKPCPs for $\#\SAT$}\label{sec:zkpcp-hsat}
+
 \begin{thm}[{\cite[Theorem 8.1]{GOS24}}]\label{thm:pzkpcp-for-sat}
-  There exists a perfect zero-knowledge probabilistically-checkable proof for
-  $\#\SAT$.
+  There exists a perfect zero-knowledge PCP for $\#\SAT$.
 \end{thm}
 
 \begin{cor}\label{cor:hashp-subset-pzkpcp}
   $\#\P \subseteq \PZKPCP$.
 \end{cor}
+
+\chapter{A zero-knowledge PCP theorem}\label{chap:zk-pcp-theorem}
+
+\section{Zero-knowledge proof composition}\label{sec:zk-proof-comp}
+
+\begin{thm}[{\cite[Theorem 3.7]{GOS25}}]\label{thm:comp-pzk}
+  The construction in \cref{thm:composition} is perfect zero-knowledge with
+  query bound $q^{*}/q_{\out}$ if $V_{\out}$ is perfect zero-knowledge with
+  query bound $q^{*}$.
+\end{thm}
+
+\begin{proof}
+  All that is needed to prove this theorem is to show that
+  \cref{alg:composed-pcp} preserves zero-knowledge, since we have already showed
+  that it satisfies the conditions in \cref{thm:composition}.
+  % TODO
+\end{proof}
+
+\section{$\PCPP$ for polynomial summation}\label{sec:pcpp-poly-sum}
+
+\section{A zero-knowledge $\PCP$ for $\NP$ and $\NEXP$}\label{sec:pzkpcp-np-nexp}
+
+\begin{algorithm}[htbp]
+  % TODO
+  \caption{A $\PZKPCP$ for $\OSAT$~\cite[Theorem 6.3]{GOS25}}\label{alg:pzkpcp-np}
+\end{algorithm}
+
+\begin{algorithm}[htbp]
+  % TODO
+  \caption{A simulator for \cref{alg:pzkpcp-np}}\label{alg:pzkpcp-np-sim}
+\end{algorithm}
+
+\begin{thm}[{\cite[Theorem 2]{GOS25}}]\label{thm:zk-pcp}\index{PCP theorem@$\PCP$ theorem!zero-knowledge}
+  $\NP \subseteq \PZKPCP[\log(n), 1]$.
+\end{thm}
+
+\begin{algorithm}[htbp]
+  % TODO
+  \caption{A $\PZKPCP$ for $\OSAT$~\cite[Construction 6.4]{GOS25}}\label{alg:pcp-osat}
+\end{algorithm}
+
+\begin{algorithm}[htbp]
+  % TODO
+  \caption{A simulator for \cref{alg:pcp-osat}~\cite[Construction 6.7]{GOS25}}\label{alg:pcp-osat-sim}
+\end{algorithm}
+
+\begin{thm}[{\cite[Theorem 7.1]{GOS25}}]\label{thm:zk-pcp-nexp}
+  $\NEXP \subseteq \PZKPCP[\poly(n), 1]$.
+\end{thm}
 
 \begin{appendices}
 
