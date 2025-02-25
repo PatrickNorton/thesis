@@ -11,6 +11,7 @@
 \usepackage{booktabs}
 \usepackage{complexity}
 \usepackage{mleftright}
+\usepackage{xcolor}
 
 \usepackage[linesnumbered,algochapter]{algorithm2e}
 \usepackage{biblatex}
@@ -89,6 +90,7 @@
 \DeclareMathOperator{\Syl}{Syl}
 \DeclareMathOperator{\Sym}{Sym}
 \DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\View}{View}
 \def\vep{\varepsilon}
 \DeclareMathOperator{\lcm}{lcm}
 
@@ -127,6 +129,18 @@
     \text{comm.\ complexity:} & #3 \\
     \text{query complexity:} & #4 \\
     \text{soundness error:} & #5
+  \end{array}}\mright]%
+}
+
+\newcommand{\pzkipcp}[6]{%
+  \ensuremath%
+  \mleft[{\footnotesize\begin{array}{r l}
+    \text{round complexity:} & #1 \\
+    \text{PCP length:} & #2 \\
+    \text{comm.\ complexity:} & #3 \\
+    \text{query complexity:} & #4 \\
+    \text{query bound:} & #5 \\
+    \text{soundness error:} & #6
   \end{array}}\mright]%
 }
 
@@ -180,6 +194,25 @@
 \newlang{\OSAT}{O3SAT}
 \newlang{\PCPP}{PCPP}
 \newlang{\Prime}{Prime}
+
+\newcommand{\shrug}[1][]{%
+  \begin{tikzpicture}[baseline,x=0.8\ht\strutbox,y=0.8\ht\strutbox,line width=0.125ex,#1]
+    \def\arm{(-2.5,0.95) to (-2,0.95) (-1.9,1) to (-1.5,0) (-1.35,0) to (-0.8,0)};
+    \draw \arm;
+    \draw[xscale=-1] \arm;
+    \def\headpart{(0.6,0) arc[start angle=-40, end angle=40,x radius=0.6,y radius=0.8]};
+    \draw \headpart;
+    \draw[xscale=-1] \headpart;
+    \def\eye{(-0.075,0.15) .. controls (0.02,0) .. (0.075,-0.15)};
+    \draw[shift={(-0.3,0.8)}] \eye;
+    \draw[shift={(0,0.85)}] \eye;
+    % draw mouth
+    \draw (-0.1,0.2) to [out=15,in=-100] (0.4,0.95);
+  \end{tikzpicture}
+}
+
+\newcommand{\TODO}[1]{\textcolor{red}{TODO: #1}}
+\newcommand{\FIXME}[1]{\textcolor{red}{\underline{FIXME: #1}}}
 
 \addbibresource{bibliography.bib}
 
@@ -2033,10 +2066,14 @@ probability'' bounds and not complete mathematical certainty.
 Interactive proof systems turn out to be surprisingly powerful---while the
 verifier only runs in polynomial time, it turns out that the interaction with
 the untrustworthy computer is still enough to boost the power significantly.
+The ``classic'' interactive proof model involves exactly two computer (one
+prover, one verifier), but many variants exist, all with distinct and
+interesting complexity-theoretic characteristics. In this chapter, we will be
+introducing a good number of these variants and a few of their interesting
+properties; the goal of the remaining chapters will be proving several of the
+more modern interesting results involving these systems.
 
 \section{Interactive Turing machines}\label{sec:interactive-tm}
-
-% TODO: Mention randomness
 
 The central mechanism underlying all of the interactive proof systems we will
 work with is the interactive Turing machine. This machine is a variant of a
@@ -2061,7 +2098,11 @@ they are allowed to do.
   associated with it, called its \emph{identity}.\index{Turing machine!identity}
   When the content of the switch tape is not equal to the machine's identity, it
   performs no computation and is called \emph{idle}.
-  % TODO: Finish
+
+  In most cases, we will also give the interactive machines a source of
+  randomness as well that they can read from. Since this is so common we will
+  treat it as the default; if we ever want a machine to not have a source of
+  randomness we will explicitly state as such.
 \end{defn}
 
 Of course, a single interactive Turing machine is not worth much: in order to do
@@ -2092,9 +2133,11 @@ looking at different entries at the same time.
     % TODO: Make pretty (esp. colors)
     \draw (0,0) rectangle ++(3,3) node [pos=0.5] {$\id = 0$};
     \draw (8,0) rectangle ++(3,3) node [pos=0.5] {$\id = 1$};
+
     \draw (5.25,4) rectangle ++(0.5,0.5) node [pos=0.5] {$\sigma$};
     \draw[<->] (5.25,4) -- (3,3);
     \draw[<->] (5.75,4) -- (8,3);
+
     \foreach \y in {0,...,4} {
       \pgfmathsetmacro{\yvar}{2.75 - 0.5 * \y}
       \draw (4.5,\yvar) rectangle ++(0.5,-0.5);
@@ -2106,18 +2149,21 @@ looking at different entries at the same time.
     \draw[->] (8,1.5) -- (6.5,1.5);
     \draw[<-] (3,2.5) to [bend left] (6,2.75);
     \draw[<-] (8,2.5) to [bend right] (5,2.75);
+
     \foreach \x in {0,...,9} {
       \pgfmathsetmacro{\xvar}{3 + 0.5 * \x}
       \draw (\xvar,5) rectangle ++(0.5,0.5);
     }
     \draw[->] (3,5) to (1.5,3);
     \draw[->] (8,5) to (9.5,3);
+
     \foreach \x in {0,...,9} {
       \pgfmathsetmacro{\xvar}{3 + 0.5 * \x}
       \draw (\xvar,-2.5) rectangle ++(0.5,0.5);
     }
     \draw[->] (1.5,0) to (3,-2);
     \draw[->] (9.5,0) to (8,-2);
+
     \foreach \y in {0,...,4} {
       \pgfmathsetmacro{\yvar}{2.75 - 0.5 * \y}
       \draw (-2,\yvar) rectangle ++(0.5,-0.5);
@@ -2127,6 +2173,18 @@ looking at different entries at the same time.
     \path (12.5,-0.25) rectangle ++(0.5,0.5) node [pos=0.5] {$\vdots$};
     \draw[<->] (0,1.5) -- (-1.5,1.5);
     \draw[<->] (11,1.5) -- (12.5,1.5);
+
+    \foreach \x in {0,10.25} {
+      \draw[rounded corners] (\x,5) rectangle ++(0.75,0.75);
+      \foreach \d in {1,2,3}{
+        \pgfmathsetmacro{\offset}{\d*0.75/4}
+        \pgfmathsetmacro{\circx}{\x+\offset}
+        \pgfmathsetmacro{\circy}{5+\offset}
+        \filldraw (\circx,\circy) circle (0.05);
+      }
+    }
+    \draw[->] (0.375,5) to (1,3);
+    \draw[->] (10.625,5) to (10,3);
   \end{tikzpicture}
   \caption{A linked pair of interactive Turing machines}\label{fig:linked-pair}
 \end{figure}
@@ -2144,10 +2202,30 @@ have an arrow pointing to them.
   halts when either machine halts and the halting machine is not idle.
 \end{defn}
 
-% TODO: Diagram here of "flow" of joint computation
+\begin{figure}
+  \TODO{}
+  \caption{The ``flow'' of a joint computation of two interactive TMs}\label{fig:joint-comp-flow}
+\end{figure}
 
 We will denote the joint computation of machines $M$ and $N$ on input $x$ by
-$\ang{M, N}(x)$. % TODO: Talk about how this is a random variable
+$\ang{M, N}(x)$. Since this output is not deterministic (it will depend on the
+values of the random bits read by $P$ and $V$), it is important to note that
+this is a random variable, not an individual value.
+
+Finally, we need the concept of a ``view''. A view is in essence a record of
+what a machine in a given interaction sees: it is an ordered list of everything
+the machine reads in sequence. We will care quite a bit about views throughout
+this thesis since views are a record of the ``public'' information of a proof:
+when we begin to work with zero knowledge, we will be using the view of an
+interaction in order to show that no information is leaked.
+
+\begin{defn}\label{def:view}\index{view}
+  The \emph{view} of $M$ in a joint computation on input string $x$ is the
+  sequence $(x, r, m_{1}, \ldots, m_{n})$, where $x$ is the input string, $r$ is the
+  sequence of random bits seen by $M$, and $m_{i}$ are the random messages
+  recieved by $M$ from $N$. We will denote the view of $M$ by
+  $\View_{M}^{N}(x)$.
+\end{defn}
 
 \section{Single-prover systems}\label{sec:single-prover}
 
@@ -2174,6 +2252,23 @@ reject whenever the input is not in the language.
           \]
   \end{itemize}
 \end{defn}
+
+\begin{figure}
+  \centering
+  \begin{tikzpicture}
+    \draw (0,4) rectangle (4,8) node[midway] {$\mathbb{P} \ge \frac{2}{3}$};
+    \draw (4,4) rectangle (8,8) node[midway] {\shrug{}};
+    \draw (0,0) rectangle (4,4) node[midway] {$\mathbb{P} \le \frac{1}{3}$};
+    \draw (4,0) rectangle (8,4) node[midway] {$\mathbb{P} \le \frac{1}{3}$};
+    \node[anchor=east] at (0,6) {$x \in L$};
+    \node[anchor=east] at (0,2) {$x \notin L$};
+    % Needed to make vertical alignment work out (sigh)
+    \node[anchor=south] at (2,8) {\makebox[0pt][l]{$B = P$}\phantom{$B \ne P$}};
+    \node[anchor=south] at (6,8) {$B \ne P$};
+  \end{tikzpicture}
+  \caption{Probability matrix for IP acceptance given prover and input
+    string}\label{fig:ip-accept-grid}
+\end{figure}
 
 While we require our system to be correct at least $2/3$ of the time, our choice
 of probability is actually somewhat arbitrary, so long as it is at least $50\%$.
@@ -2202,10 +2297,11 @@ or insisting the protocol succeed will be a reasonable restriction. Since
 $x \in L$, an alternative $P'$ could give messages arbitrarily close to the
 correct $P$ (and in some cases even send identical messages, which would be
 impossible to distinguish), so we cannot insist $L$ reject, even with high
-probability. However, if $L$ could accept even in the face of an arbitrarily
-malicious verifier, it would mean that $L$ would have some means of computing
-the problem on its own; hence we would only ever be able to accept languages in
-$\BPP$ (since $L$ is a $\BPP$ machine).
+probability. However, if $V$ could accept even in the face of an arbitrarily
+malicious prover, or a prover that sends no useful information whatsoever, it
+would mean that $V$ would have some means of computing the problem on its own;
+hence we would only ever be able to accept languages in $\BPP$ (since $L$ is a
+$\BPP$ machine).
 
 As with all of our interactive-proof variants, we will also define a complexity
 class corresponding to the set of languages with the given proof. Once we have a
@@ -2227,7 +2323,7 @@ theorem:
 % NOTE: See also A Formalization of Pratt’s Primality Certificates (Wimmer, Noschinski)
 
 \begin{algorithm}[htbp]
-  % TODO
+  \TODO{}
   \caption{An interactive proof for the language $\Prime$}\label{alg:prime-ip}
 \end{algorithm}
 
@@ -2235,13 +2331,13 @@ Once we have a complexity class, the question arises of how it relates to other
 complexity classes. For $\IP$, Adi Shamir proved in 1992~\cite{Sha92} that a
 language has a standard interactive protocol if and only if it is in $\PSPACE$.
 
-% TODO: How much do I want to talk about this? (Scope creep)
+\TODO{How much do I want to talk about this? (Scope creep)}
 \begin{thm}[{\cite{Sha92}}]\label{thm:ip-is-pspace}
   $\IP = \PSPACE$.
 \end{thm}
 
 \begin{proof}
-  % TODO
+  \TODO{}
 \end{proof}
 
 \section{Multi-prover systems}\label{sec:multi-prover}
@@ -2254,10 +2350,13 @@ with a single verifier working twice as hard (which would keep it polynomial).
 However, increasing the number of provers to two turns out to give us more power
 than we would get with a single prover.
 
-% TODO: BGKW88 says that any MIP has a variant that is complete (if x \in L then V
-% always accepts)
+\TODO{BGKW88 says that any MIP has a variant that is complete (if $x \in L$ then
+  $V$ always accepts)}
 
-% TODO: Should I define this for any n instead of just 2?
+\TODO{Should I define this for any $n$ instead of just 2? It's a simpler
+  definition with only 2 but it's pedagogically weird to say ``multi-prover''
+  and then have just 2 items; since this will be cleared up by
+  \cref{thm:mip-unchanged} it's not the end of the world either way.}
 \begin{defn}[{\cite[Def.\ 4.11.2]{Go01}}]\label{def:mps}\index{interactive proof!multi-prover}
   A \emph{multi-prover interactive proof system} is a triplet of interactive
   machines $(P_{1}, P_{2}, V)$ such that $P_{1}$ and $P_{2}$ cannot communicate,
@@ -2316,7 +2415,7 @@ computational power over just having one.
 \end{thm}
 
 \begin{proof}
-  % TODO
+  \TODO{How much effort do I want to put into this? (Scope creep)}
   We showed in \cref{thm:o3sat-nexp-complete} that $\OSAT$ is $\NEXP$-complete,
   so all we need is to demonstrate that $\OSAT$ has a multi-prover system.
 \end{proof}
@@ -2327,14 +2426,14 @@ that a third prover is no more powerful than just having two. We formalize this
 below; because we do not get any benefit from three provers we will not work
 with three-prover systems at all in this paper beyond this proof.
 
-% FIXME: Cite (where did this come from?)
+\FIXME{Cite (where did this come from?)}
 \begin{thm}\label{thm:mip-unchanged}
   If we redefine $\MIP$ to have $m(n) = \poly(n)$ provers on an input of size
   $n$, the class is unchanged.
 \end{thm}
 
 \begin{proof}
-  % TODO
+  \TODO{}
 \end{proof}
 
 \section{Zero-knowledge proofs}\label{sec:zero-knowledge}
@@ -2374,7 +2473,6 @@ knowledge of the language. However, a simulator would have access to the
 randomly-chosen value, and thus it could construct a response immediately with
 no reference to the problem to be solved.
 
-% TODO: Rewrite this to be more in line with the other definitions
 \begin{defn}[{\cite[Def.\ 4.3.1]{Go01}}]\label{def:zero-knowledge}%
   \index{perfect zero-knowledge}\index{perfect simulator}%
   \index{zero-knowledge proof!perfect}
@@ -2397,7 +2495,6 @@ no reference to the problem to be solved.
   interaction of $V^{*}$ with $P$.
 \end{defn}
 
-% FIXME: Super-perfect zero-knowledge proofs now exist
 Looking at this definition, one might wonder why we would want the ability for
 $M^{*}$ to output $\bot$. This is a reasonable thing to wonder, because we do not
 actually want this. However, we do not know of any non-trivial proof systems
@@ -2410,8 +2507,6 @@ above by $2^{-\poly(\abs{n})}$), but we cannot make it truly perfect. We can do
 this by simply re-running the simulator every time we get a $\bot$ until we get a
 valid answer.
 
-% TODO: More
-
 As with other interactive proof systems, zero-knowledge proofs are
 probabilistic; in particular this means they do \emph{not} function as proofs in
 the mathematical sense.
@@ -2421,9 +2516,9 @@ the mathematical sense.
   proof system.
 \end{defn}
 
-% TODO: Example
+\TODO{Example}
 
-\subsection{Commitment schemes}
+\subsection{Commitment schemes}\label{sec:commitment-scheme}
 
 It should not come as too much of a surprise to learn that most ``intuitive''
 proofs for a given problem are not in fact zero-knowledge.\footnote{As an
@@ -2442,15 +2537,14 @@ will not be able to change its choice once it has committed).
 
 Before we can define a bit-commitment scheme formally, we do need a few
 preliminaries.
-% TODO: More
+\TODO{More}
 
-% TODO: Define view (somewhere common to all the things that care about views)
 \begin{defn}\label{def:possible-commit}\index{possible commitment}
-  Let $\sigma \in \{0, 1\}$. A reciever's view of an interaction $(r, m)$ is an
-  \emph{possible $\sigma$-commmitment} if there exists a string $s$ such that $m$
-  describes the messages received by $R$ when $R$ uses local coins $r$ and
-  interacts with machine $S$ that uses local coins $s$ and has input
-  $(\sigma, 1^{n})$.
+  Let $\sigma \in \{0, 1\}$. A reciever's view of an interaction
+  $(x, r, m_{1}, \ldots, m_{n})$ is a \emph{possible $\sigma$-commmitment} if there exists
+  a string $s$ such that $m_{i}$ describes the messages received by $R$ when $R$
+  uses local coins $r$ and interacts with machine $S$ that uses local coins $s$
+  and has input $(\sigma, 1^{n})$.
 \end{defn}
 
 \begin{defn}\label{def:ambiguous-view}\index{ambiguous view}
@@ -2472,11 +2566,9 @@ preliminaries.
   \end{enumerate}
 \end{defn}
 
-% TODO: More explanation & potentially an example?
+\TODO{More explanation and potentially an example?}
 
-\begin{defn}\label{def:alg-comm-scheme}\index{commitment scheme!algebraic}
-  An \emph{algebraic commitment scheme} is % TODO
-\end{defn}
+\TODO{Define decommitment}
 
 \section{Probabilistically-checkable proofs}\label{sec:pcp}
 
@@ -2491,24 +2583,28 @@ always recognize accurately. Further, for any string \emph{not} in the language,
 the algorithm must reliably (but not necessarily always) reject.
 
 \begin{defn}[{\cite[Def.\ 18.1]{AB09}}]\label{def:prob-check}\index{probabilistically-checkable proof}
-  % TODO: Add diagram of this
   Let $L \subseteq \{0, 1\}^{n}$ be a language and $q, r: \mathbb{N} \rightarrow \mathbb{N}$. A
   \emph{$(r(n), q(n))$-verifier} for $L$ is a polynomial-time probabilistic
   algorithm $V$ such that
+  \TODO{Define adaptive somewhere}
   \begin{enumerate}
-    % TODO: Define adaptive somewhere
     \item When given an input string $x \in \{0, 1\}^{n}$ and random access to a
           string $\pi \in \{0, 1\}^{*}$, $V$ uses at most $r(n)$ random coins and
           makes at most $q(n)$ non-adaptive queries to locations of $\pi$ before
           either accepting or rejecting.
-    \item If $x \in L$ then there exists a $\pi \in \{0, 1\}^{*}$ such that $V$ will
-          always accept when given input $x$ and random string $\pi$.
+    \item If $x \in L$ then there exists a $\pi_{x} \in \{0, 1\}^{*}$ such that $V$
+          will always accept when given input $x$ and random string $\pi_{x}$.
     \item If $x \notin L$ then $V$ will reject with probability $\ge 1/2$ for
           \emph{all} random strings $\pi$.
   \end{enumerate}
   We call the random string $\pi$ the \emph{proof}. We denote the output of $V$ on
   input $x$ and proof $\pi$ with $V^{\pi}(x)$.
 \end{defn}
+
+\begin{figure}
+  \TODO{}
+  \caption{A probabilistically-checkable proof verifier}\label{fig:pcp}
+\end{figure}
 
 The first piece of this definition to notice is that if $x \in L$ we require $L$
 to accept unconditionally for $x$'s corresponding proof, despite the fact that
@@ -2540,9 +2636,32 @@ of computational model, so the need for polynomial equivalence is negated.
   languages with a $(cq(n), dr(n))$-verifier for some $c, d \in \mathbb{N}$.
 \end{defn}
 
-% TODO: Example
+\TODO{Example}
+
+A small note on notation: The text ``PCP'' can be used as both a complexity
+class and an abbreviation: in this paper when it is written $\PCP$, we are
+referring to the complexity class (and therefore the set of \emph{languages}
+with a probabilistically-checkable proof); when it is written PCP, we are
+referring to the proofs themselves.
 
 \subsection{$\PCP$s of proximity}\label{sec:pcpp}
+
+\TODO{}
+
+\begin{defn}[{\cite{Ham50}}]\label{def:hamming-dist}\index{Hamming distance}
+  Let $x, y \in \Sigma^{n}$ be strings. We say the \emph{Hamming distance} between $x$
+  and $y$ is the value
+  \[
+    \Delta(x, y) = \frac{\abs{\{i \in [n] \mid x_{i} \ne y_{i}\}}}{n}.
+  \]
+\end{defn}
+
+\begin{defn}\label{def:far}\index{far}
+  Let $\varepsilon > 0$. A vector $x \in \Sigma^{n}$ is \emph{$\varepsilon$-far} from a set $S \subseteq \Sigma^{n}$ if
+  \[
+    \min_{y \in S}(\Delta(x, y)) \ge \varepsilon.
+  \]
+\end{defn}
 
 \begin{defn}[{\cite[Def.\ 2.2]{GOS25}}]\label{def:pcpp}\index{PCPP@$\PCPP$}
   For $\delta: \mathbb{N} \rightarrow [0, 1]$, a \emph{probabilistically-checkable proof of proximity}
@@ -2554,7 +2673,6 @@ of computational model, so the need for polynomial equivalence is negated.
           \[
             \mathbb{P}_{\pi \leftarrow P(x, y)}[V^{(y, \pi)}(x) = 1] = 1
           \]
-    % TODO: Define \delta-far
     \item If $y$ is $\delta$-far from the set $L(x) = \{y \mid (x, y) \in L\}$, then for
           every oracle $\pi^{*}$,
           \[
@@ -2564,9 +2682,6 @@ of computational model, so the need for polynomial equivalence is negated.
 \end{defn}
 
 \section{Zero-knowledge probabilistically-checkable proofs}\label{sec:pzkpcp}
-
-% TODO: See new (unreviewed) work by Gur, O'Connor, Spooner: A Zero-Knowledge
-% PCP Theorem
 
 A zero-knowledge probabilistically-checkable proof is a combination of the ideas
 of zero-knowledge proofs (as seen in \cref{sec:zero-knowledge}) and
@@ -2600,14 +2715,12 @@ a $\PCP$ cares about how we react when $x \notin L$ but $V$ is trusted, while
 zero-knowledge cares about what happens when $V$ is not trusted, but the proof
 is.
 
-% TODO: Why do we parameterize over the verifier here?
-
 \begin{defn}\label{def:pzkpcp-class}\index{PZK-PCP@$\PZKPCP$}
   The class $\PZKPCP$ is the class of all languages that have a perfect
   zero-knowledge probabilistically-checkable proof.
 \end{defn}
 
-% TODO: Example
+\TODO{Example}
 
 \section{Interactive probabilistically-checkable proofs}\label{sec:ipcp}
 
@@ -2618,23 +2731,57 @@ proof to the verifier, after which they engage in an interactive protocol,
 during which the verifier can access the proof as an oracle.
 
 \begin{defn}[{\cite[\defaultS 1.1]{KR08}}]\label{def:ipcp}\index{interactive PCP}
-  % TODO
   Let $L$ be a language, let $p, q, l: \mathbb{N} \rightarrow \mathbb{N}$, and let $c, s \in [0, 1]$. An
   \emph{interactive probabilistically-checkable proof} for $L$ is an interactive
   protocol as follows:
 
-  \begin{algorithm}[htbp]
+  \begin{algorithm}[H]
     \KwIn{To both $P$ and $V$: a string $x$ of length $n$}
     \KwIn{To $P$ alone: A string $w$}
     \KwOut{Whether $x \in L$}
-    % TODO
+    \FIXME{Is this too simple for a full algorithm?}\;
+    $P$: Send an oracle $R$ to $V$\;
+    $V^{R}$: Engage in an interactive protocol with $P$\;
     \caption{The IPCP protocol}\label{alg:ipcp-protocol}
   \end{algorithm}
 \end{defn}
 
-\begin{defn}\label{def:ipcp-class}\index{IPCP@$\IPCP$}
-  The class $\IPCP$ is % TODO
+Next, we need to define a few properties of IPCPs. In general we will care about
+IPCPs with specific bounds on these properties; later on we will spend some time
+(in particular \cref{sec:reduce-queries}) working on optimizing bounds on some
+of these properties at the expense of others.
+
+\begin{defn}\label{def:ipcp-round-complexity}\index{round complexity!IPCP}
+  The \emph{round complexity} of an IPCP is the number of rounds in the second
+  portion of the protocol.
 \end{defn}
+
+\begin{defn}\label{def:ipcp-comm-complexity}\index{communication complexity!IPCP}
+  The \emph{communication complexity} of an IPCP is the total number of bits
+  exchanged between $P$ and $V$ \emph{except} for the message that contains $R$.
+\end{defn}
+
+\begin{defn}
+  The \emph{query complexity} of an IPCP is the total number of queries that $V$
+  makes to the PCP oracle $R$.
+\end{defn}
+
+\begin{defn}\label{def:ipcp-class}\index{IPCP@$\IPCP$}
+  The class $\IPCP$ is the class of all languages with an interactive $\PCP$.
+\end{defn}
+
+Next, we give a few reasonable class inclusions regarding $\IPCP$.
+
+\begin{thm}
+  $\PCP \subseteq \IPCP$ and $\IP \subseteq \IPCP$.
+\end{thm}
+
+\begin{proof}
+  Both of these come from the definition of an interactive PCP: A regular PCP is
+  simply the first half of the IPCP protocol where the interactive portion is
+  useless, and an interactive proof is simply the second half of the protocol
+  where the oracle is useless.
+\end{proof}
 
 The tuple-notation we used when talking about the class $\PCP$ (see
 \cref{def:pcp}) is rather hard to read when we have this many parameters, and as
@@ -2645,7 +2792,7 @@ bounds on $\IPCP$ algorithms:
 \end{equation*}
 to mean the language $L$ is a member of $\IPCP$ with the listed restrictions.
 
-% TODO: Does it make sense to talk about BFL90's IPCP for all of NEXP?
+\TODO{Does it make sense to talk about BFL90's IPCP for all of NEXP?}
 
 \begin{defn}\label{def:low-deg-ipcp}\index{low-degree IPCP@low-degree $\IPCP$}
   Let $\mathbb{F}$ be a field, and $d, m \in \mathbb{N}$. A \emph{low-degree IPCP} is an
@@ -2670,7 +2817,41 @@ so that we do not wind up with an exorbitant number of lines in our
 notation.\footnote{Having said that, there are still a lot of lines in this
   notation, but this is the best we can do.}
 
-% TODO: Examples
+\TODO{Examples}
+
+\begin{defn}\label{def:ipcp-view}\index{view!IPCP}
+  The \emph{view} of an IPCP $(P, V)$ on input $x$ is the random variable
+  \[
+    (x, r, s_{1}, \ldots, s_{n}, t_{1}, \ldots, t_{m})
+  \]
+  where $r$ is the random bits used by $V$, $s_{i}$ are the messages from $P$,
+  and $t_{i}$ are the answers to $V$'s queries to the oracle sent by $P$.
+\end{defn}
+
+We denote the view of $P$ and $V$ on input $x$ by $\View_{V}^{P}(x)$.
+
+\section{Zero-knowledge IPCPs}
+
+\begin{defn}[{\cite[\defaultS 5.2]{CFGS22}}]\label{def:zk-ipcp}\index{interactive PCP!zero-knowledge}
+  An interactive PCP is \emph{perfect zero-knowledge} with query bound $b$ when
+  there exists a polynomial-time simulator algorithm $S$ such that for every
+  interactive Turing machine $\tilde{V}$ that makes no more than $b$ queries,
+  $S^{\tilde{V}}(x)$ and $\View\ang{P(x), \tilde{V}(x)}$ are identically
+  distributed.
+\end{defn}
+
+\begin{defn}\label{def:pzkipcp}\index{PZK-IPCP@$\PZKIPCP$}
+  The class $\PZKIPCP$ is the class of all languages with a perfect
+  zero-knowledge IPCP.
+\end{defn}
+
+\TODO{Example probably}
+
+As with our other notations, we will write
+\[
+  L \in \PZKIPCP\pzkipcp{r}{\ell}{c}{q}{b}{\varepsilon}
+\]
+to show $L$ has a perfect zero-knowledge IPCP with the listed restrictions.
 
 \chapter{The $\PCP$ theorem}\label{chap:pcp-theorem}
 
@@ -2680,12 +2861,12 @@ notation.\footnote{Having said that, there are still a lot of lines in this
   Equivalently, $\NP = \PCP(\log n, 1)$.
 \end{thm}
 
-% TODO
+\TODO{}
 % NOTE: Somewhere I need a section on low-degree tests
 
 \section{Algebraic circuits}\label{sec:alg-circuit}
 
-% TODO: Mention what the size of an algebraic circuit is
+\TODO{Mention what the size of an algebraic circuit is}
 
 \begin{defn}[{\cite[\defaultS 14.1]{AB09}}]\label{def:alg-circuit}\index{algebraic circuit}
   An \emph{algebraic circuit} is a directed acyclic graph such that
@@ -2741,7 +2922,7 @@ We give an example of an algebraic circuit in \cref{fig:algebraic-circuit}.
 Notice in particular that unlike the in-degree, the out-degree is unbounded (the
 rightmost node in the second row has out-degree three, for example).
 
-% TODO: More
+\TODO{More}
 
 \begin{defn}\label{def:alg-circuit}\index{satisfying assignment!algebraic circuit}
   An algebraic circuit has a \emph{satisfying assignment} when there exists a
@@ -2749,7 +2930,7 @@ rightmost node in the second row has out-degree three, for example).
   $1$.
 \end{defn}
 
-\begin{figure} % TODO: Make clear nodes' original operation
+\begin{figure}
   \begin{center}
     \begin{tikzpicture}[>=stealth,every node/.style={minimum size=0.75cm},scale=2]
       \node [diamond,draw] (R) at (0,0) {$1$};
@@ -2790,7 +2971,7 @@ We give a satisfying assignment to \cref{fig:algebraic-circuit} as an example in
 \cref{fig:sat-assignment}. Notice that we have kept the shapes of the nodes from
 the original in order to communicate the underlying operation.
 
-% TODO: More
+\TODO{More}
 
 \begin{defn}\label{def:cktsat}\index{CktSAT@$\CktSAT$}
   The language $\CktSAT$ is the language of all algebraic circuits with a
@@ -2976,7 +3157,7 @@ We will denote robust PCP classes with
 % TODO: Rename chapter
 \chapter{Lifting $\IPCP$ to $\MIP*$}\label{chap:ipcp-to-mip}
 
-\section{Reducing query complexity}
+\section{Reducing query complexity}\label{sec:reduce-queries}
 
 \begin{thm}[{\cite[Prop.\ 9.2]{CFGS22}}]\label{thm:ipcp-one-query}
   There exists a transformation $T$ such that, for every $m, d \in \mathbb{N}$ and finite
@@ -3319,6 +3500,52 @@ $R(X) = \sum_{\beta \in G^{k}}Z(X, \beta)$.
 \end{proof}
 
 % TODO: Additional theorem that links this to algebraic query complexity somehow
+
+\section{Algebraic commitment schemes}\label{sec:alg-commit-scheme}
+
+We gave an explanation of bit-commitment schemes in
+\cref{sec:commitment-scheme}, but there are many circumstances in which
+commitment to a single bit is insufficient. In some cases, we will want to
+commit to an entire polynomial. This is the setting in which \emph{algebraic
+  commitment schemes} exist.
+
+\begin{defn}\label{def:alg-comm-scheme}\index{commitment scheme!algebraic}
+  An \emph{algebraic commitment scheme} is a commitment scheme such that instead
+  of $S$ recieving a single bit it recieves a polynomial
+  $Q: \mathbb{F}^{m} \rightarrow \mathbb{F}$.
+\end{defn}
+
+\TODO{Mention the role of algebraic query complexity
+  (\cref{sec:alg-query-complexity}) in commitment schemes}
+
+\begin{algorithm}[htbp]
+  \TODO{Should bring in single-element commitment scheme} \\
+  \KwIn{A polynomial $Q \in \mathbb{F}[X_{1, \ldots, m}^{\le d_{Q}}]$}
+  Let $K \subseteq \mathbb{F}$ with $\abs{K} = d + 1$\;
+  \For{$\alpha \in K^{m}$}{
+    sample a random $B^{\alpha} \in \mathbb{F}^{n}$ such that
+    $\sum_{i=1}^{m}B^{\alpha}_{i} = Q(\alpha)$\;
+  }
+  \FIXME{What on earth is $G$?}
+  Define $B: K^{m} \times G^{k} \rightarrow \mathbb{F}$ by $B(\alpha, x) = B^{\alpha}(x)$\;
+  \TODO{$d_{Q}$ vs $d$}
+  Define $\hat{B}: \mathbb{F}^{m} \times \mathbb{F}^{k} \rightarrow \mathbb{F}$ to be a
+  low-degree extension of
+  $B$\tcc*{Note: $P \in \mathbb{F}[X_{1, \ldots, m}^{\le d_{Q}}, Y_{1, \ldots, m}^{\le d}]$}
+  \KwRet{$\hat{B}$}\;
+  \caption{An algebraic commitment scheme~\cite[\defaultS
+    12]{CFGS22}}\label{alg:alg-commit-scheme}
+\end{algorithm}
+
+We would next like to give an example of an algebraic commitment scheme. \TODO{}
+
+\begin{thm}\label{thm:alg-commit-scheme}
+  \Cref{alg:alg-commit-scheme} is a valid algebraic commitment scheme.
+\end{thm}
+
+\begin{proof}
+  \TODO{}
+\end{proof}
 
 \section{The sumcheck problem}
 
