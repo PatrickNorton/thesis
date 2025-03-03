@@ -144,6 +144,28 @@
   \end{array}}\mright]%
 }
 
+\newcommand{\pzkpcp}[4]{%
+  \ensuremath%
+  \mleft[{\footnotesize\begin{array}{r l}
+    \text{rand.\ complexity:} & #1 \\
+    \text{query complexity:} & #2 \\
+    \text{query bound:} & #3 \\
+    \text{soundness error:} & #4
+  \end{array}}\mright]%
+}
+
+\newcommand{\pzkpcpr}[6]{%
+  \ensuremath%
+  \mleft[{\footnotesize\begin{array}{r l}
+    \text{rand.\ complexity:} & #1 \\
+    \text{query complexity:} & #2 \\
+    \text{query bound:} & #3 \\
+    \text{soundness error:} & #4 \\
+    \text{RS error:} & #5 \\
+    \text{robustness param:} & #6
+  \end{array}}\mright]%
+}
+
 \newcommand{\ldipcp}[6]{%
   \ensuremath%
   \mleft[{\footnotesize\begin{array}{r l}
@@ -190,10 +212,12 @@
 \makeatother
 
 \newlang{\CktSAT}{CktSAT}
+\newlang{\ECC}{ECC}
 \newlang{\OR}{OR}
 \newlang{\OSAT}{O3SAT}
 \newlang{\PCPP}{PCPP}
 \newlang{\Prime}{Prime}
+\newlang{\Sum}{Sum}
 
 \newcommand{\shrug}[1][]{%
   \begin{tikzpicture}[baseline,x=0.8\ht\strutbox,y=0.8\ht\strutbox,line width=0.125ex,#1]
@@ -303,6 +327,10 @@ Turing machine must exist.
 
 \begin{defn}\label{def:multitape-tm}\index{Turing machine!multitape}
   A \emph{multitape Turing machine} is
+\end{defn}
+
+\begin{defn}\label{def:prob-tm}\index{Turing machine!probabilistic}
+  A \emph{probabilistic Turing machine} is
 \end{defn}
 
 \section{Complexity classes}
@@ -2582,11 +2610,28 @@ language, we ensure there exists a correct proof, which our algorithm must
 always recognize accurately. Further, for any string \emph{not} in the language,
 the algorithm must reliably (but not necessarily always) reject.
 
+In general, query-based machines (i.e.\ those where the \emph{number} of queries
+is an important part of the complexity) come in two flavors: adaptive and
+non-adaptive. Adaptive-query machines allow the machine to change what locations
+it queries based on what it has already seen; non-adaptive machines do not allow
+that. In general, adaptive queries are more powerful---it turns out that any
+adaptive machine can be simulated by a non-adaptive machine using $2^{q}$
+queries. Most interesting results about PCPs can be proven about non-adaptive
+machines, however, so we will be working entirely with those for the rest of
+this paper.
+
+\begin{defn}\label{def:adaptive}\index{adaptive}
+  Let $M$ be a Turing machine with query access to some string
+  $\pi \in \{0, 1\}^{*}$. The queries by $M$ are \emph{non-adaptive} if the
+  locations queried depend only on the contents of the input tape and random
+  generator. If the queries are dependent on previous query results, then $M$ is
+  \emph{adaptive}.
+\end{defn}
+
 \begin{defn}[{\cite[Def.\ 18.1]{AB09}}]\label{def:prob-check}\index{probabilistically-checkable proof}
   Let $L \subseteq \{0, 1\}^{n}$ be a language and $q, r: \mathbb{N} \rightarrow \mathbb{N}$. A
   \emph{$(r(n), q(n))$-verifier} for $L$ is a polynomial-time probabilistic
   algorithm $V$ such that
-  \TODO{Define adaptive somewhere}
   \begin{enumerate}
     \item When given an input string $x \in \{0, 1\}^{n}$ and random access to a
           string $\pi \in \{0, 1\}^{*}$, $V$ uses at most $r(n)$ random coins and
@@ -2924,7 +2969,16 @@ rightmost node in the second row has out-degree three, for example).
 
 \TODO{More}
 
-\begin{defn}\label{def:alg-circuit}\index{satisfying assignment!algebraic circuit}
+\begin{defn}\label{def:alg-assignment}\index{assignment!algebraic circuit}
+  An \emph{assignment} to an algebraic circuit is a labeling of its input nodes.
+  The \emph{result} of the assignment is the value in the output node, where the
+  value of any $+$ gate is $a+b$ and any $\cdot$ gate is $a \times b$, where $a$ and $b$
+  are the values of the two in-nodes.
+\end{defn}
+
+\TODO{}
+
+\begin{defn}\label{def:alg-circuit-sat}\index{satisfying assignment!algebraic circuit}
   An algebraic circuit has a \emph{satisfying assignment} when there exists a
   labeling of its input nodes such that the value computed by the output node is
   $1$.
@@ -2970,6 +3024,13 @@ rightmost node in the second row has out-degree three, for example).
 We give a satisfying assignment to \cref{fig:algebraic-circuit} as an example in
 \cref{fig:sat-assignment}. Notice that we have kept the shapes of the nodes from
 the original in order to communicate the underlying operation.
+
+Satisfying assignments will form the root of our circuit classes: the problem we
+care about computing is whether or not a circuit has a satisfying assignment.
+We find this a useful formulation because it works well with arbitrary algebraic
+formulas: since we will be working in a primarily algebraic setting for these
+proofs, having an example of a $\NP$-complete problem that is itself algebraic
+will make for relatively easy transformations.
 
 \TODO{More}
 
@@ -3022,6 +3083,9 @@ We will denote robust PCP classes with
 
 \section{The composition theorem}\label{sec:comp-theorem}
 
+We now introduce a theorem that will allow us to compose robust PCPs with robust
+PCPPs to make a new (non-robust) PCP with improved bounds.
+
 % NOTE: I believe this replaces 2.1 (outer/inner verifiers) from ALMSS98
 \begin{thm}[{\cite[Theorem 2.7]{BGHSV06}}]\label{thm:composition}
   Let
@@ -3068,7 +3132,63 @@ We will denote robust PCP classes with
 
 % TODO: Rest of proof
 
-\section{An upper bound on $\PCP$ queries}\label{sec:pcp-query-complexity}
+\section{Alphabet reduction}\label{sec:alph-reduction}
+
+\begin{thm}[{\cite[Lemma 2.13]{BGHSV06}}]%
+  \label{thm:alph-reduction}\index{alphabet reduction}
+  Let $L$ be a language with a PCP over the language $\{0, 1\}^{a}$ such
+  that
+  \[
+    L \in \PCP\pcpr{q}{r}{s}{\rho}.
+  \]
+  Then $L$ has a PCP over the language $\{0, 1\}$ such that
+  \[
+    L \in \PCP\pcpr{r}{O(aq)}{s}{\Omega(\rho)}.
+  \]
+\end{thm}
+
+\begin{algorithm}[htbp]
+  \KwIn{A PCP $(P, V)$ over the language $\{0, 1\}^{a}$ for $L$}
+  \tcc{Proof}
+  Run $P(x)$ to obtain a proof $\pi$\;
+  Define the proof oracle $\tau$ by $\tau(\gamma) = \ECC(\pi(\gamma))$\;
+  \KwRet{$(\pi, \tau)$}\;
+  \tcc{Verifier}
+  % TODO
+  \caption{A boolean reduction of a PCP~\cite[Construction 3.6]{GOS25}}\label{alg:boolean-reduction}
+\end{algorithm}
+
+\begin{proof}
+  We show that \cref{alg:boolean-reduction} is a boolean reduction algorithm.
+  % TODO
+\end{proof}
+
+\section{Robust PCP verifiers for $\CktSAT$}\label{sec:robust-pcp-cktsat}
+
+% TODO: Theorem 2.1.12?
+
+\section{Parallelizable PCPPs}\label{sec:parallel-pcp}
+
+% TODO: Goal: Prove Theorem 2.1.9 from ALMSS98 and then Proposition 2.14 from
+% BGHSV06 (removing as much complexity from ALMSS98 as possible)
+
+\begin{thm}[{\cite[Theorem 2.1.9]{ALMSS98}}]\index{thm:always-robust-pcpp}
+  % TODO: Rephrase to use PCPP verifiers instead of inner verifiers
+\end{thm}
+
+\begin{proof}
+  % TODO
+\end{proof}
+
+\begin{thm}[{\cite[Prop.\ 2.14]{BGHSV06}}]\index{thm:parallel-vs-robust}
+  % TODO
+\end{thm}
+
+\begin{proof}
+  % TODO
+\end{proof}
+
+\section{An upper bound on minimal PCP queries}\label{sec:pcp-query-complexity}
 
 \begin{thm}[{\cite{Has97}}]\label{thm:pcp-max-queries}
   Any language in $\NP$ has a $\PCP$ that queries a maximum of $3$ bits of the
@@ -3141,7 +3261,7 @@ We will denote robust PCP classes with
             \mathbb{E}_{\alpha \in \mathbb{F}^{m}}\sum_{Q \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]}\sum_{z \in \mathbb{F} \setminus \{Q(\alpha)\}}
             \braopket{\Psi}{A_{1,\alpha}^{z} \otimes L_{2}^{Q}}{\Psi} &\le v, \\
             \mathbb{E}_{\alpha \in \mathbb{F}^{m}}\sum_{Q \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]}\sum_{z \in \mathbb{F} \setminus \{Q(\alpha)\}}
-            \braopket{\Psi}{L_{1} \otimes A_{2,\alpha}^{z}}{\Psi} &\le v.
+            \braopket{\Psi}{L_{1}^{Q} \otimes A_{2,\alpha}^{z}}{\Psi} &\le v.
           \end{align}
     \item Consistency of $\{L_{1}^{Q}\}_{Q}$ and $\{L_{2}^{Q}\}_{Q}$:
           \begin{equation}
@@ -3175,23 +3295,22 @@ We will denote robust PCP classes with
   % TODO: Any bounds on s?
   \KwIn{An honest oracle $R \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]$ and string $s$}
   \KwOut{Whether or not $s \in L_{(P, V)}$}
+  Let $S \subseteq \mathbb{F}$ with $\abs{S} < q$\;
   $V'$: choose random $r \in \mathbb{F}^{m}$\;
-  $V'$: choose $S \subseteq \mathbb{F}$ with $\abs{S} < q$\; % FIXME: Is this random or predetermined?
   $V'$: choose random $t \in \mathbb{F} \setminus S$\;
-  % FIXME: What is meant by curve (polynomial?)
-  % NOTE: A is "query set" of V on input S
-  $V'$: compute curve $\gamma: \mathbb{F} \rightarrow \mathbb{F}^{m}$ of degree $q$ such that
-  $\{\gamma(s)\}_{s \in S} = A$ and $\gamma(t) = r$\;
+  $V'$: Simulate $V$ on $s$ answering every query with
+  $0$\;\nllabel{line:zero-sim}
+  Let $A$ be the set of queries of $V$\;
+  $V'$: compute polynomial $\gamma: \mathbb{F} \rightarrow \mathbb{F}^{m}$ of degree $q$ such
+  that $\{\gamma(s)\}_{s \in S} = A$ and $\gamma(t) = r$\;
   $V'$: Send $\gamma$ to $P'$\;
-  $P'$: Reply with the coefficients of the polynomial
-  $\rho: \mathbb{F} \rightarrow \mathbb{F}$ with $\deg(\rho) < mdq$ that is the restriction of
-  $R$ to $\gamma$\;
-  $V$: query $R$ at $r$ and recieve answer $a$\; % FIXME: Should this be V'?
+  $P'$: Reply with the coefficients of the polynomial $\rho = R \circ \gamma$\;
+  $V'$: query $R$ at $r$ and recieve answer $a$\;
   \If{$a \ne \rho(t)$}{\nllabel{line:check-rho}
     reject\;
   }
-  % FIXME: TypeError: Should be \rho(A)?
-  $V'$: Simulate $V(x)$, answering all queries $a \in A$ with $\gamma(A)$\;
+  $V'$: Simulate $V(x)$, answering all queries $a \in A$ with
+  $\rho(A)$\;\nllabel{line:proper-sim}
   \KwRet{the result of $V(x)$}\;
   \caption{A single-query, zero-knowledge transformation of an
     IPCP~\cite[Construction 4]{CFGS22}}\label{alg:single-query}
@@ -3203,8 +3322,10 @@ We will denote robust PCP classes with
   require is to show that $L_{T(P, V)} = L_{(P, V)}$, and to briefly demonstrate
   why $V'$ runs in polynomial time.
 
-  To show $V'$ runs in polynomial time, % TODO: Complexity of the random choice
-  % TODO
+  To show $V'$ runs in polynomial time, note that the random choices are in
+  polynomial time (as a reminder, random choice is polynomial relative to the
+  length), simulating $V$ is polynomial time through the definition of $V$, and
+  computing polynomials can be done in polynomial time as well.
 
   When $P'$ is honest, then this will simulate $V$ answering all its queries via
   $\rho$ (which gives the correct answer to every value in $A$); hence $V$ will
@@ -3214,14 +3335,19 @@ We will denote robust PCP classes with
   degree at most $dq$ (since $\rho = R\gamma$). Further note that our random choice of
   both $t$ and $\gamma$ means that $\gamma(t)$ is uniformly distributed over
   $\mathbb{F}^{m}$. Since $\rho$ is a univariate polynomial with degree at most
-  $dq$, then it can agree with $R\gamma$ at most $mdq$ distinct points without being
-  equal. Hence, since we query it at a random point in $\mathbb{F} \setminus S$, if the
-  check in line~\ref{line:check-rho} passes with at probability bigger than
-  $\frac{mdq}{\abs{\mathbb{F}} - q}$, it must mean that $\rho = R\gamma$ on more than
-  $mdq$ points. Thus, $\rho = R\gamma$ and so we will get the correct answer for all of
-  our queries on $A$. If it passes with a lower probability, then we are within
-  our soundness error overall and so the result does not matter.
+  $mdq$, then it can agree with $R \circ \gamma$ at most $mdq$ distinct points without
+  being equal. Hence, since we query it at a random point in $\mathbb{F} \setminus S$,
+  if the check in line~\ref{line:check-rho} passes with at probability bigger
+  than $\frac{mdq}{\abs{\mathbb{F}} - q}$, it must mean that $\rho = R\gamma$ on more
+  than $mdq$ points. Thus, $\rho = R \circ \gamma$ and so we will get the correct answer for
+  all of our queries on $A$. If it passes with a lower probability, then we are
+  within our soundness error overall and so the result does not matter.
 \end{proof}
+
+Next, we show that \cref{alg:single-query} also preserves zero knowledge. This
+is important for us because zero knowledge is \emph{actually} what we care
+about.
+% TODO: More transition (brief proof overview)
 
 \begin{thm}[{\cite[Prop.\ 9.2]{CFGS22}}]\label{thm:one-query-pzk}
   If $(P, V)$ is perfect zero-knowledge with query bound $b$, then $T(P, V)$
@@ -3974,11 +4100,156 @@ problem, and as before our problem of choice is $\OSAT$.
   % TODO
 \end{proof}
 
-\section{$\PCPP$ for polynomial summation}\label{sec:pcpp-poly-sum}
+\section{Zero-knowledge alphabet reduction}\label{sec:zk-alph-red}
+
+\begin{thm}[{\cite[Lemma 2.13]{BGHSV06}}]%
+  \label{thm:zk-alph-red}\label{alphabet reduction!zero-knowledge}
+  Let $L$ be a language with a PZK-PCP over the language $\{0, 1\}^{a}$ such
+  that
+  \[
+    L \in \PZKPCP\pzkpcpr{r}{q}{q^{*}}{\varepsilon}{s}{\rho}.
+  \]
+  Then $L$ has a PZK-PCP over the language $\{0, 1\}$ such that
+  \[
+    L \in \PZKPCP\pzkpcpr{r}{O(aq)}{q^{*}}{\varepsilon}{s}{\Omega(\rho)}.
+  \]
+\end{thm}
+
+\begin{proof}
+  We proved the non-zero-knowledge version of this as \cref{thm:alph-reduction},
+  so all that remains is to prove that \cref{alg:boolean-reduction} preserves
+  zero-knowledge.
+  % TODO
+\end{proof}
+
+\section{Robust total-degree test}\label{sec:robust-degree}
+
+\begin{thm}[{\cite[Prop.\ 5.7]{Par21}}]\label{thm:robust-low-deg}
+  % TODO: Rephrase in terms of PCPPs if possible
+\end{thm}
+
+\begin{algorithm}[htbp]
+  % TODO
+  \caption{A robust low-degree test~\cite[Prop.\ 5.7]{Par21}}\label{alg:robust-low-deg}
+\end{algorithm}
+
+\section{PCPPs for polynomial summation}\label{sec:pcpp-poly-sum}
+
+% TODO: This looks like the same language we've seen earlier in this paper: do
+% we want this as the formal definition somewhere or are there better ones?
+\begin{defn}[{\cite[Def.\ 4.1]{GOS25}}]\label{def:sum-lang}\index{Sum@$\Sum$}
+  The language $\Sum$ is the set of all ordered pairs
+  $((\mathbb{F}, 1^{m}, 1^{d}, H, \gamma), F)$, where
+  \begin{itemize}
+    \item $\mathbb{F}$ is a finite field,
+    \item $m, d \in \mathbb{N}$,
+    \item $H \subseteq \mathbb{F}$,
+    \item $\gamma \in F$, and
+    \item $F \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]$ with
+          \[
+            \sum_{b \in H^{m}}F(b) = \gamma.
+          \]
+  \end{itemize}
+\end{defn}
+
+% FIXME: Separate proof & verifier more cleanly
+\begin{algorithm}[htbp]
+  \tcc{Proof}
+  \For{$i \in \{1, \ldots, m - 1\}$}{
+    $g_{i}(X) \leftarrow \sum_{b \in H^{m-i}}F(X, b)$\;
+  }
+  Define $\pi: \mathbb{F}^{m-1} \rightarrow \mathbb{F}^{m-1}$ by
+  \[
+    \pi(c_{1}, \ldots, c_{m-2}, \alpha) = (g_{1}(\alpha), g_{2}(c_{1}, \alpha), \ldots, g_{m-1}(c_{1}, \ldots, c_{m-2}, \alpha))
+  \]
+  for each $(c_{1}, \ldots, c_{m-2}, \alpha) \in \mathbb{F}^{m-1}$\;
+  \KwRet{$\pi$}\;
+  \tcc{Verifier}
+  Sample $c \in \mathbb{F}^{m-1}$ at random\;
+  \For{$\alpha \in \mathbb{F}$}{
+    Query $\pi(c_{1}, \ldots, c_{m-2}, \alpha)$\;
+    Query $F(c_{1}, \ldots, c_{m-1}, \alpha)$\;
+  }
+  \For{$i \in \{1, \ldots, m-1\}$}{
+    \If{$g_{i} \notin \mathbb{F}[X_{1, \ldots, i}^{\le d}]$}{
+      reject\;
+    }
+  }
+  Check
+  \begin{algomathdisplay}
+    \sum_{b \in H}g_{1}(b) = \gamma
+  \end{algomathdisplay}
+  \For{$i \in \{1, \ldots, m - 2\}$}{
+    Check
+    \begin{algomathdisplay}
+      \sum_{b \in H}g_{i+1}(c_{1}, \ldots, c_{i}, b) = g_{i}(c_{1}, \ldots, c_{i})
+    \end{algomathdisplay}
+  }
+  Check
+  \begin{algomathdisplay}
+    \sum_{b \in H}F(c, b) = g_{m-1}(c)
+  \end{algomathdisplay}
+  Run \cref{alg:robust-low-deg} on $F$, with proximity parameter
+  $\delta_{R} = \min(\delta, 1/5)$\;
+  Accept if and only if the prior test passes\;
+  \caption{A robust PCPP for $\Sum$~\cite[Construction 4.3]{GOS25}}\label{alg:sum-pcpp}
+\end{algorithm}
+
+\begin{algorithm}[htbp]
+  \tcc{Proof}
+  Sample $Q \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]$ uniformly\;
+  \For{$i \in \{1, \ldots, m\}$}{
+    Sample
+    $T_{i} \in \mathbb{F}[X_{1, \ldots, i-1}^{\le d}, X_{i}^{\le d-\abs{H}}, X_{i+1, \ldots, m}^{\le d}]$
+    uniformly\;
+  }
+  Define $\pi_{P}(x) = (Q(x), T_{1}(x), \ldots, T_{m}(x))$\;
+  Define $Z_{H} = \prod_{a \in H}(X - a)$\;
+  Define $Q_{\text{rev}}(X) = Q(X_{\text{rev}})$\; % FIXME: I think rev means reversed?
+  Define $R(X) = Q(X) - Q_{\text{rev}}(X) + \sum_{i=1}^{m}Z_{H}(X_{i})T_{i}(X)$\;
+  Run \cref{alg:sum-pcpp} with explicit input $(\mathbb{F}, m, d, H, \gamma, \delta)$ and
+  implicit input $F + R$\;
+  \KwRet{$(\pi_{\Sigma}, \pi_{P})$}\;
+  \tcc{Verifier}
+  Emulate \cref{alg:sum-pcpp} on input $F + R$ and proof $\pi_{\Sigma}$. To query
+  $F + R$ at some $\alpha \in \mathbb{F}^{m}$, query $F(\alpha)$, $\pi_{P}(\alpha)$, and
+  $\pi_{P}(\alpha_{\text{rev}})$, then compute
+  \begin{algomathdisplay}
+    (F+R)(\alpha) = F(\alpha) + (\pi_{P}(\alpha))_{1} - (\pi_{P}(\alpha_{\text{rev}}))_{1} + \sum_{i=1}^{m}Z_{H}(\alpha_{i})(\pi_{P}(\alpha))_{i+1}
+  \end{algomathdisplay}
+  Perform \cref{alg:robust-low-deg} on $\pi_{P}$ with proximity parameter
+  $\varepsilon_{P} = \delta_{R}/8$ and degree parameter $d_{P} = md$\;
+  \If{\cref{alg:robust-low-deg} fails}{
+    reject\;
+  }
+  Accept\;
+  % TODO
+  \caption{A zero-knowledge robust PCPP for $\Sum$~\cite[Construction
+    5.2]{GOS25}}\label{alg:sum-pzk-pcpp}
+\end{algorithm}
 
 \section{A zero-knowledge $\PCP$ for $\NP$ and $\NEXP$}\label{sec:pzkpcp-np-nexp}
 
 \begin{algorithm}[htbp]
+  \tcc{Proof}
+  Let $A: \{0, 1\}^{n} \rightarrow \{0, 1\}$ be a satisfying assignment for $B$\;
+  Choose $\hat{C} \in \mathbb{F}[X_{m_{2} + k}^{\le 2(\abs{H} - 1)}]$ randomly such
+  that
+  \[
+    \sum_{c \in H^{k}}\hat{C}(b, c) = A(\gamma_{2}, b)
+  \]
+  for all $b \in H^{m_{2}}$\;
+  \For{$\tau \in \mathbb{F}^{m_{1}+3m_{2}+3}$}{
+    Let $\pi_{\tau}$ be a PZK-PCPP for the claim
+    % FIXME: There *has* to be a better way to do this
+    \begin{algomathdisplay}
+      \sum_{\substack{z \in H^{m_{1}} \\ b_{1}, b_{2}, b_{3} \in H^{m_{2}}}}
+      \sum_{a_{1}, a_{2}, a_{3} \in \{0, 1\}}\sum_{c_{1}, c_{2}, c_{3} \in H^{k}}
+      L_{H_{m_{1}+3m_{2}} \times \{0, 1\}^{3},(z,b,a)}(\tau)h_{\hat{C}}(\tau, c_{1}, c_{2}, c_{3}) = 0
+    \end{algomathdisplay}
+  }
+  \KwRet{$(\pi_{C}, (\pi_{\tau})_{\tau \in \mathbb{F}^{m_{1}+3m_{2}+3}})$}\;
+  \tcc{Verifier}
   % TODO
   \caption{A $\PZKPCP$ for $\OSAT$~\cite[Theorem 6.3]{GOS25}}\label{alg:pzkpcp-np}
 \end{algorithm}
@@ -3987,10 +4258,6 @@ problem, and as before our problem of choice is $\OSAT$.
   % TODO
   \caption{A simulator for \cref{alg:pzkpcp-np}}\label{alg:pzkpcp-np-sim}
 \end{algorithm}
-
-\begin{thm}[{\cite[Theorem 2]{GOS25}}]\label{thm:zk-pcp}\index{PCP theorem@$\PCP$ theorem!zero-knowledge}
-  $\NP \subseteq \PZKPCP[\log(n), 1]$.
-\end{thm}
 
 \begin{algorithm}[htbp]
   % TODO
@@ -4002,9 +4269,26 @@ problem, and as before our problem of choice is $\OSAT$.
   \caption{A simulator for \cref{alg:pcp-osat}~\cite[Construction 6.7]{GOS25}}\label{alg:pcp-osat-sim}
 \end{algorithm}
 
+\subsection{Reducing query complexity to constant}\label{sec:constant-pcp-np}
+
+We are now finally able to present our analogues to the classical $\PCP$
+theorem.
+
+\begin{thm}[{\cite[Theorem 2]{GOS25}}]\label{thm:zk-pcp}\index{PCP theorem@$\PCP$ theorem!zero-knowledge}
+  $\NP \subseteq \PZKPCP[\log(n), 1]$.
+\end{thm}
+
+\begin{proof}
+  % TODO
+\end{proof}
+
 \begin{thm}[{\cite[Theorem 7.1]{GOS25}}]\label{thm:zk-pcp-nexp}
   $\NEXP \subseteq \PZKPCP[\poly(n), 1]$.
 \end{thm}
+
+\begin{proof}
+  % TODO
+\end{proof}
 
 \begin{appendices}
 
