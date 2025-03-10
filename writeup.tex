@@ -213,6 +213,7 @@
 
 \newlang{\CktSAT}{CktSAT}
 \newlang{\ECC}{ECC}
+\newlang{\GNI}{GNI}
 \newlang{\OR}{OR}
 \newlang{\OSAT}{O3SAT}
 \newlang{\PCPP}{PCPP}
@@ -284,14 +285,15 @@ arbitrarily-long ``tape'' according to some finite set of rules. We give a more
 formal definition below, and then we will attempt to take this definition into a
 more manageable form.
 \begin{defn}[{\cite[Def.\ 3.1]{Sip97}}]\label{def:TM}\index{Turing machine}
-  A \emph{Turing machine} is a 7-tuple $(Q, \Sigma, \Gamma, \delta, q_{0}, q_{a}, q_{r})$ where
-  $Q$, $\Sigma$, and $\Gamma$ are all finite sets and
+  A \emph{Turing machine} (abbreviated TM) is a 7-tuple
+  $(Q, \Sigma, \Gamma, \delta, q_{0}, q_{a}, q_{r})$ where $Q$, $\Sigma$, and $\Gamma$ are all finite
+  sets and
   % TODO: Rephrase to separate out terminology and definitions?
   \begin{enumerate}
     \item $Q$ is the set of \emph{states},
     \item $\Sigma$ is the \emph{input alphabet},
     \item $\Gamma$ is the \emph{tape alphabet},
-    \item $\delta: Q \times \Gamma \rightarrow Q \times \Gamma \times \{L, R\}$ is the \emph{transition function},
+    \item $\delta\colon Q \times \Gamma \rightarrow Q \times \Gamma \times \{L, R\}$ is the \emph{transition function},
     \item $q_{0} \in Q$ is the \emph{start state},
     \item $q_{a} \in Q$ is the \emph{accept state},
     \item $q_{r} \in Q$ is the \emph{reject state}, with $q_{a} \ne q_{r}$.
@@ -383,7 +385,7 @@ will then introduce some specific ones that we care about.
 
 \begin{defn}[{\cite[Def.\ 1.19]{AB09}}]\label{def:dtime}\index{DTIME@$\DTIME$}
   % FIXME: Reword to make more clear what $n$ is
-  Let $f: \mathbb{N} \rightarrow \mathbb{N}$ be a function. The class $\DTIME(f(n))$ is the class of all
+  Let $f\colon \mathbb{N} \rightarrow \mathbb{N}$ be a function. The class $\DTIME(f(n))$ is the class of all
   problems computable by a deterministic Turing machine in $O(f(n))$ steps for
   some constant $c > 0$.
 \end{defn}
@@ -504,9 +506,10 @@ It is perhaps illustrative to see an example of a problem in $\NEXP$. % TODO
 \begin{defn}[{\cite[Def.\ 14.1]{CFGS22}}]\label{def:oracle-3sat}\index{O3SAT@$\OSAT$}
   The \emph{oracle 3-satisfiability problem}, denoted $\OSAT$, is the language
   of all triplets $(r, s, B)$, where $r, s \in \mathbb{N}^{+}$ and
-  $B: \{0, 1\}^{r+3s+3} \rightarrow \{0, 1\}$ a boolean function, such that there exists a
-  boolean function $A: \{0, 1\}^{s} \rightarrow \{0, 1\}$ having the property that for all
-  $z \in \{0, 1\}^{r}$ and $b_{1}, b_{2}, b_{3} \in \{0, 1\}^{s}$,
+  $B\colon \{0, 1\}^{r+3s+3} \rightarrow \{0, 1\}$ a boolean function, such that there
+  exists a boolean function $A\colon \{0, 1\}^{s} \rightarrow \{0, 1\}$ having
+  the property that for all $z \in \{0, 1\}^{r}$ and
+  $b_{1}, b_{2}, b_{3} \in \{0, 1\}^{s}$,
   \begin{equation*}
     B(z, b_{1}, b_{2}, b_{3}, A(b_{1}), A(b_{2}), A(b_{3})) = 1.
   \end{equation*}
@@ -524,7 +527,7 @@ It is perhaps illustrative to see an example of a problem in $\NEXP$. % TODO
   \begin{algorithm}[H]
     \KwIn{A triplet $(r, s, B)$}
     \KwOut{Whether or not $(r, s, B) \in \OSAT$}
-    Nondeterministically choose a function $A: \{0, 1\}^{s} \rightarrow \{0, 1\}$\;
+    Nondeterministically choose a function $A\colon \{0, 1\}^{s} \rightarrow \{0, 1\}$\;
     \For{$z \in \{0, 1\}^{r}$}{
       \For{$b_{1}, b_{2}, b_{3} \in \{0, 1\}^{s}$}{
         Compute $B(z, b_{1}, b_{2}, b_{3}, A(b_{1}), A(b_{2}), A(b_{3}))$\;
@@ -565,17 +568,17 @@ we have already defined. In particular, $\DSPACE$ will correspond nicely to
 $\DTIME$, and $\NSPACE$ to $\NTIME$.
 
 \begin{defn}[{\cite[Def.\ 4.1]{AB09}}]\label{def:dspace}\index{DSPACE@$\DSPACE$}
-  Let $f: \mathbb{N} \rightarrow \mathbb{N}$ be a function. A language $L$ is in $\DSPACE(f(n))$ if there
-  exists a deterministic Turing machine $M$ such that the number of locations on
-  the tape that are non-blank at some point during the execution of $M$ is
-  in $O(f(n))$.
+  Let $f\colon \mathbb{N} \rightarrow \mathbb{N}$ be a function. A language $L$ is in $\DSPACE(f(n))$ if
+  there exists a deterministic Turing machine $M$ such that the number of
+  locations on the tape that are non-blank at some point during the execution of
+  $M$ is in $O(f(n))$.
 \end{defn}
 
 In the same way as we have defined $\DSPACE$ for deterministic machines, we now
 need to define $\NSPACE$ for nondeterministic machines.
 
 \begin{defn}[{\cite[Def. 4.1]{AB09}}]\label{def:nspace}\index{NSPACE@$\NSPACE$}
-  Let $f: \mathbb{N} \rightarrow \mathbb{N}$ be a function. A language $L$ is in $\NSPACE(f(n))$ if there
+  Let $f\colon \mathbb{N} \rightarrow \mathbb{N}$ be a function. A language $L$ is in $\NSPACE(f(n))$ if there
   exists a nondeterministic Turing machine $M$ such that the number of locations
   on the tape that are non-blank at some point during the execution of $M$ is in
   $O(f(n))$.
@@ -642,8 +645,8 @@ classes.
 
 \begin{defn}[{\cite[Def.\ 7.29]{Sip97}}]\label{def:p-reduction}\index{polynomial-time reduction}
   A language $A$ is \emph{polynomial-time reducible} to a language $B$ if a
-  polynomial-time computable function $f: \Sigma^{*} \rightarrow \Sigma^{*}$ exists such that for
-  all $w \in \Sigma^{*}$, $w \in A$ if and only if $f(w) \in B$.
+  polynomial-time computable function $f\colon \Sigma^{*} \rightarrow \Sigma^{*}$ exists
+  such that for all $w \in \Sigma^{*}$, $w \in A$ if and only if $f(w) \in B$.
 \end{defn}
 
 Polynomial-time reductions are important because they give us a way to say that
@@ -751,9 +754,9 @@ we instead restrict ourselves to polynomial-time reductions.
 \end{defn}
 
 \begin{defn}[{\cite[Def.\ 9.2]{AB09}}]\label{def:hash-p}\index{P#@$\#\P$}
-  The class $\#\P$ is the class of functions $f: \{0, 1\}^{*} \rightarrow \mathbb{N}$ such that
-  there exists a polynomial $p: \mathbb{N} \rightarrow \mathbb{N}$ and a polynomial-time Turing machine $M$
-  such that for every $x \in \{0, 1\}^{*}$,
+  The class $\#\P$ is the class of functions $f\colon \{0, 1\}^{*} \rightarrow \mathbb{N}$ such
+  that there exists a polynomial $p\colon \mathbb{N} \rightarrow \mathbb{N}$ and a polynomial-time
+  Turing machine $M$ such that for every $x \in \{0, 1\}^{*}$,
   \begin{equation}
     f(x) = \abs*{\mleft\{y \in \{0, 1\}^{p(\abs{x})} \middlemid M(x, y) = 1\mright\}}.
   \end{equation}
@@ -832,9 +835,9 @@ field.
 
 \begin{defn}[{\cite[8]{AW09}}]\label{def:ext-poly}\index{extension polynomial}
   Let $\mathbb{F}$ be a finite field, $H \subseteq \mathbb{F}$, $m \in \mathbb{N}$ a number, and
-  $f: H^{m} \rightarrow \mathbb{F}$ be a function. An \emph{extension polynomial} of $f$
-  is any polynomial $f' \in \mathbb{F}[x_{1, \ldots, m}]$ such that $f(h) = f'(h)$ for
-  all $h \in H$.
+  $f\colon H^{m} \rightarrow \mathbb{F}$ be a function. An \emph{extension polynomial} of
+  $f$ is any polynomial $f' \in \mathbb{F}[x_{1, \ldots, m}]$ such that $f(h) = f'(h)$
+  for all $h \in H$.
 \end{defn}
 % TODO: Examples
 
@@ -846,8 +849,9 @@ this context.
 % TODO: Rewrite \hat{f} as \tilde{f} to agree with AW09
 \begin{defn}[{\cite[\defaultS 5.1]{CFGS22}}]\label{def:low-deg-ext}\index{low-degree extension}
   Let $\mathbb{F}$ be a finite field, $H \subseteq \mathbb{F}$, $m \in \mathbb{N}$ a number, and
-  $f: H^{m} \rightarrow \mathbb{F}$ be a function. A \emph{low-degree extension} $\hat{f}$
-  of $f$ is an extension of $f$ with multidegree at most $\abs{H} - 1$.
+  $f\colon H^{m} \rightarrow \mathbb{F}$ be a function. A \emph{low-degree extension}
+  $\hat{f}$ of $f$ is an extension of $f$ with multidegree at most
+  $\abs{H} - 1$.
 \end{defn}
 
 % TODO: Cite these statements
@@ -860,8 +864,8 @@ we shall now calculate.
 
 \begin{thm}[{\cite[\defaultS 5.1]{CFGS22}}]\label{thm:low-deg-ext-exists}
   Let $\mathbb{F}$ be a finite field, $H \subseteq \mathbb{F}$, $m \in \mathbb{N}$ a number, and
-  $f: H^{m} \rightarrow \mathbb{F}$. Then a low-degree extension $\hat{f}$ of $f$ is the
-  function
+  $f\colon H^{m} \rightarrow \mathbb{F}$. Then a low-degree extension $\hat{f}$ of $f$ is
+  the function
   \begin{equation}
     \hat{f}(x) = \sum_{\beta \in H^{m}}\delta_{\beta}(x)f(\beta),
   \end{equation}
@@ -911,7 +915,7 @@ makes it much easier to reason about.
 
 \begin{cor}[{\cite[\defaultS 4.1]{AW09}}]\label{cor:low-degree-boolean}
   Let $\mathbb{F}$ be a finite field, $m \in \mathbb{N}$ a number, and
-  $f: \{0, 1\}^{m} \rightarrow \mathbb{F}$. Then
+  $f\colon \{0, 1\}^{m} \rightarrow \mathbb{F}$. Then
   \begin{equation}\label{eqn:low-deg-ext-small}
     \hat{f}(x) = \sum_{\beta \in \{0, 1\}^{m}}\delta_{\beta}(x)f(\beta)
   \end{equation}
@@ -969,7 +973,7 @@ of qualifiers to them, but they will be useful in later theorems (in particular
   Let $\mathbb{F}$ be a field and $Y \subseteq \mathbb{F}^{n}$ be a set of $t$ points
   $y_{1}, \ldots, y_{t}$. Then for at least $2^{n} - t$ Boolean points
   $w \in \{0, 1\}^{n}$, there exists a multiquadratic extension polynomial
-  $p: \mathbb{F}^{n} \rightarrow \mathbb{F}$ such that
+  $p\colon \mathbb{F}^{n} \rightarrow \mathbb{F}$ such that
   \begin{enumerate}
     \item $p(y_{i}) = 0$ for all $i \in [t]$,
     \item $p(w) = 1$,
@@ -987,18 +991,18 @@ of qualifiers to them, but they will be useful in later theorems (in particular
 % TODO: Add preceding lemmas
 % TODO: Come up with descriptive names for these things (adversary polynomials?)
 \begin{lemma}[{\cite[Lemma 4.5]{AW09}}]\label{lem:multiquad-adversary}
-  Let $\mathcal{F}$ be a collection of fields. Let $f: \{0, 1\}^{n} \rightarrow \{0, 1\}$ be a
+  Let $\mathcal{F}$ be a collection of fields. Let $f\colon \{0, 1\}^{n} \rightarrow \{0, 1\}$ be a
   Boolean function, and for every $\mathbb{F} \in \mathcal{F}$, let
-  $p_{\mathbb{F}}: \mathbb{F}^{n} \rightarrow \mathbb{F}$ be a multiquadratic polynomial
-  over $\mathbb{F}$ extending $f$. Also let $\mathcal{Y}_{\mathbb{F}} \in \mathbb{F}^{n}$
-  for each $\mathbb{F} \in \mathcal{F}$, and define
+  $p_{\mathbb{F}}\colon \mathbb{F}^{n} \rightarrow \mathbb{F}$ be a multiquadratic
+  polynomial over $\mathbb{F}$ extending $f$. Also let
+  $\mathcal{Y}_{\mathbb{F}} \in \mathbb{F}^{n}$ for each $\mathbb{F} \in \mathcal{F}$, and define
   $t = \sum_{\mathbb{F} \in \mathcal{F}}\abs{\mathcal{Y}_{\mathbb{F}}}$.
 
   Then, there exists a subset $B \subseteq \{0, 1\}^{n}$, with $\abs{B} \le t$, such that
-  for all Boolean functions $f': \{0, 1\}^{n} \rightarrow \{0, 1\}$ that agree with $f$ on
-  $B$, there exist multiquadratic polynomials
-  $p_{\mathbb{F}}':\mathbb{F}_{n} \rightarrow \mathbb{F}$ (one for each $\mathbb{F} \in \mathcal{F}$)
-  such that
+  for all Boolean functions $f'\colon \{0, 1\}^{n} \rightarrow \{0, 1\}$ that agree with
+  $f$ on $B$, there exist multiquadratic polynomials
+  $p_{\mathbb{F}}'\colon \mathbb{F}_{n} \rightarrow \mathbb{F}$ (one for each
+  $\mathbb{F} \in \mathcal{F}$) such that
   \begin{enumerate}
     \item $p_{\mathbb{F}}'$ extends $f'$, and
     \item $p_{\mathbb{F}}'(y) = p_{\mathbb{F}}(y)$ for all $y \in \mathcal{Y}_{\mathbb{F}}$.
@@ -1007,8 +1011,8 @@ of qualifiers to them, but they will be useful in later theorems (in particular
 
 \begin{proof}
   Call $z \in \{0, 1\}^{n}$ \emph{good} if for every $\mathbb{F} \in \mathcal{F}$ there exists
-  a multiquadratic poylnomial $u_{\mathbb{F},z}: \mathbb{F}^{n} \rightarrow \mathbb{F}$
-  such that
+  a multiquadratic poylnomial
+  $u_{\mathbb{F},z}\colon \mathbb{F}^{n} \rightarrow \mathbb{F}$ such that
   \begin{enumerate}[label=\alph*.]
     \item\label{item:zero-in-y} $u_{\mathbb{F},z}(y) = 0$ for all
           $y \in \mathcal{Y}_{\mathbb{F}}$,
@@ -1116,7 +1120,7 @@ simpler, concept of \emph{relativization}, also called \emph{oracle separation}.
 To do this, we first must define an \emph{oracle}.
 \begin{defn}[{\cite[Def.\ 2.1]{AW09}}]\label{def:oracle}\index{oracle}
   An \emph{oracle} $A$ is a collection of Boolean functions
-  $A_{m}: \{0, 1\}^{m} \rightarrow \{0, 1\}$, one for each natural number $m$.
+  $A_{m}\colon \{0, 1\}^{m} \rightarrow \{0, 1\}$, one for each natural number $m$.
 \end{defn}
 There are several ways to think of an oracle; this will extend the most
 naturally when it comes time to define an extension oracle in
@@ -1135,7 +1139,7 @@ purpose: allowing us to think of $A$ as the set and $[A]$ as the function.
   Let $m = 3$. The function
   \begin{equation}
     \begin{aligned}
-      f: \{0, 1\}^{3} &\rightarrow \{0, 1\} \\
+      f\colon \{0, 1\}^{3} &\rightarrow \{0, 1\} \\
       abc &\mapsto b
     \end{aligned}
   \end{equation}
@@ -1147,7 +1151,7 @@ purpose: allowing us to think of $A$ as the set and $[A]$ as the function.
   For each $n \in \mathbb{N}$, define
   \begin{equation}
     \begin{aligned}
-      f_{n}: \{0, 1\}^{n} &\rightarrow \{0, 1\} \\
+      f_{n}\colon \{0, 1\}^{n} &\rightarrow \{0, 1\} \\
       a_{1}a_{2} \cdots a_{n} &\mapsto a_{n}.
     \end{aligned}
   \end{equation}
@@ -1326,10 +1330,11 @@ gain information about the oracle it queries. We will do this with the notion of
 \section{Query complexity}\label{sec:query-complexity}
 
 The goal of query complexity is to ask questions about some Boolean function
-$A: \{0, 1\}^{n} \rightarrow \{0, 1\}$ by querying $A$ itself. For this, we will
+$A\colon \{0, 1\}^{n} \rightarrow \{0, 1\}$ by querying $A$ itself. For this, we will
 interchangeably think of $A$ as a \emph{function} as well as a bit string of
 length $N = 2^{n}$, where each string element is $A$ applied to the $i$th string
-of length $n$, arranged in some lexicographical order. % TODO: Better way to phrase this
+of length $n$, arranged in some lexicographical
+order. % TODO: Better way to phrase this
 We can further think of the property itself as being a Boolean function; a
 function that takes as input the bit-string representation of $A$ and outputs
 whether or not $A$ has the given property. We will call the function
@@ -1343,7 +1348,7 @@ it is outside the scope of this paper.
 % TODO: Find better source for these definitions
 % Perhaps rephrase in the style of AW09 Def. 4.1?
 \begin{defn}[{\cite[17]{AW09}}]\label{def:det-qc}\index{query complexity!deterministic}
-  Let $f: \{0, 1\}^{N} \rightarrow \{0, 1\}$ be a Boolean function. Then the
+  Let $f\colon \{0, 1\}^{N} \rightarrow \{0, 1\}$ be a Boolean function. Then the
   \emph{deterministic query complexity} of $f$, which we write $D(f)$, is the
   minimum number of queries made by any deterministic algorithm with access to
   an oracle $A$ that determines the value of $f(A)$.
@@ -1355,8 +1360,9 @@ To make this more clear, let us give an example problem.
 \begin{defn}\label{def:or-problem}\index{OR@$\OR$}
   The $\OR$ problem is the following oracle problem:
   \begin{quote}
-    Let $A: \{0, 1\}^{n} \rightarrow \{0, 1\}$ be an oracle. The function $\OR(A)$ returns
-    1 if there exists a string on which $A$ returns 1, and $0$ otherwise.
+    Let $A\colon \{0, 1\}^{n} \rightarrow \{0, 1\}$ be an oracle. The function $\OR(A)$
+    returns 1 if there exists a string on which $A$ returns 1, and $0$
+    otherwise.
   \end{quote}
 \end{defn}
 
@@ -1392,7 +1398,7 @@ is in line with most definitions of complexity classes involving random
 computers.
 
 \begin{defn}[{\cite[17]{AW09}}]\label{def:rand-qc}\index{query complexity!randomized}
-  Let $f: \{0, 1\}^{N} \rightarrow \{0, 1\}$ be a Boolean function. Then the
+  Let $f\colon \{0, 1\}^{N} \rightarrow \{0, 1\}$ be a Boolean function. Then the
   \emph{randomized query complexity} of $f$, which we write $D(f)$, is the
   minimum number of queries made by any randomized algorithm with access to an
   oracle $A$ that evaluates $f(A)$ with probability at least $2/3$.
@@ -1401,10 +1407,10 @@ computers.
 % TODO: Talk about how quantum oracles are weird?
 
 \begin{defn}[{\cite[17]{AW09}}]\label{def:quant-qc}\index{query complexity!quantum}
-  Let $f: \{0, 1\}^{N} \rightarrow \{0, 1\}$ be a Boolean function. Then the
-  \emph{quantum query complexity} of $f$, which we write $D(f)$, is the
-  minimum number of queries made by any quantum algorithm with access to an
-  oracle $A$ that evaluates $f(A)$ with probability at least $2/3$.
+  Let $f\colon \{0, 1\}^{N} \rightarrow \{0, 1\}$ be a Boolean function. Then the
+  \emph{quantum query complexity} of $f$, which we write $D(f)$, is the minimum
+  number of queries made by any quantum algorithm with access to an oracle $A$
+  that evaluates $f(A)$ with probability at least $2/3$.
 \end{defn}
 % TODO: Examples
 
@@ -1631,15 +1637,15 @@ this notion below.
 
 \begin{defn}[{\cite[Def.\ 2.2]{AW09}}]\label{def:ext-oracle}\index{extension oracle}
   % TODO: Reuse definition of extension polynomial from earlier
-  Let $A_{m}: \{0, 1\}^{m} \rightarrow \{0, 1\}$ be a Boolean function and let
+  Let $A_{m}\colon \{0, 1\}^{m} \rightarrow \{0, 1\}$ be a Boolean function and let
   $\mathbb{F}$ be a finite field. Then an \emph{extension} of $A_{m}$ over
   $\mathbb{F}$ is a polynomial
-  $\tilde{A}_{m,\mathbb{F}}: \mathbb{F}^{m} \rightarrow \mathbb{F}$ such that
+  $\tilde{A}_{m,\mathbb{F}}\colon \mathbb{F}^{m} \rightarrow \mathbb{F}$ such that
   $\tilde{A}_{m,\mathbb{F}}(x) = A_{m}(x)$ whevever $x \in \{0, 1\}^{m}$. Also,
   given an oracle $A = (A_{m})$, an \emph{extension} $\tilde{A}$ of $A$ is a
   collection of polynomials
-  $\tilde{A}_{m,\mathbb{F}}: \mathbb{F}^{m} \rightarrow \mathbb{F}$, one for each positive
-  integer $m$ and finite field $\mathbb{F}$, such that
+  $\tilde{A}_{m,\mathbb{F}}\colon \mathbb{F}^{m} \rightarrow \mathbb{F}$, one for each
+  positive integer $m$ and finite field $\mathbb{F}$, such that
   \begin{enumerate}
     \item $\tilde{A}_{m,\mathbb{F}}$ is an extension of $A_{m}$ for all
           $m,\mathbb{F}$, and
@@ -1659,14 +1665,14 @@ oracles in potentially-interesting ways.
   Consider the function we defined in \cref{ex:oracle-function}:
   \begin{equation}
     \begin{aligned}
-      f: \{0, 1\}^{3} &\rightarrow \{0, 1\} \\
+      f\colon \{0, 1\}^{3} &\rightarrow \{0, 1\} \\
       abc &\mapsto b.
     \end{aligned}
   \end{equation}
   An extension of that function is the polynomial
   \begin{equation}
     \begin{aligned}
-      \tilde{f}: \mathbb{F}^{3} &\rightarrow \mathbb{F}^{3} \\
+      \tilde{f}\colon \mathbb{F}^{3} &\rightarrow \mathbb{F}^{3} \\
       (a,b,c) &\mapsto b.
     \end{aligned}
   \end{equation}
@@ -1674,7 +1680,7 @@ oracles in potentially-interesting ways.
   ones, for example
   \begin{equation}
     \begin{aligned}
-      \tilde{f}: \mathbb{F}^{3} &\rightarrow \mathbb{F}^{3} \\
+      \tilde{f}\colon \mathbb{F}^{3} &\rightarrow \mathbb{F}^{3} \\
       (a,b,c) &\mapsto a^{3}c^{3} + b^{2} - ac.
     \end{aligned}
   \end{equation}
@@ -1715,13 +1721,13 @@ notion of algebrization requires a definition of \emph{algebraic} query
 complexity. % TODO: More (connect to previous section)
 
 \begin{defn}[{\cite[Def. 4.1]{AW09}}]\label{def:aqc}\index{query complexity!algebraic}
-  Let $f: \{0, 1\}^{N} \rightarrow \{0, 1\}$ be a Boolean function, $\mathbb{F}$ be a
+  Let $f\colon \{0, 1\}^{N} \rightarrow \{0, 1\}$ be a Boolean function, $\mathbb{F}$ be a
   field, and $c$ be a positive integer. Also, let $\mathbb{M}$ be the set of
   deterministic algorithms $M$ such that $M^{\tilde{A}}$ outputs $f(A)$ for
-  every oracle $A: \{0, 1\}^{n} \rightarrow \{0, 1\}$ and every finite field extension
-  $\tilde{A}: \mathbb{F}^{n} \rightarrow \mathbb{F}$ of $A$ with $\mdeg(\tilde{A}) \le c$.
-  Then, the deterministic algebraic query complexity of $f$ over $\mathbb{F}$ is
-  defined as
+  every oracle $A\colon \{0, 1\}^{n} \rightarrow \{0, 1\}$ and every finite field
+  extension $\tilde{A}\colon \mathbb{F}^{n} \rightarrow \mathbb{F}$ of $A$ with
+  $\mdeg(\tilde{A}) \le c$. Then, the deterministic algebraic query complexity of
+  $f$ over $\mathbb{F}$ is defined as
   \begin{equation}
     \tilde{D}_{\mathbb{F}, c}(f) = \min_{M \in \mathcal{M}}\mleft(
       \max_{A, \tilde{A}: \mdeg(\tilde{A}) \le c}T_{M}(\tilde{A})
@@ -1754,13 +1760,13 @@ As an example, let us look at the same $\OR$ problem we defined in
   Let $M$ be a deterministic algorithm and let $\mathcal{Y}$ be the set of points queried
   by $M$ in the case where $M$ always recieves $0$ as a response. So long as
   $\abs{\mathcal{Y}} < 2^{n}$, there exists by \cref{thm:multiquad-extension} a
-  multiquadratic extension polynomial $\tilde{A}: \mathbb{F}^{n} \rightarrow \mathbb{F}$
-  such that $\tilde{A}(y) = 0$ for all $y \in \mathcal{Y}$ but $\tilde{A}(w) = 1$ for some
-  $w \in \{0, 1\}^{n}$. As such, if $M$ queries less than $2^{n}$ points then it
-  would not be able to tell the difference between $\tilde{A}$ and the zero
-  function. However, $\OR(A) = 1$ and $\OR(0) = 0$, so it would get the
-  incorrect answer for one of them. Hence if $M$ queries fewer than $2^{n}$
-  points it cannot solve the $\OR$ problem.
+  multiquadratic extension polynomial
+  $\tilde{A}\colon \mathbb{F}^{n} \rightarrow \mathbb{F}$ such that $\tilde{A}(y) = 0$ for
+  all $y \in \mathcal{Y}$ but $\tilde{A}(w) = 1$ for some $w \in \{0, 1\}^{n}$. As such, if
+  $M$ queries less than $2^{n}$ points then it would not be able to tell the
+  difference between $\tilde{A}$ and the zero function. However, $\OR(A) = 1$
+  and $\OR(0) = 0$, so it would get the incorrect answer for one of them. Hence
+  if $M$ queries fewer than $2^{n}$ points it cannot solve the $\OR$ problem.
 \end{proof}
 
 Note that this works even if $M$ is adaptive: if $M$ ever recieves a nonzero
@@ -1784,9 +1790,9 @@ get a speedup.
 
 \begin{proof}
   % TODO
-  Let $A: \{0, 1\}^{n} \rightarrow \{0, 1\}$ and $\tilde{A}$ be our extension polynomial.
-  Consider the value of $p(1/2, \ldots, 1/2)$. We aim to show that this value is
-  equal to $0$ if and only if $A$ is the zero oracle.
+  Let $A\colon \{0, 1\}^{n} \rightarrow \{0, 1\}$ and $\tilde{A}$ be our extension
+  polynomial. Consider the value of $p(1/2, \ldots, 1/2)$. We aim to show that this
+  value is equal to $0$ if and only if $A$ is the zero oracle.
 
   Consider the function
   \begin{equation}
@@ -1856,7 +1862,7 @@ Instead, we present our own proof of the above lemma.
   follows that
   \begin{equation}
     \begin{aligned}
-      f: \Sigma^{*} &\rightarrow \Sigma^{*} \\
+      f\colon \Sigma^{*} &\rightarrow \Sigma^{*} \\
       x &\mapsto (x, 1)
     \end{aligned}
   \end{equation}
@@ -2093,13 +2099,13 @@ probability'' bounds and not complete mathematical certainty.
 
 Interactive proof systems turn out to be surprisingly powerful---while the
 verifier only runs in polynomial time, it turns out that the interaction with
-the untrustworthy computer is still enough to boost the power significantly.
-The ``classic'' interactive proof model involves exactly two computer (one
-prover, one verifier), but many variants exist, all with distinct and
-interesting complexity-theoretic characteristics. In this chapter, we will be
-introducing a good number of these variants and a few of their interesting
-properties; the goal of the remaining chapters will be proving several of the
-more modern interesting results involving these systems.
+the untrustworthy computer is still enough to boost the power significantly. The
+``classic'' interactive proof model involves exactly two computers (one prover,
+one verifier), but many variants exist, all with distinct and interesting
+complexity-theoretic characteristics. In this chapter, we will introduce a good
+number of these variants and a few of their interesting properties; the goal of
+the remaining chapters will be to prove several of the more modern interesting
+results involving these systems.
 
 \section{Interactive Turing machines}\label{sec:interactive-tm}
 
@@ -2124,8 +2130,8 @@ they are allowed to do.
   \end{itemize}
   In addition to these tapes, an interactive TM has a single bit $\sigma \in \{0, 1\}$
   associated with it, called its \emph{identity}.\index{Turing machine!identity}
-  When the content of the switch tape is not equal to the machine's identity, it
-  performs no computation and is called \emph{idle}.
+  When the content of the switch tape is not equal to the machine's identity,
+  the machine performs no computation and is called \emph{idle}.
 
   In most cases, we will also give the interactive machines a source of
   randomness as well that they can read from. Since this is so common we will
@@ -2133,8 +2139,8 @@ they are allowed to do.
   randomness we will explicitly state as such.
 \end{defn}
 
-Of course, a single interactive Turing machine is not worth much: in order to do
-work with these we need to define how a pair of them interact. The chief
+On its own, a single interactive Turing machine is not worth much: in order to
+do work with these we need to define how a pair of them interact. The chief
 mechanism of interacting Turing machines is that of \emph{shared
   tapes}.\index{shared tape} Shared tapes are tapes where any modifications can
 be seen by both Turing machines immediately. While the tapes themselves are
@@ -2224,7 +2230,7 @@ have an arrow pointing to them.
 
 \begin{defn}[{\cite[Def.\ 4.2.2]{Go01}}]\label{def:joint-comp}\index{joint computation}
   The \emph{joint computation} of a linked pair of interactive Turing machines
-  $(M, N)$ is, on a common input string $x$, is the series of computation states
+  $(M, N)$ is, on a common input string $x$, the series of computation states
   for both $M$ and $N$ when each is given $x$ as its initial input tape and when
   the initial value of the shared switch tape is $0$. The joint computation
   halts when either machine halts and the halting machine is not idle.
@@ -2232,7 +2238,8 @@ have an arrow pointing to them.
 
 \begin{figure}
   \TODO{}
-  \caption{The ``flow'' of a joint computation of two interactive TMs}\label{fig:joint-comp-flow}
+  \caption{The flow of a joint computation of two interactive
+    TMs}\label{fig:joint-comp-flow}
 \end{figure}
 
 We will denote the joint computation of machines $M$ and $N$ on input $x$ by
@@ -2283,7 +2290,7 @@ reject whenever the input is not in the language.
 
 \begin{figure}
   \centering
-  \begin{tikzpicture}
+  \begin{tikzpicture}[scale=0.5]
     \draw (0,4) rectangle (4,8) node[midway] {$\mathbb{P} \ge \frac{2}{3}$};
     \draw (4,4) rectangle (8,8) node[midway] {\shrug{}};
     \draw (0,0) rectangle (4,4) node[midway] {$\mathbb{P} \le \frac{1}{3}$};
@@ -2306,30 +2313,29 @@ get the probability arbitrarily high. Since this iteration is for a fixed number
 of times, it will only linearly scale the runtime and thus it does not affect
 whether our algorithm is an interactive proof system.
 
-An additional thing to note is that for the soundness clause, we require the
-inequality to hold for \emph{any} interactive machine $B$, and not just our
-chosen machine $P$. This is important---it says that our verifier cannot be
-``fooled'' reliably by a lying machine, so long as $x$ is not in the language
-$L$. In practice, what this means is that if the verifier has reason to believe
-that the machine it is interacting with is not $P$, then it should always reject
-immediately, as we do not care what happens with an arbitrary machine when
-$x \in L$. A consequence of this is that if $V$ ever recieves back
-improperly-formatted or nonsense input from its prover, it will reject
-immediately. Similarly to what we do for ordinary Turing machines parsing their
-input, we will not explicitly write out that $V$ should reject if it recieves
-a poorly-formatted response, as it serves little but to provide clutter.
+For the soundness clause, note that we require the inequality to hold for
+\emph{any} interactive machine $B$, and not just our chosen machine $P$. This is
+important---it says that our verifier cannot be fooled reliably by a dishonest
+machine, so long as $x$ is not in the language $L$. In practice, what this means
+is that if the verifier has reason to believe that the machine it is interacting
+with is not $P$, then it should always reject immediately, as we do not care
+what happens with an arbitrary machine when $x \in L$. A consequence of this is
+that if $V$ ever recieves back improperly-formatted or nonsense input from its
+prover, it will reject immediately. Similarly to what we do for ordinary Turing
+machines parsing their input, we will not explicitly write out that $V$ should
+reject if it recieves a poorly-formatted response, as it serves little but to
+provide clutter.
 
-It is also worth mentioning that we do not care how $V$ fares if $x \in L$ and $P$
-is not the correct verifier. This is because neither insisting the protocol fail
-or insisting the protocol succeed will be a reasonable restriction. Since
-$x \in L$, an alternative $P'$ could give messages arbitrarily close to the
-correct $P$ (and in some cases even send identical messages, which would be
-impossible to distinguish), so we cannot insist $L$ reject, even with high
-probability. However, if $V$ could accept even in the face of an arbitrarily
-malicious prover, or a prover that sends no useful information whatsoever, it
-would mean that $V$ would have some means of computing the problem on its own;
-hence we would only ever be able to accept languages in $\BPP$ (since $L$ is a
-$\BPP$ machine).
+We also do not care how $V$ fares if $x \in L$ and $P$ is not the correct
+verifier. This is because neither insisting the protocol fail or insisting the
+protocol succeed will be a reasonable restriction. Since $x \in L$, an alternative
+$P'$ could give messages arbitrarily close to the correct $P$ (and in some cases
+even send identical messages, which would be impossible to distinguish), so we
+cannot insist $L$ reject, even with high probability. However, if $V$ could
+accept even in the face of an arbitrarily malicious prover, or a prover that
+sends no useful information whatsoever, it would mean that $V$ would have some
+means of computing the problem on its own; hence we would only ever be able to
+accept languages in $\BPP$ (since $L$ is a $\BPP$ machine).
 
 As with all of our interactive-proof variants, we will also define a complexity
 class corresponding to the set of languages with the given proof. Once we have a
@@ -2345,15 +2351,67 @@ Now that we have seen the formal definition of an interactive proof, let us
 illustrate the formality with an example. To do so, consider the following
 theorem:
 
-\begin{thm}[{\cite{Pra75}}]\label{thm:primes-in-ip}\index{Prime@$\Prime$}
-  The language $\Prime = \{p \mid p \text{ is prime}\}$ is in $\IP$.
+% \begin{thm}[{\cite{Pra75}}]\label{thm:primes-in-ip}\index{Prime@$\Prime$}
+%   The language $\Prime = \{p \mid p \text{ is prime}\}$ is in $\IP$.
+% \end{thm}
+% % NOTE: See also A Formalization of Pratt’s Primality Certificates (Wimmer, Noschinski)
+
+% \begin{algorithm}[htbp]
+%   \TODO{}
+%   \caption{An interactive proof for the language $\Prime$}\label{alg:prime-ip}
+% \end{algorithm}
+
+\FIXME{Move $\GNI$ definition up here}
+
+\begin{thm}\label{thm:gni-ip}
+  The language $\GNI$ is in $\IP$.
 \end{thm}
-% NOTE: See also A Formalization of Pratt’s Primality Certificates (Wimmer, Noschinski)
 
 \begin{algorithm}[htbp]
-  \TODO{}
-  \caption{An interactive proof for the language $\Prime$}\label{alg:prime-ip}
+  \KwIn{Two $n$-vertex graphs $G_{0}$ and $G_{1}$}
+  \KwOut{Whether $G_{0} \ncong G_{1}$}
+  \FIXME{What is $s$?}\;
+  \For{$i \in [s]$}{
+    $V$: Pick a random $\sigma_{i} \in S^{n}$\;
+    $V$: Pick a random $b_{i} \in \{0, 1\}$\;
+    $V$: Compute $H_{i} \leftarrow \sigma_{i} \cdot G_{b_{i}}$\;
+    $V$: Send $H_{i}$ to $P$\;
+    $r_{i} \leftarrow$ \eIf{$H_{i} \cong G_{0}$}{
+      $P$: Send $0$ to $S$\;
+    }{
+      $P$: Send $1$ to $S$\;
+    }
+    \If{$r_{i} \ne b_{i}$}{
+      reject\;
+    }
+  }
+  accept\;
+  \caption{An interactive proof for the language $\GNI$}\label{alg:gni-ip}
 \end{algorithm}
+
+\begin{proof}
+  First, we show $V$ runs in polynomial time. Picking a random permutation and
+  single bit can be done in polynomial time, and computing the action of a
+  permutation on a graph is also polynomial.
+
+  Next, if $G_{0} \ncong G_{1}$ and $P$ is the honest prover, we show $V$ will accept
+  with probability $\ge 2/3$. Since $G_{0} \ncong G_{1}$, it follows that
+  $\sigma \cdot G_{0} \ncong \sigma' \cdot G_{1}$ for any permutations $\sigma$ and $\sigma'$. Hence, the honest
+  prover will always answer with the correct $r_{i} = b_{i}$, and thus $V$ will
+  always accept.
+
+  If $G_{0} \cong G_{1}$, we show $V$ will reject with probability $\ge 2/3$,
+  regardless of the prover. For any permutations $\sigma$ and $\sigma'$, we have that
+  $\sigma \cdot G_{0} \cong \sigma' \cdot G_{1}$, by transitivity of isomorphisms. Further, we have
+  that $S_{n}$ is exactly the class of isomorphisms on $n$-vertex labeled
+  graphs, so for any isomorphic graph $G$, there exists exactly one $\sigma_{0}$ and
+  $\sigma_{1}$ such that $\sigma_{0} \cdot G_{0} \cong G \cong \sigma_{1} \cdot G_{1}$. Hence, the odds of
+  $b_{i}$ being $0$ are $1$ are equal for any given $G$. Thus, in each round the
+  odds of $P$ guessing correctly are no more than $1/2$. Further, in each round
+  the random picks are statistically independent; hence the overall odds of $P$
+  fooling $V$ are no more than $2^{-s}$. For any $s > 1$, $2^{-s} < 1/3$; hence
+  $V$ will reject with probability $\ge 2/3$.
+\end{proof}
 
 Once we have a complexity class, the question arises of how it relates to other
 complexity classes. For $\IP$, Adi Shamir proved in 1992~\cite{Sha92} that a
@@ -2388,7 +2446,7 @@ than we would get with a single prover.
 \begin{defn}[{\cite[Def.\ 4.11.2]{Go01}}]\label{def:mps}\index{interactive proof!multi-prover}
   A \emph{multi-prover interactive proof system} is a triplet of interactive
   machines $(P_{1}, P_{2}, V)$ such that $P_{1}$ and $P_{2}$ cannot communicate,
-  $V$ is probabilistic polynomial-time, and
+  $V$ is probabilistic polynomial-time, and the following hold.
   \begin{itemize}
     \item \emph{Completeness}: For every $x \in L$,
           \[
@@ -2487,19 +2545,19 @@ prover.\footnote{Exception: if $L \in \P$ then we can trivially recreate the
   interaction no matter what, but that case is not particularly interesting for
   the purpose of zero-knowledge proofs.}
 
-Having said that, it is not particularly obvious that there are \emph{any}
-languages that are outside of $\P$ with perfect zero-knowledge
-proofs.\footnote{To some extent, showing that there are languages \emph{truly}
-  outside of $\P$ would require a proof that $\P \ne \NP$ (which is unfortunately
-  beyond the scope of this paper), but there are lots of languages strongly
-  believed to be outside of $\P$ with zero-knowledge proofs.} It turns out,
-however, that these languages do in fact exist (and are reasonably common).
-Abstractly, the idea behind why many of these work is that the verifier can
-perform a transformation on some random value, such that undoing the
-transformation and reliably recovering the original value is only possible with
-knowledge of the language. However, a simulator would have access to the
-randomly-chosen value, and thus it could construct a response immediately with
-no reference to the problem to be solved.
+Having said that, it is not particularly obvious that there are any languages
+that are outside of $\P$ with perfect zero-knowledge proofs.\footnote{To some
+  extent, showing that there are languages \emph{truly} outside of $\P$ would
+  require a proof that $\P \ne \NP$ (which is unfortunately beyond the scope of
+  this paper), but there are lots of languages strongly believed to be outside
+  of $\P$ with zero-knowledge proofs.} It turns out, however, that these
+languages do in fact exist (and are reasonably common). Abstractly, the idea
+behind why many of these work is that the verifier can perform a transformation
+on some random value, such that undoing the transformation and reliably
+recovering the original value is only possible with knowledge of the language.
+However, a simulator would have access to the randomly-chosen value, and thus it
+could construct a response immediately with no reference to the problem to be
+solved.
 
 \begin{defn}[{\cite[Def.\ 4.3.1]{Go01}}]\label{def:zero-knowledge}%
   \index{perfect zero-knowledge}\index{perfect simulator}%
@@ -2544,17 +2602,34 @@ the mathematical sense.
   proof system.
 \end{defn}
 
-\TODO{Example}
+To demonstrate perfect zero-knowledge, we now show an example. In
+\cref{sec:single-prover}, we demonstrated a non-zero-knowledge interactive proof
+for the language $\GNI$ of non-isomorphic graphs. Here, we modify that algorithm
+to not reveal anything beyond simply whether $G_{0}$ and $G_{1}$ are isomorphic.
+
+\begin{thm}\label{thm:gni-pzk-ip}
+  The language $\GNI$ has a perfect zero-knowledge interactive proof.
+\end{thm}
+
+\begin{algorithm}[htbp]
+  \KwIn{Two $n$-vertex graphs $G_{0}$ and $G_{1}$}
+  \KwOut{Whether $G_{0} \ncong G_{1}$}
+  \TODO{}\;
+  \caption{A perfect zero-knowledge IP for $\GNI$}\label{alg:gni-pzk-ip}
+\end{algorithm}
+
+\begin{proof}
+  \TODO{}
+\end{proof}
 
 \subsection{Commitment schemes}\label{sec:commitment-scheme}
 
-It should not come as too much of a surprise to learn that most ``intuitive''
-proofs for a given problem are not in fact zero-knowledge.\footnote{As an
-  example, I would certainly hope that the proofs in this text have, in fact,
-  imparted at least some knowledge on the reader.} As such, we will want the
-assistance of a few techniques that, once understood, will allow us to build
-zero-knowledge proofs more easily. The first of these is a \emph{bit-commitment
-  scheme}.
+It should not come as too much of a surprise to learn that most intuitive proofs
+for a given problem are not in fact zero-knowledge.\footnote{As an example, I
+  would certainly hope that the proofs in this text have, in fact, imparted at
+  least some knowledge on the reader.} As such, we will want the assistance of a
+few techniques that, once understood, will allow us to build zero-knowledge
+proofs more easily. The first of these is a \emph{bit-commitment scheme}.
 
 Abstractly, a bit-commitment scheme allows a machine to ``commit to'' a given
 single bit, with the intent of revealing it later on to a verifier. To do this,
@@ -2564,7 +2639,11 @@ to the committed bit, the verifier will be able to know (that is, the committer
 will not be able to change its choice once it has committed).
 
 Before we can define a bit-commitment scheme formally, we do need a few
-preliminaries.
+preliminaries. First, we define what it means for an interaction to look like a
+commitment from the reciever's perspective; since the reciever needs to be
+convinced of the commitment, we need a definition that only considers its
+perspective.
+
 \TODO{More}
 
 \begin{defn}\label{def:possible-commit}\index{possible commitment}
@@ -2575,10 +2654,20 @@ preliminaries.
   and has input $(\sigma, 1^{n})$.
 \end{defn}
 
+The above definition does not preclude a series of messages looking like it
+could be both a $0$-commitment and a $1$-commitment; consider the case of a
+machine $S$ that completely ignores its input and sends the same series of
+strings. In this case, the record of that interaction would be a possible
+commitment for any input, since the input is ignored completely.
+
 \begin{defn}\label{def:ambiguous-view}\index{ambiguous view}
   A reciever's view is \emph{ambiguous} if it is both a possible $0$-commitment
   and a possible $1$-commitment.
 \end{defn}
+
+Now, we can define a bit-commitment scheme. In brief, a bit-commitment scheme is
+a scheme such that there are no ambiguous views and yet the total
+publicly-released information is ambiguous.
 
 \begin{defn}[{\cite[Def.\ 4.4.1]{Go01}}]\label{def:commitment-scheme}\index{commitment scheme}
   A \emph{bit-commitment scheme} is a pair of interactive probabilistic
@@ -2586,9 +2675,9 @@ preliminaries.
   \begin{enumerate}
     \item Both machines recieve an integer $n$ in unary,
     \item $S$ recieves a single bit $v$,
-    \item For any PPT machine $R'$, the output of $\ang{S(0), R'}$ and
-          $\ang{S(1), R'}$ are computationally indistinguishable over all inputs
-          $n$, and
+    \item For any PPT machine $R'$, the output of $\ang{S(0), R'}(1^{n})$ and
+          $\ang{S(1), R'}(1^{n})$ are computationally indistinguishable over all
+          inputs $n$, and
     \item For almost all coin tosses of $R$, there exists no sequence of
           messages from $S$ such that the view of $R$ is ambiguous.
   \end{enumerate}
@@ -2620,6 +2709,8 @@ queries. Most interesting results about PCPs can be proven about non-adaptive
 machines, however, so we will be working entirely with those for the rest of
 this paper.
 
+\TODO{Go01 4.10.3.2 talks about adaptive vs non-adaptive proofs}
+
 \begin{defn}\label{def:adaptive}\index{adaptive}
   Let $M$ be a Turing machine with query access to some string
   $\pi \in \{0, 1\}^{*}$. The queries by $M$ are \emph{non-adaptive} if the
@@ -2629,7 +2720,7 @@ this paper.
 \end{defn}
 
 \begin{defn}[{\cite[Def.\ 18.1]{AB09}}]\label{def:prob-check}\index{probabilistically-checkable proof}
-  Let $L \subseteq \{0, 1\}^{n}$ be a language and $q, r: \mathbb{N} \rightarrow \mathbb{N}$. A
+  Let $L \subseteq \{0, 1\}^{n}$ be a language and $q, r\colon \mathbb{N} \rightarrow \mathbb{N}$. A
   \emph{$(r(n), q(n))$-verifier} for $L$ is a polynomial-time probabilistic
   algorithm $V$ such that
   \begin{enumerate}
@@ -2647,7 +2738,20 @@ this paper.
 \end{defn}
 
 \begin{figure}
-  \TODO{}
+  \centering
+  \begin{tikzpicture}[>=Stealth]
+    \draw (0,0) rectangle ++(3,2);
+    \foreach \i in {0,...,10}{
+      \pgfmathsetmacro{\xval}{\i*0.5};
+      \draw (\xval,3) rectangle ++(0.5,0.5);
+    }
+    % cdots doesn't appear to be centered in the box?
+    \path (5.5,3) rectangle ++(0.5,0.5) node [midway] {$\cdots$};
+    \foreach \x in {2, 6, 9}{
+      \pgfmathsetmacro{\xval}{\x/2+0.25};
+      \draw[->] (1.5,2) to (\xval,3);
+    }
+  \end{tikzpicture}
   \caption{A probabilistically-checkable proof verifier}\label{fig:pcp}
 \end{figure}
 
@@ -2677,11 +2781,80 @@ preexisting bits actually read by the algorithm), they are actually independent
 of computational model, so the need for polynomial equivalence is negated.
 
 \begin{defn}[{\cite[Def.\ 18.1]{AB09}}]\label{def:pcp}\index{PCP@$\PCP$}
-  For any $q, r: \mathbb{N} \rightarrow \mathbb{N}$, the class $\PCP(q(n), r(n))$ is the class of all
+  For any $q, r\colon \mathbb{N} \rightarrow \mathbb{N}$, the class $\PCP(q(n), r(n))$ is the class of all
   languages with a $(cq(n), dr(n))$-verifier for some $c, d \in \mathbb{N}$.
 \end{defn}
 
-\TODO{Example}
+As an example, consider the language of non-isomorphic graphs:
+
+\begin{defn}\label{def:gni}\index{GNI@$\GNI$}
+  The language $\GNI$ (for \emph{graph non-isomorphism}) is the set
+  \[
+    \GNI = \{(G_{0}, G_{1}) \mid G_{0}, G_{1} \text{ graphs and } G_{0} \ncong G_{1}\}.
+  \]
+\end{defn}
+
+This language is interesting for reasons beyond the scope of this paper,
+especially in that it is known to be in $\NP$ but is believed to be neither in
+$\P$ nor $\NP$-complete. Importantly to us, $\GNI$ has a relatively short PCP
+that only uses a single query, as well as polynomial randomness.
+
+It is reasonable to be surprised about the fact that we only need one query to
+determine this problem to the constraints imposed by a PCP. This is our first
+clue that PCPs are surprisingly powerful: in \cref{chap:pcp-theorem} and again
+in \cref{chap:zk-pcp-theorem} we will explore the extremes of the power of PCPs.
+
+\begin{thm}\label{thm:gni-pcp}
+  $\GNI \in \PCP(\poly(n), 1)$.
+\end{thm}
+
+\begin{algorithm}[htbp]
+  \KwIn{Two $n$-vertex graphs $G_{1}$ and $G_{2}$}
+  \KwOut{Whether $G_{1} \ncong G_{2}$}
+  \tcc{Proof:}
+  \For{$H$ a graph with $n$ nodes}{
+    \eIf{$H \cong G_{0}$}{
+      $\pi[H] \leftarrow 0$\;
+    }{
+      $\pi[H] \leftarrow 1$\;
+    }
+  }
+  \KwRet{$\pi$}\;
+  \tcc{Verifier:}
+  Pick random $b \in \{0, 1\}$\;
+  Pick random $\sigma \in S_{n}$\;
+  Apply $\sigma$ to the vertices of $G_{b}$\;
+  Accept if and only if $\pi[\sigma \cdot G_{b}] = b$\;\nllabel{line:gni-accept}
+  \caption{A PCP for $\GNI$}\label{alg:gni-pcp}
+\end{algorithm}
+
+\begin{proof} % FIXME: Should I describe any background about isomorphic graphs?
+  We describe such a PCP in \cref{alg:gni-pcp}. Next, we show that this
+  algorithm has the properties we seek.
+
+  The verifier runs in polynomial time: both picking and computing an $n$-bit
+  permutation are known to be in polynomial time with respect to $n$. Further,
+  picking a random $n$-bit permutation is doable in $\poly(n)$ bits, and picking
+  a random bit is doable in $1$ bit; hence $V$ uses $\poly(n)$ bits of
+  randomness. Lastly, we only make a single query to $\pi$, in
+  line~\ref{line:gni-accept}.
+
+  If $G_{0} \ncong G_{1}$, we show $V$ always accepts when given $\pi$ as input. Since
+  isomorphisms are transitive, we know there is no $H$ with both $H \cong G_{0}$ and
+  $H \cong G_{1}$. Hence, for all $H$, if $H \cong G_{0}$ then $\pi[H] = 0$ and if
+  $H \cong G_{1}$ then $\pi[H] = 1$. Hence, since $\sigma \cdot G_{b} \cong G_{b}$ regardless of
+  our choice of $\sigma$ and $b$, we have that $\pi[\sigma \cdot G_{b}] = b$.
+
+  Next, if $G_{0} \cong G_{1}$ then $V$ rejects with probability at least $1/2$,
+  regardless of choice of $\pi$. Since $G_{0} \cong G_{1}$, it follows that if
+  $H \cong G_{0}$ then $H \cong G_{1}$, and vice versa. Hence, for any graph
+  $H = \sigma \cdot G_{0}$, there exists a $\sigma' \in S_{n}$ with $H = \sigma' \cdot G_{1}$. For any
+  $n$-vertex graph $H$, this means that we are equally likely to query $\pi[H]$
+  with $b = 0$ and $\sigma$ as we are with $b = 1$ and $\sigma'$. Since we know $\pi[H]$ can
+  only be $0$ or $1$, it must be the case that $\pi[H]$ is incorrect at least half
+  the time. Hence, $V$ will reject with probability at least $1/2$ for any proof
+  $\pi$.
+\end{proof}
 
 A small note on notation: The text ``PCP'' can be used as both a complexity
 class and an abbreviation: in this paper when it is written $\PCP$, we are
@@ -2689,17 +2862,36 @@ referring to the complexity class (and therefore the set of \emph{languages}
 with a probabilistically-checkable proof); when it is written PCP, we are
 referring to the proofs themselves.
 
-\subsection{$\PCP$s of proximity}\label{sec:pcpp}
+\subsection{PCPs of proximity}\label{sec:pcpp}
 
 \TODO{}
 
+Since a PCP will always only check a limited proportion of any given proof, for
+any strings in the language, the verifier will still accept any proof that is
+close to the official proof with very high probability. While this is
+interesting in and of itself, it can also lead to the question of how PCPs
+perform on \emph{values} that are close to strings in our language. This is the
+notion behind PCPs of proximity: what if we weaken a PCP to only require it to
+reject strings that are not sufficiently close to strings in the given language?
+
+To define PCPs of proximity, we first need a working definition of proximity.
+Computer scientists have many definitions of string closeness, but for this
+particular problem we will be working with a mathematically simple one
+originally used for error-correcting codes.
+
 \begin{defn}[{\cite{Ham50}}]\label{def:hamming-dist}\index{Hamming distance}
-  Let $x, y \in \Sigma^{n}$ be strings. We say the \emph{Hamming distance} between $x$
-  and $y$ is the value
+  Let $x, y \in \Sigma^{n}$ be strings of the same length. We say the \emph{Hamming
+    distance} between $x$ and $y$ is the value
   \[
     \Delta(x, y) = \frac{\abs{\{i \in [n] \mid x_{i} \ne y_{i}\}}}{n}.
   \]
 \end{defn}
+
+Note that $\Delta(x, y) \in [0, 1]$ for any $x$ and $y$. This normalization is not
+strictly necessary in the general case, since $\Delta$ is only defined between
+strings of equal length (and there exist cases where it is much nicer to keep
+the distance as a natural number). In our case, however, we would like to keep
+the distances all in the same bounded range.
 
 \begin{defn}\label{def:far}\index{far}
   Let $\varepsilon > 0$. A vector $x \in \Sigma^{n}$ is \emph{$\varepsilon$-far} from a set $S \subseteq \Sigma^{n}$ if
@@ -2708,11 +2900,13 @@ referring to the proofs themselves.
   \]
 \end{defn}
 
+\TODO{}
+
 \begin{defn}[{\cite[Def.\ 2.2]{GOS25}}]\label{def:pcpp}\index{PCPP@$\PCPP$}
-  For $\delta: \mathbb{N} \rightarrow [0, 1]$, a \emph{probabilistically-checkable proof of proximity}
-  for a language $L$ consisting of ordered pairs $(x, y)$ with proximity
-  parameter $\delta$ consists of a prover $P$ and verifier $V$ such that the
-  following holds for all $(x, y)$:
+  For $\delta\colon \mathbb{N} \rightarrow [0, 1]$, a \emph{probabilistically-checkable proof of
+    proximity} for a language $L$ consisting of ordered pairs $(x, y)$ with
+  proximity parameter $\delta$ consists of a prover $P$ and verifier $V$ such that
+  the following holds for all $(x, y)$:
   \begin{enumerate}
     \item If $(x, y) \in L$,
           \[
@@ -2725,6 +2919,8 @@ referring to the proofs themselves.
           \]
   \end{enumerate}
 \end{defn}
+
+\TODO{Example, preferably with $\GNI$}
 
 \section{Zero-knowledge probabilistically-checkable proofs}\label{sec:pzkpcp}
 
@@ -2765,7 +2961,20 @@ is.
   zero-knowledge probabilistically-checkable proof.
 \end{defn}
 
-\TODO{Example}
+\TODO{Example (preferably $\GNI$)}
+
+\begin{thm}\label{thm:gni-pzkpcp}
+  There is a perfect zero-knowledge PCP for $\GNI$.
+\end{thm}
+
+\begin{algorithm}[htbp]
+  \TODO{}
+  \caption{A PZK-PCP for $\GNI$}\label{alg:gni-pzkpcp}
+\end{algorithm}
+
+\begin{proof}
+  \TODO{}
+\end{proof}
 
 \section{Interactive probabilistically-checkable proofs}\label{sec:ipcp}
 
@@ -2776,7 +2985,7 @@ proof to the verifier, after which they engage in an interactive protocol,
 during which the verifier can access the proof as an oracle.
 
 \begin{defn}[{\cite[\defaultS 1.1]{KR08}}]\label{def:ipcp}\index{interactive PCP}
-  Let $L$ be a language, let $p, q, l: \mathbb{N} \rightarrow \mathbb{N}$, and let $c, s \in [0, 1]$. An
+  Let $L$ be a language, let $p, q, l\colon \mathbb{N} \rightarrow \mathbb{N}$, and let $c, s \in [0, 1]$. An
   \emph{interactive probabilistically-checkable proof} for $L$ is an interactive
   protocol as follows:
 
@@ -2796,6 +3005,14 @@ IPCPs with specific bounds on these properties; later on we will spend some time
 (in particular \cref{sec:reduce-queries}) working on optimizing bounds on some
 of these properties at the expense of others.
 
+The first two complexities we will look at come from the interactive-proof
+portion of the IPCP\@. As a reminder, two important parameters we care about
+with regard to interactive proofs are the number of communication rounds (i.e.,
+the number of times the switch tape flips) and the total amount of information
+sent between the two machines. Since these are supposed to relate to just the IP
+portion of the protocol, we need to modify the definitions slightly to exclude
+the information exchanged during the PCP phase.
+
 \begin{defn}\label{def:ipcp-round-complexity}\index{round complexity!IPCP}
   The \emph{round complexity} of an IPCP is the number of rounds in the second
   portion of the protocol.
@@ -2805,6 +3022,9 @@ of these properties at the expense of others.
   The \emph{communication complexity} of an IPCP is the total number of bits
   exchanged between $P$ and $V$ \emph{except} for the message that contains $R$.
 \end{defn}
+
+The third complexity we care about comes from the PCP portion of the IPCP\@.
+\TODO{}
 
 \begin{defn}
   The \emph{query complexity} of an IPCP is the total number of queries that $V$
@@ -2822,7 +3042,7 @@ Next, we give a few reasonable class inclusions regarding $\IPCP$.
 \end{thm}
 
 \begin{proof}
-  Both of these come from the definition of an interactive PCP: A regular PCP is
+  Both of these come from the definition of an interactive PCP: a regular PCP is
   simply the first half of the IPCP protocol where the interactive portion is
   useless, and an interactive proof is simply the second half of the protocol
   where the oracle is useless.
@@ -2877,6 +3097,11 @@ We denote the view of $P$ and $V$ on input $x$ by $\View_{V}^{P}(x)$.
 
 \section{Zero-knowledge IPCPs}
 
+At this point, the astute reader may have noticed a trend: after each new
+interactive-proof variant we introduce, we then describe how to make it
+zero-knowledge. We will continue this trend by showing how an interactive PCP
+can be made zero-knowledge.
+
 \begin{defn}[{\cite[\defaultS 5.2]{CFGS22}}]\label{def:zk-ipcp}\index{interactive PCP!zero-knowledge}
   An interactive PCP is \emph{perfect zero-knowledge} with query bound $b$ when
   there exists a polynomial-time simulator algorithm $S$ such that for every
@@ -2887,7 +3112,7 @@ We denote the view of $P$ and $V$ on input $x$ by $\View_{V}^{P}(x)$.
 
 \begin{defn}\label{def:pzkipcp}\index{PZK-IPCP@$\PZKIPCP$}
   The class $\PZKIPCP$ is the class of all languages with a perfect
-  zero-knowledge IPCP.
+  zero-knowledge IPCP\@.
 \end{defn}
 
 \TODO{Example probably}
@@ -3071,9 +3296,10 @@ will make for relatively easy transformations.
 \section{Robust verifiers}\label{sec:robust-verifier}
 
 \begin{defn}[{\cite[Def.\ 2.6]{BGHSV06}}]\label{def:robust-verifer}\index{robust verifier}
-  Let $s, \rho: \mathbb{N} \rightarrow [0, 1]$. A PCP verifier $V$ has \emph{robust-soundness error}
-  $s$ with \emph{robustness parameter} $\rho$ if for all $x \notin L$, the bits read by
-  $V$ are $\rho$-close to being accepted with probability strictly less than $s$.
+  Let $s, \rho\colon \mathbb{N} \rightarrow [0, 1]$. A PCP verifier $V$ has
+  \emph{robust-soundness error} $s$ with \emph{robustness parameter} $\rho$ if for
+  all $x \notin L$, the bits read by $V$ are $\rho$-close to being accepted with
+  probability strictly less than $s$.
 \end{defn}
 
 We will denote robust PCP classes with
@@ -3090,8 +3316,8 @@ PCPPs to make a new (non-robust) PCP with improved bounds.
 \begin{thm}[{\cite[Theorem 2.7]{BGHSV06}}]\label{thm:composition}
   Let
   \begin{align*}
-    r_{\out}, r_{\oin}, d_{\out}, d_{\oin}, q_{\oin}&: \mathbb{N} \rightarrow \mathbb{N} \\
-    \varepsilon_{\out}, \varepsilon_{\oin}, \rho_{\out}, \delta_{\oin}&: \mathbb{N} \rightarrow [0, 1]
+    r_{\out}, r_{\oin}, d_{\out}, d_{\oin}, q_{\oin}&\colon \mathbb{N} \rightarrow \mathbb{N} \\
+    \varepsilon_{\out}, \varepsilon_{\oin}, \rho_{\out}, \delta_{\oin}&\colon \mathbb{N} \rightarrow [0, 1]
   \end{align*}
   be functions such that the following holds:
   % TODO: Put in IPCP-style bracket notation
@@ -3204,7 +3430,7 @@ PCPPs to make a new (non-robust) PCP with improved bounds.
 \end{defn}
 
 \begin{defn}\label{def:operator}\index{operator}
-  A \emph{operator} is a linear function $A: V \rightarrow V$ such that
+  A \emph{operator} is a linear function $A\colon V \rightarrow V$ such that
   $v \cdot A \cdot v^{T} \ge 0$ for all $v \in V$.
 \end{defn}
 
@@ -3301,8 +3527,8 @@ PCPPs to make a new (non-robust) PCP with improved bounds.
   $V'$: Simulate $V$ on $s$ answering every query with
   $0$\;\nllabel{line:zero-sim}
   Let $A$ be the set of queries of $V$\;
-  $V'$: compute polynomial $\gamma: \mathbb{F} \rightarrow \mathbb{F}^{m}$ of degree $q$ such
-  that $\{\gamma(s)\}_{s \in S} = A$ and $\gamma(t) = r$\;
+  $V'$: compute polynomial $\gamma\colon \mathbb{F} \rightarrow \mathbb{F}^{m}$ of degree $q$
+  such that $\{\gamma(s)\}_{s \in S} = A$ and $\gamma(t) = r$\;
   $V'$: Send $\gamma$ to $P'$\;
   $P'$: Reply with the coefficients of the polynomial $\rho = R \circ \gamma$\;
   $V'$: query $R$ at $r$ and recieve answer $a$\;
@@ -3426,6 +3652,7 @@ lower bound on the algebraic query complexity of this problem, similar to the
 examples we saw in \cref{sec:alg-query-complexity}.
 % TODO: More examples
 
+% FIXME: Relate this to the Sum language we talk about later
 \begin{defn}\label{def:poly-sum}\index{polynomial summation problem}
   The \emph{polynomial summation problem} is the following:
   \begin{quote}
@@ -3495,7 +3722,7 @@ our total queries, we will not recieve \emph{any} information about $R(X)$.
       \mid p(q) = 0 \text{ for all } q \in S\}.
   \]
   We can write $P_{0}$ as the kernel of the linear function
-  $F_{S}: \mathbb{F}[X_{1, \ldots, m}^{\le d}, Y_{1, \ldots, k}^{\le \abs{H} - 1}] \rightarrow \mathbb{F}^{S}$
+  $F_{S}\colon \mathbb{F}[X_{1, \ldots, m}^{\le d}, Y_{1, \ldots, k}^{\le \abs{H} - 1}] \rightarrow \mathbb{F}^{S}$
   defined by $(F_{S}(p))_{s} = p(s)$. By the rank-nullity theorem, this means
   \[
     \dim(P_{0}) \ge (d+1)^{m}\abs{H}^{m} - \abs{S}.
@@ -3558,7 +3785,7 @@ our total queries, we will not recieve \emph{any} information about $R(X)$.
   Lastly, we can apply Sylvester's rank inequality:
   \begin{align*}
     \rk(A_{y_{0}}) + \rk(C') - (d+1)^{m} &\le \rk(0) \\
-    (d+1)^{m} - \rk(C') &\ge rk(A_{y_{0}}) \\
+    (d+1)^{m} - \rk(C') &\ge \rk(A_{y_{0}}) \\
     (d+1)^{m} - \rk(C') &\ge (d+1)^{m} - \abs{S}/\abs{H}^{k} \\
     \abs{S} &\ge \rk(C')\abs{H}^{k}.
   \end{align*}
@@ -3638,7 +3865,7 @@ commit to an entire polynomial. This is the setting in which \emph{algebraic
 \begin{defn}\label{def:alg-comm-scheme}\index{commitment scheme!algebraic}
   An \emph{algebraic commitment scheme} is a commitment scheme such that instead
   of $S$ recieving a single bit it recieves a polynomial
-  $Q: \mathbb{F}^{m} \rightarrow \mathbb{F}$.
+  $Q\colon \mathbb{F}^{m} \rightarrow \mathbb{F}$.
 \end{defn}
 
 \TODO{Mention the role of algebraic query complexity
@@ -3653,9 +3880,9 @@ commit to an entire polynomial. This is the setting in which \emph{algebraic
     $\sum_{i=1}^{m}B^{\alpha}_{i} = Q(\alpha)$\;
   }
   \FIXME{What on earth is $G$?}
-  Define $B: K^{m} \times G^{k} \rightarrow \mathbb{F}$ by $B(\alpha, x) = B^{\alpha}(x)$\;
+  Define $B\colon K^{m} \times G^{k} \rightarrow \mathbb{F}$ by $B(\alpha, x) = B^{\alpha}(x)$\;
   \TODO{$d_{Q}$ vs $d$}
-  Define $\hat{B}: \mathbb{F}^{m} \times \mathbb{F}^{k} \rightarrow \mathbb{F}$ to be a
+  Define $\hat{B}\colon \mathbb{F}^{m} \times \mathbb{F}^{k} \rightarrow \mathbb{F}$ to be a
   low-degree extension of
   $B$\tcc*{Note: $P \in \mathbb{F}[X_{1, \ldots, m}^{\le d_{Q}}, Y_{1, \ldots, m}^{\le d}]$}
   \KwRet{$\hat{B}$}\;
@@ -4152,13 +4379,20 @@ problem, and as before our problem of choice is $\OSAT$.
   \end{itemize}
 \end{defn}
 
+\begin{defn}\label{def:sum-params}
+  For a fixed finite field $\mathbb{F}$, $m, d \in \mathbb{N}$, $H \subseteq \mathbb{F}$, and
+  $\gamma \in \mathbb{F}$, the language $\Sum[\mathbb{F}, m, d, H, \gamma]$ is the subset of
+  $\Sum$ where the co-named parameters in \cref{def:sum-lang} are equal to their
+  fixed values.
+\end{defn}
+
 % FIXME: Separate proof & verifier more cleanly
 \begin{algorithm}[htbp]
   \tcc{Proof}
   \For{$i \in \{1, \ldots, m - 1\}$}{
     $g_{i}(X) \leftarrow \sum_{b \in H^{m-i}}F(X, b)$\;
   }
-  Define $\pi: \mathbb{F}^{m-1} \rightarrow \mathbb{F}^{m-1}$ by
+  Define $\pi\colon \mathbb{F}^{m-1} \rightarrow \mathbb{F}^{m-1}$ by
   \[
     \pi(c_{1}, \ldots, c_{m-2}, \alpha) = (g_{1}(\alpha), g_{2}(c_{1}, \alpha), \ldots, g_{m-1}(c_{1}, \ldots, c_{m-2}, \alpha))
   \]
@@ -4175,10 +4409,7 @@ problem, and as before our problem of choice is $\OSAT$.
       reject\;
     }
   }
-  Check
-  \begin{algomathdisplay}
-    \sum_{b \in H}g_{1}(b) = \gamma
-  \end{algomathdisplay}
+  Check $\sum_{b \in H}g_{1}(b) = \gamma$\;
   \For{$i \in \{1, \ldots, m - 2\}$}{
     Check
     \begin{algomathdisplay}
@@ -4194,6 +4425,21 @@ problem, and as before our problem of choice is $\OSAT$.
   Accept if and only if the prior test passes\;
   \caption{A robust PCPP for $\Sum$~\cite[Construction 4.3]{GOS25}}\label{alg:sum-pcpp}
 \end{algorithm}
+
+% TODO: I think this can/should be moved to the normal PCP theorem section?
+\begin{thm}
+  Let $\delta > 0$, $\mathbb{F}$ be a finite field, $H \subseteq \mathbb{F}$,
+  $\gamma \in \mathbb{F}$, and $m, d \in \mathbb{N}$ such that $\frac{md}{\abs{\mathbb{F}}} < \delta$
+  and $d > \abs{H} + 1$. Then there exists a PCP of
+  proximity for $\Sum[\mathbb{F}, m, d, H, \gamma]$ over the alphabet
+  $\mathbb{F}^{m+1}$ with proximity parameter $\delta$ and robustness parameter
+  $\rho = \Omega(\delta)$. Further, the verifier makes $O(\abs{m})$ queries to $F$ and $\pi$
+  and the proof length is $O(\abs{\mathbb{F}}^{m})$.
+\end{thm}
+
+\begin{proof}
+  We construct such an algorithm as \cref{alg:sum-pcpp}. % TODO
+\end{proof}
 
 \begin{algorithm}[htbp]
   \tcc{Proof}
@@ -4228,11 +4474,26 @@ problem, and as before our problem of choice is $\OSAT$.
     5.2]{GOS25}}\label{alg:sum-pzk-pcpp}
 \end{algorithm}
 
+\begin{thm}[{\cite[Lemma 5.1]{GOS25}}]\label{thm:pcpp-sum-pzk}
+  % TODO: Rewrite in bracket notation
+  Let $\delta > 0$, $\mathbb{F}$ be a finite field, $H \subseteq \mathbb{F}$,
+  $\gamma \in \mathbb{F}$, and $m, d \in \mathbb{N}$ such that $\frac{md}{\abs{\mathbb{F}}} < \delta$
+  and $d > \abs{H} + 1$. Then there exists a perfect zero-knowledge PCP of
+  proximity for $\Sum[\mathbb{F}, m, d, H, \gamma]$ over the alphabet
+  $\mathbb{F}^{m+1}$ with proximity parameter $\delta$ and robustness parameter
+  $\rho = \Omega(\delta)$. Further, the verifier makes $O(\abs{m})$ queries to $F$ and $\pi$
+  and the proof length is $O(\abs{\mathbb{F}}^{m})$.
+\end{thm}
+
+\begin{proof}
+  We construct such an algorithm as \cref{alg:sum-pzk-pcpp}. % TODO
+\end{proof}
+
 \section{A zero-knowledge $\PCP$ for $\NP$ and $\NEXP$}\label{sec:pzkpcp-np-nexp}
 
 \begin{algorithm}[htbp]
   \tcc{Proof}
-  Let $A: \{0, 1\}^{n} \rightarrow \{0, 1\}$ be a satisfying assignment for $B$\;
+  Let $A\colon \{0, 1\}^{n} \rightarrow \{0, 1\}$ be a satisfying assignment for $B$\;
   Choose $\hat{C} \in \mathbb{F}[X_{m_{2} + k}^{\le 2(\abs{H} - 1)}]$ randomly such
   that
   \[
