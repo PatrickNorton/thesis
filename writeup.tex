@@ -12,6 +12,7 @@
 \usepackage{complexity}
 \usepackage{mleftright}
 \usepackage{xcolor}
+\usepackage{soul}
 
 \usepackage[linesnumbered,algochapter]{algorithm2e}
 \usepackage{biblatex}
@@ -64,8 +65,10 @@
 \DeclareMathOperator{\Aut}{Aut}
 \DeclareMathOperator{\ch}{ch}
 \DeclareMathOperator{\col}{col}
+\DeclareMathOperator{\comp}{comp}
 \DeclareMathOperator{\diag}{diag}
 \DeclareMathOperator{\dimn}{dim}
+\DeclareMathOperator{\dom}{dom}
 \DeclareMathOperator{\End}{End}
 \DeclareMathOperator{\ev}{ev}
 \def\f{\varphi}
@@ -84,6 +87,7 @@
 \def\normeq{\trianglelefteq}
 \DeclareMathOperator{\nul}{nullity}
 \DeclareMathOperator{\per}{per}
+\DeclareMathOperator{\Sim}{Sim}
 \DeclareMathOperator{\sgn}{sgn}
 \DeclareMathOperator{\spn}{span}
 \DeclareMathOperator{\supp}{supp}
@@ -119,6 +123,16 @@
 
 \newcommand{\commath}[1]{%
   \phantom{(#1)} \tag{#1}%
+}
+
+\newcommand{\pcpp}[4]{%
+  \ensuremath%
+  \mleft[{\footnotesize\begin{array}{r l}
+    \text{rand.\ complexity:} & #1 \\
+    \text{query complexity:} & #2 \\
+    \text{prox.\ param.:} & #3 \\
+    \text{soundness error:} & #4
+  \end{array}}\mright]%
 }
 
 \newcommand{\ipcp}[5]{%
@@ -198,6 +212,7 @@
   \end{array}}\mright]%
 }
 
+\newclass{\CktVal}{CktVal}
 \newclass{\IPCP}{IPCP}
 \makeatletter % complexity doesn't support hyphens by default...
 \newcommand{\PZKPCP}{%
@@ -237,7 +252,7 @@
 }
 
 \newcommand{\TODO}[1]{\textcolor{red}{TODO: #1}}
-\newcommand{\FIXME}[1]{\textcolor{red}{\underline{FIXME: #1}}}
+\newcommand{\FIXME}[1]{\textcolor{red}{\ul{FIXME: #1}}}
 
 \addbibresource{bibliography.bib}
 
@@ -2607,18 +2622,108 @@ To demonstrate perfect zero-knowledge, we now show an example. In
 for the language $\GNI$ of non-isomorphic graphs. Here, we modify that algorithm
 to not reveal anything beyond simply whether $G_{0}$ and $G_{1}$ are isomorphic.
 
-\begin{thm}\label{thm:gni-pzk-ip}
-  The language $\GNI$ has a perfect zero-knowledge interactive proof.
+\begin{thm}\label{thm:gi-pzk-ip}
+  The language $\GI$ has a perfect zero-knowledge interactive proof.
 \end{thm}
 
 \begin{algorithm}[htbp]
   \KwIn{Two $n$-vertex graphs $G_{0}$ and $G_{1}$}
-  \KwOut{Whether $G_{0} \ncong G_{1}$}
-  \TODO{}\;
-  \caption{A perfect zero-knowledge IP for $\GNI$}\label{alg:gni-pzk-ip}
+  \KwOut{Whether $G_{0} \cong G_{1}$}
+  \For{$i \in [s]$}{
+    $P$: pick a random $\sigma \in S^{n}$\;
+    $P$: pick a random $b \in \{0, 1\}$\;
+    $P$: send $\sigma \cdot G_{b}$ to $V$\;\nllabel{line:send-perm}
+    $V$: pick a random $b' \in \{0, 1\}$\;
+    $V$: send $b'$ to $P$\;\nllabel{line:send-b}
+    $P$: compute $\sigma' \in S^{n}$ such that
+    $\sigma' \cdot G_{b'} = \sigma \cdot G_{b}$\;\nllabel{line:sigma-prime}
+    $P$: send $\sigma'$ to $V$\;
+    \If{$\sigma' \cdot G_{b'} \ne \sigma \cdot G_{b}$}{\nllabel{line:confirm-sigma}
+      reject\;
+    }
+  }
+  accept\;
+  \caption{A perfect zero-knowledge IP for $\GI$}\label{alg:gi-pzk-ip}
+\end{algorithm}
+
+\begin{algorithm}[htbp]
+  $c \leftarrow 0$\;
+  \For{$i \in [2s]$}{
+    \If{$c \ge s$}{
+      \KwRet{}\;
+    }
+    Choose random $\sigma \in S_{n}$\;
+    Choose random $b \in \{0, 1\}$\;
+    $H \leftarrow \sigma \cdot G_{b}$\;
+    Simulate $V^{*}$ on input $(G_{0}, G_{1})$ and recieved message $H$ until it
+    sends a message $\sigma'$\;\nllabel{line:sim-vstar-gi}
+    \If{$b = b'$}{
+      $c \leftarrow c + 1$\;
+      Write $\sigma$ to the log as $P$'s response\;
+    }
+  }
+  \KwRet{$\bot$}\;
+  \caption{A simulator for \cref{alg:gi-pzk-ip}}\label{alg:gi-simulator}
 \end{algorithm}
 
 \begin{proof}
+  We present the algorithm as \cref{alg:gi-pzk-ip}. Our proof will consist of
+  two stages: first, we will prove that the algorithm is a functional
+  interactive proof for $\GI$, and then we will show that it does not leak any
+  knowledge.
+
+  First, if $G_{0} \cong G_{1}$ and $P$ is honest, then regardless of what
+  parameters we pick, there will always exist a $\sigma'$ we can compute in
+  line~\ref{line:sigma-prime}. Hence, the condition in
+  line~\ref{line:confirm-sigma} will never be true and hence we will always
+  accept.
+
+  If $G_{0} \ncong G_{1}$, then whenever $b' \ne b$ there exists no $\sigma'$ such that
+  $\sigma' \cdot G_{b'} = \sigma \cdot G_{b}$. Hence, if $b' \ne b$ (which happens with probability
+  $1/2$) then regardless of what $\sigma'$ is sent to $V$ the check in
+  line~\ref{line:confirm-sigma} will fail and hence $V$ will reject. Since $b'$
+  and $b$ are re-rolled in each round, the probability of them being equal in
+  all $s$ rounds is $2^{-s}$. Hence, $V$ will accept with probability no more
+  than $2^{-s}$.
+
+  Now, we show zero-knowledge. To do this we show a simulator in
+  \cref{alg:gi-simulator}. To summarize, it attempts to simulate a single round
+  of the interaction repeatedly until it has $s$ successes; if it cannot do this
+  in $2s$ tries, it outputs $\bot$.
+
+  First, we show \cref{alg:gi-simulator} runs in polynomial time. We know
+  $V^{*}$ runs in polynomial time by our hypothesis; hence
+  line~\ref{line:sim-vstar-gi} runs in polynomial time. All the rest of the
+  lines are either random choice of items, computing permutations, or simple
+  arithmetic; all of these are also doable in polynomial time. Hence the
+  interior of the loop runs in polynomial time, and since we iterate no more
+  than $2s$ times, it follows that the whole algorithm is polynomial time.
+
+  Note that an individual round of this simulator can only succeed when
+  $b = b'$: if it could output a correct response $\sigma'$ when $b \ne b'$, then it
+  would have $\sigma' \circ \sigma^{-1}$ as an isomorphism from $G_{0}$ to $G_{1}$, and thus
+  \cref{alg:gi-simulator} would be a probabilistic polynomial-time determinier
+  for $\GI$. Since we do not know whether or not $\GI \in \BPP$, we do not yet
+  know how to construct any verifier that would do this.
+
+  \FIXME{What if $\GI$ is ``close'' to $\BPP$? All we need is one $x$ and one
+    $V^{*}$ to output the wrong $b'$ slightly more often and we have problems}
+
+  \FIXME{This might be reasonable even if $V^{*}$ outputs the correct symbol
+    with probability bounded below by $2^{-\poly(n)}$?}
+
+  Since $V^{*}$ never recieves $b$ and $b$ is randomly generated, it is
+  impossible for $V^{*}$ to reliably output $b' \ne b$ without itself solving
+  which graph $G_{b}$ is isomorphic to (in which case we would have $\GI \in \BPP$
+  and thus have a trivial zero-knowledge proof). Hence, if $\GI \notin \BPP$, it
+  follows that $b \ne b'$ with probability $1/2$. Since each individual round
+  succeeds with probability $1/2$, the probability that $s$ rounds have
+  succeeded after $2s$ rounds is also $1/2$. Hence, the algorithm will output
+  $\bot$ with probability no more than $1/2$.
+
+  Next, we show \cref{alg:gi-simulator} outputs an identically-distributed view
+  to what $V^{*}$ sees, regardless of what $V^{*}$ is.
+
   \TODO{}
 \end{proof}
 
@@ -3335,7 +3440,7 @@ PCPPs to make a new (non-robust) PCP with improved bounds.
     \item For every $n \in \mathbb{N}$, $\delta_{\oin}(d_{\out}(n)) \le \rho_{\out}(n)$.
   \end{enumerate}
   % TODO: More bracket notation
-  Then $L$ has a standard PCP $V_{\operatorname{comp}}$ with
+  Then $L$ has a standard PCP $V_{\comp}$ with
   \begin{enumerate}[label=\alph*.]
     \item randomness complexity $r_{\out}(n) + r_{\oin}(d_{\out}(n))$,
     \item query complexity $q_{\oin}(d_{\out}(n))$,
@@ -3398,7 +3503,7 @@ PCPPs to make a new (non-robust) PCP with improved bounds.
 % TODO: Goal: Prove Theorem 2.1.9 from ALMSS98 and then Proposition 2.14 from
 % BGHSV06 (removing as much complexity from ALMSS98 as possible)
 
-\begin{thm}[{\cite[Theorem 2.1.9]{ALMSS98}}]\index{thm:always-robust-pcpp}
+\begin{thm}[{\cite[Theorem 2.1.9]{ALMSS98}}]\label{thm:always-robust-pcpp}
   % TODO: Rephrase to use PCPP verifiers instead of inner verifiers
 \end{thm}
 
@@ -3406,7 +3511,7 @@ PCPPs to make a new (non-robust) PCP with improved bounds.
   % TODO
 \end{proof}
 
-\begin{thm}[{\cite[Prop.\ 2.14]{BGHSV06}}]\index{thm:parallel-vs-robust}
+\begin{thm}[{\cite[Prop.\ 2.14]{BGHSV06}}]\label{thm:parallel-vs-robust}
   % TODO
 \end{thm}
 
@@ -4312,6 +4417,102 @@ problem, and as before our problem of choice is $\OSAT$.
 
 \chapter{A zero-knowledge PCP theorem}\label{chap:zk-pcp-theorem}
 
+\section{Locally-computable proofs}\label{sec:loc-comp-proof}
+
+% TODO: This will probably need to be moved to the original PCP theorem chapter
+
+\begin{defn}[{\cite[Def.\ 3.1]{GOS25}}]\label{def:loc-comp}%
+  \index{locally-computable proof}
+  Let $A$ and $A_{0}$ be randomized Turing machines, and let $\ell: \mathbb{N} \rightarrow \mathbb{N}$. Then
+  $A$ is \emph{$\ell$-locally computable} from $A_{0}$ on a subset
+  % FIXME: What is the oracle of f?
+  $C \subseteq \{0, 1\}^{*}$ if there exists an oracle Turing machine $f$ that runs in
+  polynomial time and makes no more than $\ell$ queries to its oracle such that for
+  every $x \in C$, the distribution of $A(x)$ is identical to the distribution of
+  $f$ with oracle $\pi_{0} = A_{0}(x)$.
+  % TODO: Be more clear about what this oracle actually is
+  % $(f^{\pi_{0}} \mid \pi_{0} \leftarrow A_{0}(x))$
+\end{defn}
+
+% FIXME: This paper refers to proofs as algorithms computable from their input:
+% this conflicts with how we have been referring to PCPs so far
+
+\begin{thm}[{\cite[Lemma 3.2]{GOS25}}]\label{thm:local-comp-pzk}
+  % TODO
+  % FIXME: Is (P, V) supposed to have the same language as (P_0, V_0)?
+  Let $(P_{0}, V_{0})$ be a PZK-PCP for some language $L$ with query bound
+  $q^{*}$, and let $(P, V)$ be a PCP for a langauge $M$ such that $P$ is
+  $\ell$-locally computable from $V$ on $M$. Then $(P, V)$ is perfect
+  zero-knowledge with query bound $q^{*}/\ell$.
+\end{thm}
+
+% TODO: Define hybrid simulator somewhere
+\begin{algorithm}[htbp]
+  \KwIn{A string $x$ and random coins $r$, as well as oracle access to a
+    function $\pi_{0}$}
+  \KwOut{The interaction transcript of $(P, V^{*})$ on input $x$}
+  % TODO: KwIn/KwOut
+  % NOTE: r is an input
+  $T \leftarrow \lbrack\,\rbrack$\;
+  Run $V^{*}$ on random coins $r$\;
+  \For{each query $\alpha$ that $V^{*}$ makes}{
+    $\beta \leftarrow f^{\pi_{0}}(\alpha)$\;
+    Push $(\alpha, \beta)$ onto $T$\;
+  }
+  \KwRet{$(r, T)$}\;
+  \caption{A hybrid simulator for a locally-computable PCP~\cite[Construction
+    3.3]{GOS25}}\label{alg:hybrid-sim-lc}
+\end{algorithm}
+
+\begin{algorithm}[htbp]
+  \KwIn{A string $x$}
+  \KwOut{The interaction transcript of $(P, V^{*})$ on input $x$}
+  % TODO: Define \overline{\Sim}
+  Run $\overline{\Sim}_{A_{V^{*}}}(x)$ to obtain $T_{0}$ with random coins $r$\;
+  Run $A_{V^{*}}(x, r)$ (\cref{alg:hybrid-sim-lc}) using $T_{0}$ to answer its
+  questions\;
+  \KwRet{$(r, T)$}\;
+  \caption{A PZK simulator for a locally-computable PCP~\cite[Construction
+    3.4]{GOS25}}\label{alg:pzk-sim-lc}
+\end{algorithm}
+
+\begin{proof}
+  We construct a simulator for $(P, V)$ in \cref{alg:pzk-sim-lc}.
+
+  Let $V^{*}$ be a malicious verifier for $(P, V)$, and let $\pi \leftarrow P$ and
+  $\pi_{0} \leftarrow P_{0}$ be random variables. Since $P$ is $\ell$-locally computable with
+  the function $f$, by definition we have that $\pi$ is identically-distributed to
+  $(f^{\pi_{0}}(\alpha))_{\alpha \in \dom(\pi_{0})}$.
+  % FIXME: Not quite by definition; the definition is identically-distributed
+  % for all x but this is a pretty simple jump
+  Since all \cref{alg:hybrid-sim-lc} does is compute $f^{\pi_{0}}(\alpha)$ for each
+  query $\alpha$, it will reproduce the same transcript as $(P, V^{*})$ would.
+
+  % FIXME: Why is this a verifier?
+  Next, since $(P_{0}, V_{0})$ is a PZK-PCP, and \cref{alg:hybrid-sim-lc} is a
+  verifier for $\pi_{0}$, by definition there exists a simulator
+  $\overline{\Sim}_{A_{V^{*}}}$ whose output is identically-distributed to
+  $\View_{A_{V^{*}}, P_{0}}$, so long as $A_{V^{*}}$ makes no more than $q^{*}$
+  queries to $\pi_{0}$. Since $P$ is $\ell$-locally computable from $P_{0}$, it
+  follows that \cref{alg:hybrid-sim-lc} makes no more than $\ell$ queries to
+  $\pi_{0}$. Hence, \cref{alg:pzk-sim-lc} makes no more than $q^{*}$ queries to
+  $\pi_{0}$ so long as $V^{*}$ makes no more than $q^{*}/\ell$ queries to $\pi$.
+  % TODO
+\end{proof}
+
+\begin{cor}\label{cor:local-comp-pzk}
+  % TODO: Previous theorem but for PCPPs
+  Let $(P_{0}, V_{0})$ be a PZK-PCPP for some language $L$ with query bound
+  $q^{*}$ and proximity parameter $\delta$, and let $(P, V)$ be a PCPP for a langauge
+  $M$ with proximity parameter $\delta$ such that $P$ is $\ell$-locally computable
+  from $V$ on $M$. Then $(P, V)$ is perfect zero-knowledge with query bound
+  $q^{*}/\ell$.
+\end{cor}
+
+\begin{proof}
+  % TODO
+\end{proof}
+
 \section{Zero-knowledge proof composition}\label{sec:zk-proof-comp}
 
 \begin{thm}[{\cite[Theorem 3.7]{GOS25}}]\label{thm:comp-pzk}
@@ -4320,14 +4521,61 @@ problem, and as before our problem of choice is $\OSAT$.
   query bound $q^{*}$.
 \end{thm}
 
+\begin{algorithm}[htbp]
+  % TODO: Steps 2-4 from the composed PCP
+  % Define D_out and \pi_out
+  \KwIn{A string $r \in \{0, 1\}^{r_{\out}}$}
+  \KwOut{The function $\pi_{r}$}
+  $I_{\out} \leftarrow Q_{\out}(x, r)$\;
+  Compile $D_{\out}$ on input $r$ into a circuit
+  $C_{\out}: \{0, 1\}^{n} \times \{0, 1\}^{\ell_{\out}} \rightarrow \{0, 1\}$\;
+  Run $P_{\oin}(C_{\out}, \pi_{\out}|_{I_{\out}})$ to get $\pi_{r}$\;
+  \KwRet{$\pi_{r}$}\;
+  \caption{An algorithm for $\pi_{r}$ from $\pi_{0}$}\label{alg:pi-r-from-pi-0}
+\end{algorithm}
+
 \begin{proof}
   All that is needed to prove this theorem is to show that
   \cref{alg:composed-pcp} preserves zero-knowledge, since we have already showed
-  that it satisfies the conditions in \cref{thm:composition}.
-  % TODO
+  that it satisfies the conditions in \cref{thm:composition}. We do this by
+  showing $P_{\comp}$ is $q_{\out}$-locally computable from $P_{\out}$.
+
+  We need to show that for any input $x \in L$, the distributions of $P(x)$ and
+  $f^{\pi_{0}}(x)$ are identically distributed. Consider the function
+  % TODO: Lemma about these "split instances": we seem to do this a lot
+  \begin{equation}
+    f(O, r) = \begin{cases}
+      \pi_{0}(r) & O = b_{0} \\
+      \text{\cref{alg:pi-r-from-pi-0}} & O = b_{r}.
+    \end{cases}
+  \end{equation}
+  % TODO: Correctness (why does above algorithm compute?)
+  If $O = b_{0}$, then we make no more than one query to $\pi_{0}$. If
+  $O = b_{r}$, then \cref{alg:pi-r-from-pi-0} makes no more than
+  $\abs{I_{\out}}$ queries to $\pi_{\out}$ (since that is the size of the domain
+  of the restricted function); regardless of $r$ we have that
+  $\abs{I_{\out}} \le q_{\out}$ since $I_{\out}$ is a set of queries and
+  $q_{\out}$ is the maximum number of queries that $V_{\out}$ makes. Hence $f$
+  makes no more than $q_{\out}$ queries.
+
+  Lastly, so long as $V_{\out}$ runs in polynomial time, so must $D_{\out}$ and
+  $Q_{\out}$; compiling into a circuit is also known to take polynomial time.
+  % TODO: Reference
+  Lastly, the problem statement tells us $P_{\oin}$ is guaranteed to run in
+  polynomial time; it follows that $f$ runs in polynomial time. Lastly, since
+  \cref{alg:pi-r-from-pi-0} uses its input $r$ as randomness to all the
+  algorithms it calls, it follows that $f$ itself is deterministic (since all
+  randomness comes from the choice of $r$). Hence, $P_{\comp}$ is
+  $q_{\out}$-locally computable from $P_{\out}$.
+
+  Since $P_{\comp}$ is $q_{\out}$-locally computable from $P_{\out}$, by
+  \cref{thm:local-comp-pzk} we have that $P_{\comp}$ is perfect zero-knowledge
+  with query bound $q^{*}/q_{\out}$.
 \end{proof}
 
 \section{Zero-knowledge alphabet reduction}\label{sec:zk-alph-red}
+
+% TODO: Talk a little about what alphabet reduction means (also earlier)
 
 \begin{thm}[{\cite[Lemma 2.13]{BGHSV06}}]%
   \label{thm:zk-alph-red}\label{alphabet reduction!zero-knowledge}
@@ -4346,6 +4594,69 @@ problem, and as before our problem of choice is $\OSAT$.
   We proved the non-zero-knowledge version of this as \cref{thm:alph-reduction},
   so all that remains is to prove that \cref{alg:boolean-reduction} preserves
   zero-knowledge.
+
+  First, we show $P$ is $1$-locally computable from $P_{a}$. Consider the
+  function $f$ (with oracle $\pi_{a}$) defined by
+  % TODO: Refresher on the terms
+  % TODO: Calling O \pi_a and \tau is a little confusing since we are not passing the
+  % functions themselves, just a marker
+  \begin{equation}\label{eqn:local-alph-red}
+    \begin{aligned}
+      % FIXME: Do I have the codomain right?
+      f^{\pi_{a}}\colon \{b_{\pi}, b_{\tau}\} \times \dom(\pi_{a}) \times [n] &\rightarrow \{0, 1\} \\
+      f^{\pi_{a}}(O, \alpha, i) &\mapsto \begin{cases}
+        \pi_{a}(\alpha) & O = b_{\pi} \\
+        \ECC(\pi_{a}(\alpha))_{i} & O = b_{\tau}.
+      \end{cases}
+    \end{aligned}
+  \end{equation}
+  We show the distribution of $P$ is the same as the distribution of $f$ with
+  oracle from $P_{a}$ for all $x$.
+  % TODO
+
+  % TODO: Don't like this phrasing particularly much (introduce domain
+  % shenanigans before defining f?)
+  The domain for our function is three values: $O$, a marker for either $\pi_{a}$
+  or $\tau$; $\alpha$, the value we query; and $i$, the bit of the error-correcting code
+  we wish to query. This is equivalent to a way to access the output of $P$ from
+  \cref{alg:boolean-reduction}; since it returns an ordered pair of two
+  functions $(\pi_{a}, \tau)$, whenever we query it we need first to choose which of
+  the two functions to query, the value we are querying them on, and then since
+  we can only look at one bit, if we are querying $\tau$ we need to also determine
+  which specific bit we are asking for. Hence, for any $(O, \alpha, i)$, the
+  definition of $f$ means that $\pi(O, \alpha, i) = f^{\pi_{0}}(O, \alpha, i)$. Hence the two
+  are identically distributed and thus $P$ is $1$-locally computable from
+  $P_{a}$.
+
+  Since $P$ is $1$-locally computable from $P_{a}$, it follows from
+  \cref{thm:local-comp-pzk} that $P$ is perfect zero-knowledge with the same
+  query bound as $P_{a}$.
+\end{proof}
+
+% FIXME: Is this the right theorem?
+\begin{thm}[{\cite[Theorem 3.2]{BGHSV06}}]\label{thm:ckt-val-pcpp}
+  % TODO: Introduce the circuit value problem
+  For any $\varepsilon > 0$, $\CktVal$ has a PCPP $(P, V)$ where $P$ is deterministic and
+  polynomial-time, such that
+  \[
+    \CktVal \in \PCPP\pcpp{\log(n) + O(\log^{\varepsilon}(n))}{O(1/\varepsilon)}{\Theta(\varepsilon)}{1/2}.
+  \]
+\end{thm}
+
+\begin{proof}
+  % TODO: Do I even \emph{want} a proof or is this too much?
+\end{proof}
+
+\begin{cor}\label{cor:constant-query}
+  % TODO: Define all these
+  % FIXME: Get this equation number to be in a reasonable place
+  \begin{equation}\label{eqn:constant-query}
+    \PZKPCP\pzkpcpr{r}{q}{q^{*}}{\varepsilon}{s}{\Omega(1)} \subseteq
+    \PZKPCP\pzkpcpr{r + \log(n)}{q}{q^{*}/q}{\varepsilon}{s}{\Omega(1)}.
+  \end{equation}
+\end{cor}
+
+\begin{proof}
   % TODO
 \end{proof}
 
@@ -4491,7 +4802,40 @@ problem, and as before our problem of choice is $\OSAT$.
 
 \section{A zero-knowledge $\PCP$ for $\NP$ and $\NEXP$}\label{sec:pzkpcp-np-nexp}
 
+\begin{thm}[{\cite[Theorem 6.3]{GOS25}}]\label{thm:np-zk-pcp}
+  For any query bound $q^{*}(n) \le 2^{\poly(n)}$,
+  \[
+    \NEXP \subseteq
+    \PZKPCP_{\Sigma(n)}\pzkpcpr{\log(n)+\log(q^{*}(n))}{\poly(\log(n) + \log(q^{*}(n)))}{q^{*}(n)}{\varepsilon}{s}{\Omega(1)}.
+  \]
+  where $\abs{\Sigma(n)} = \poly(n, q)$.
+\end{thm}
+
 \begin{algorithm}[htbp]
+  % TODO
+  \caption{A $\PZKPCP$ for $\NP$~\cite[Theorem 6.3]{GOS25}}\label{alg:pzkpcp-np}
+\end{algorithm}
+
+\begin{algorithm}[htbp]
+  % TODO
+  \caption{A simulator for \cref{alg:pzkpcp-np}}\label{alg:pzkpcp-np-sim}
+\end{algorithm}
+
+\begin{proof}
+  % TODO
+\end{proof}
+
+\begin{thm}[{\cite[Theorem 6.3]{GOS25}}]\label{thm:nexp-zk-pcp}
+  For any query bound $q^{*}(n) \le 2^{\poly(n)}$,
+  \[
+    \NEXP \subseteq
+    \PZKPCP_{\Sigma(n)}\pzkpcpr{\poly(n)+\log(q^{*}(n))}{\poly(n)}{q^{*}(n)}{\varepsilon}{s}{\Omega(1)}.
+  \]
+  where $\Sigma(n)$ is any alphabet with $\abs{\Sigma(n)} \in \poly(n, q)$.
+\end{thm}
+
+\begin{algorithm}[htbp]
+  % TODO
   \tcc{Proof}
   Let $A\colon \{0, 1\}^{n} \rightarrow \{0, 1\}$ be a satisfying assignment for $B$\;
   Choose $\hat{C} \in \mathbb{F}[X_{m_{2} + k}^{\le 2(\abs{H} - 1)}]$ randomly such
@@ -4511,24 +4855,29 @@ problem, and as before our problem of choice is $\OSAT$.
   }
   \KwRet{$(\pi_{C}, (\pi_{\tau})_{\tau \in \mathbb{F}^{m_{1}+3m_{2}+3}})$}\;
   \tcc{Verifier}
-  % TODO
-  \caption{A $\PZKPCP$ for $\OSAT$~\cite[Theorem 6.3]{GOS25}}\label{alg:pzkpcp-np}
-\end{algorithm}
-
-\begin{algorithm}[htbp]
-  % TODO
-  \caption{A simulator for \cref{alg:pzkpcp-np}}\label{alg:pzkpcp-np-sim}
-\end{algorithm}
-
-\begin{algorithm}[htbp]
-  % TODO
   \caption{A $\PZKPCP$ for $\OSAT$~\cite[Construction 6.4]{GOS25}}\label{alg:pcp-osat}
 \end{algorithm}
 
 \begin{algorithm}[htbp]
   % TODO
+  \KwIn{A query $\alpha$ to an oracle $O$, either $\pi_{C}$ or $\pi_{\tau}$}
+  \KwOut{The result of the query}
+  \eIf{The query request is to $\pi_{C}$}{
+    % TODO
+  }{
+    \If{This is the first query to $\pi_{\tau}$}{
+      % TODO
+    }
+    % TODO
+  }
   \caption{A simulator for \cref{alg:pcp-osat}~\cite[Construction 6.7]{GOS25}}\label{alg:pcp-osat-sim}
 \end{algorithm}
+
+\begin{proof}
+  We construct a PZK-PCP for $\OSAT$, a $\NEXP$-complete language, in
+  \cref{alg:pcp-osat}.
+  % TODO
+\end{proof}
 
 \subsection{Reducing query complexity to constant}\label{sec:constant-pcp-np}
 
@@ -4540,7 +4889,57 @@ theorem.
 \end{thm}
 
 \begin{proof}
-  % TODO
+  To show this, we will take the PCP for $\NP$ that we showed in
+  \cref{thm:np-zk-pcp}, which has relatively weak bounds and an arbitrary
+  alphabet, and transform it into one with the exact parameters we seek. We do
+  this first through an alphabet reduction (as per \cref{thm:alph-reduction})
+  and then through proof-composing it with the algorithm for $\CktVal$ with
+  \cref{cor:constant-query}, we can get a constant query-complexity PCP.
+
+  Let $q^{*}(n) \le 2^{\poly(n)}$ be arbitrary. This will be the query complexity
+  of our final PCP after we do all the class inclusions. As per
+  \cref{thm:np-zk-pcp}, we know that
+  \begin{equation}\label{eqn:np-subseteq-pzkpcp}
+    \NP \subseteq
+    \PZKPCP_{\Sigma(n)}\pzkpcpr{\log(n)+\log(\tilde{q}(n))}{\poly(\log(n) + \log(\tilde{q}(n)))}{\tilde{q}(n)}{\varepsilon}{s}{\Omega(1)}.
+  \end{equation}
+  for any $\tilde{q} \le 2^{\poly(n)}$ and where
+  $\abs{\Sigma(n)} \in \poly(n, \tilde{q})$. \Cref{thm:np-zk-pcp} only guarantees this
+  inclusion for alphabets of $\{0, 1\}^{a}$, however a PCP over $\Sigma(n)$ is
+  equivalent to a PCP over $\{0, 1\}^{\log_{2}(\abs{\Sigma(n)})}$ by a simple
+  relabeling of alphabet items, so this inclusion still holds.
+
+  Next, we perform an alphabet reduction: by \cref{thm:zk-alph-red},
+  % TODO: Highlight changes?
+  \begin{equation}\label{eqn:alph-red-np}
+    \begin{aligned}
+      \PZKPCP_{\Sigma(n)}&\pzkpcpr{\log(n)+\log(\tilde{q}(n))}{\poly(\log(n) + \log(\tilde{q}(n)))}{\tilde{q}(n)}{\varepsilon}{s}{\Omega(1)} \\
+      \subseteq \PZKPCP_{\{0,1\}}&\pzkpcpr{\log(n)+\log(\tilde{q}(n))}{\poly(\log(n) + \log(\tilde{q}(n)))}{\tilde{q}(n)}{\varepsilon}{s}{\Omega(1)}.
+    \end{aligned}
+  \end{equation}
+
+  Next, we perform proof composition. For any language $L \in \NP$, let
+  $Q(n) \in \poly(\log(n) + \log(\tilde{q}))$ be the query complexity of the
+  PZK-PCP within the parameters of the right-hand side of \cref{eqn:alph-red-np}
+  that recognizes $L$. Since $\tilde{q}$ was arbitrary, we can define it to be
+  whatever we like; hence let $\tilde{q}(n)$ be a polynomial in $q^{*}$ and $n$
+  large enough that for all $n \in \mathbb{N}$, $\tilde{q}(n)/Q(n) \ge q^{*}(n)$. By
+  \cref{cor:constant-query}, we have that
+  \begin{equation}\label{eqn:proof-comb-np}
+    \begin{aligned}
+      \PZKPCP_{\{0,1\}}&\pzkpcpr{\log(n)+\log(\tilde{q}(n))}{\poly(\log(n) + \log(\tilde{q}(n)))}{\tilde{q}(n)}{\varepsilon}{s}{\Omega(1)} \\
+      \subseteq \PZKPCP_{\{0,1\}}&\pzkpcp{\log(n)+\log(q^{*}(n))}{1}{q^{*}(n)}{\varepsilon}.
+    \end{aligned}
+  \end{equation}
+
+  At the beginning of the proof, we said $q^{*}$ was arbitrary; hence we can set
+  $q^{*} \in O(1)$. Thus, we get
+  \begin{equation}\label{eqn:qstar-arbitrary-np}
+      \PZKPCP_{\{0,1\}}\pzkpcp{\log(n)+\log(q^{*}(n))}{1}{q^{*}(n)}{\varepsilon} \subseteq \PZKPCP[\log(n), 1].
+  \end{equation}
+  By combining the inclusions in
+  \crefrange{eqn:np-subseteq-pzkpcp}{eqn:qstar-arbitrary-np}, we get that
+  $\NP \subseteq \PZKPCP[\log(n), 1]$, as desired.
 \end{proof}
 
 \begin{thm}[{\cite[Theorem 7.1]{GOS25}}]\label{thm:zk-pcp-nexp}
@@ -4548,7 +4947,51 @@ theorem.
 \end{thm}
 
 \begin{proof}
-  % TODO
+  Broadly speaking, this proof will proceed in the same style as the proof for
+  \cref{thm:zk-pcp}. % TODO: More intro
+
+  Let $q^{*} \le 2^{\poly(n)}$ be arbitrary. This will be the query complexity of
+  our final PCP after we do all the class inclusions. As per
+  \cref{thm:nexp-zk-pcp}, we know that
+  \begin{equation}\label{eqn:nexp-subseteq-pzkpcp}
+    \NEXP \subseteq \PZKPCP_{\Sigma(n)}\pzkpcpr{\poly(n)+\log(\tilde{q}(n))}{\poly(n)}{\tilde{q}(n)}{\varepsilon}{s}{\Omega(1)}.
+  \end{equation}
+  for any $\tilde{q} \le 2^{\poly(n)}$ and where
+  $\abs{\Sigma(n)} \in \poly(n, \tilde{q})$. As before, \cref{thm:np-zk-pcp} only
+  guarantees this inclusion for alphabets of $\{0, 1\}^{a}$, however a PCP over
+  $\Sigma(n)$ is equivalent to a PCP over $\{0, 1\}^{\log_{2}(\abs{\Sigma(n)})}$ by a
+  simple relabeling of alphabet items, so this inclusion still holds.
+
+  Next, we perform an alphabet reduction: by \cref{thm:zk-alph-red},
+  % TODO: Highlight changes?
+  \begin{equation}\label{eqn:alph-red-nexp}
+    \begin{aligned}
+      \PZKPCP_{\Sigma(n)}&\pzkpcpr{\poly(n)+\log(\tilde{q}(n))}{\poly(n)}{\tilde{q}(n)}{\varepsilon}{s}{\Omega(1)} \\
+      \subseteq \PZKPCP_{\{0,1\}}&\pzkpcpr{\poly(n)+\log(\tilde{q}(n))}{\poly(n,\log(\tilde{q}(n)))}{\tilde{q}(n)}{\varepsilon}{s}{\Omega(1)}.
+    \end{aligned}
+  \end{equation}
+
+  Next, we perform proof composition. For any language $L \in \NP$, let
+  $Q(n) \in \poly(n)$ be the query complexity of the PZK-PCP within the parameters
+  of the right-hand side of \cref{eqn:alph-red-np} that recognizes $L$. Since
+  $\tilde{q}$ was arbitrary, we can define it to be whatever we like; hence let
+  $\tilde{q}(n) = q^{*}(n) \cdot Q(n)$ for all $n \in \mathbb{N}$. By
+  \cref{cor:constant-query}, we have that
+  \begin{equation}\label{eqn:proof-comb-nexp}
+    \begin{aligned}
+      \PZKPCP_{\{0,1\}}&\pzkpcpr{\poly(n)}{\poly(n, \log(\tilde{q}(n)))}{\tilde{q}(n)}{\varepsilon}{s}{\Omega(1)} \\
+      \subseteq \PZKPCP_{\{0,1\}}&\pzkpcp{\poly(n) + \log(q^{*}(n))}{1}{q^{*}(n)}{\varepsilon}.
+    \end{aligned}
+  \end{equation}
+
+  At the beginning of the proof, we said $q^{*}$ was arbitrary; hence we can set
+  $q^{*} \in O(1)$. Thus, we get
+  \begin{equation}\label{eqn:qstar-arbitrary-nexp}
+      \PZKPCP_{\{0,1\}}\pzkpcp{\poly(n)+\log(q^{*}(n))}{1}{q^{*}(n)}{\varepsilon} \subseteq \PZKPCP[\poly(n), 1].
+  \end{equation}
+  By combining the inclusions in
+  \crefrange{eqn:nexp-subseteq-pzkpcp}{eqn:qstar-arbitrary-nexp}, we get that
+  $\NEXP \subseteq \PZKPCP[\poly(n), 1]$, as desired.
 \end{proof}
 
 \begin{appendices}
