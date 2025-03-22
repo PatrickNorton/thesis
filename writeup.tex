@@ -31,7 +31,9 @@
 \usepackage[capitalize,noabbrev]{cleveref}
 
 \usetikzlibrary{arrows.meta}
+\usetikzlibrary{hobby}
 \usetikzlibrary{shapes.geometric}
+\usetikzlibrary{through}
 \usetikzlibrary{trees}
 
 \setlength{\headheight}{14.5pt}
@@ -60,6 +62,14 @@
 \newtheorem{remark}[thm]{Remark}
 \newtheorem{subrem}[example]{Remark}
 
+\definecolor{plum}{HTML}{8105C1}
+\definecolor{pumpkin}{HTML}{E47604}
+\definecolor{rose}{HTML}{C10091}
+\definecolor{dgreen}{HTML}{25A75B}
+\definecolor{dblue}{HTML}{0066FF}
+\definecolor{cornflower}{HTML}{3256C3}
+\definecolor{viridian}{HTML}{099A97}
+\definecolor{alert}{HTML}{3256C3}
 
 \DeclareMathOperator{\ad}{ad}
 \DeclareMathOperator{\Aut}{Aut}
@@ -286,8 +296,6 @@ complexity theory.
 
 \chapter{Preliminaries}
 
-% TODO: Do we need Hamming distance? I can't find them actually using it in CFGS22
-
 \section{Turing machines}
 
 % TODO: Do we even need to formally define a TM?
@@ -299,11 +307,19 @@ most common is that of a small machine that can read and write to an
 arbitrarily-long ``tape'' according to some finite set of rules. We give a more
 formal definition below, and then we will attempt to take this definition into a
 more manageable form.
+
+\begin{figure}[htbp]
+  \centering
+  \TODO{}
+  \begin{tikzpicture}
+  \end{tikzpicture}
+  \caption{A Turing machine}\label{fig:tm}
+\end{figure}
+
 \begin{defn}[{\cite[Def.\ 3.1]{Sip97}}]\label{def:TM}\index{Turing machine}
   A \emph{Turing machine} (abbreviated TM) is a 7-tuple
   $(Q, \Sigma, \Gamma, \delta, q_{0}, q_{a}, q_{r})$ where $Q$, $\Sigma$, and $\Gamma$ are all finite
   sets and
-  % TODO: Rephrase to separate out terminology and definitions?
   \begin{enumerate}
     \item $Q$ is the set of \emph{states},
     \item $\Sigma$ is the \emph{input alphabet},
@@ -338,6 +354,14 @@ into the context of a Turing machine. If we have explained the algorithm well
 enough that a reader can execute it (as we endeavor to do), then we know a
 Turing machine must exist.
 
+\begin{figure}[htbp]
+  \centering
+  \TODO{}
+  \begin{tikzpicture}
+  \end{tikzpicture}
+  \caption{A nondeterministic Turing machine}\label{fig:ntm}
+\end{figure}
+
 \begin{defn}\label{def:nondeterministic-tm}\index{Turing machine!nondeterministic}
   A \emph{nondeterministic Turing machine} is % TODO
 \end{defn}
@@ -353,7 +377,29 @@ Turing machine must exist.
 \section{Complexity classes}
 
 % TODO: Do I need to define big-O for this?
-% TODO: Venn diagram of all the complexity classes in this section
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}
+    \pgfmathsetmacro{\s}{sqrt(2)/4};
+    \draw (0, 0) circle [radius=0.5];
+    \node at (0, 0) {$\P$};
+    \draw (\s,\s) ellipse [x radius=1,y radius=0.75,rotate=45];
+    \node[anchor=south west] at (\s,\s) {$\NP$};
+    \draw (-\s,\s) ellipse [x radius=1,y radius=0.75,rotate=-45];
+    \node[anchor=south east] at (0.1-\s,\s) {$\BPP$};
+    \draw (0, 1) circle [radius=1.5];
+    \node at (0, 1.75) {$\PSPACE$};
+    \draw (0, 1.5) circle [radius=2];
+    \node at (0, 3) {$\EXP$};
+    \draw (0, 2) circle [radius=2.5];
+    \node at (0, 4) {$\NEXP$};
+    \draw (0, 2.5) circle [radius=3];
+    \node at (0, 5) {$\RE$};
+  \end{tikzpicture}
+  \caption{The relationship between the complexity classes for this
+    paper}\label{fig:comp-class}
+\end{figure}
 
 Complexity classes are the main way we think about the hardness of problems in
 computer science. A complexity class\index{complexity class} is a collection of
@@ -517,7 +563,6 @@ interest is the relationship between $\NP$ and $\NEXP$.
 
 It is perhaps illustrative to see an example of a problem in $\NEXP$. % TODO
 
-% https://www.cs.umd.edu/~jkatz/complexity/f11/lecture26-dapon.pdf
 \begin{defn}[{\cite[Def.\ 14.1]{CFGS22}}]\label{def:oracle-3sat}\index{O3SAT@$\OSAT$}
   The \emph{oracle 3-satisfiability problem}, denoted $\OSAT$, is the language
   of all triplets $(r, s, B)$, where $r, s \in \mathbb{N}^{+}$ and
@@ -570,7 +615,8 @@ It is perhaps illustrative to see an example of a problem in $\NEXP$. % TODO
   in length (since that is an arbitrary function); since runtime complexity is
   about the worst case there thus exist inputs that cannot be computed in
   polynomial time relative to their length.
-  % TODO
+
+  \TODO{}
 \end{proof}
 
 \subsection{Space complexity}\index{space complexity}
@@ -643,11 +689,6 @@ nondeterministic class.
   is in $\PSPACE$. % TODO: Explain why
 \end{example}
 
-% TODO: If/when we pull random/quantum stuff in here, probably worth defining
-% BPP and BQP (QMA might need its own section?)
-
-% TODO: Draw a graph of all these complexity inclusions
-
 \subsection{Completeness}
 
 % TODO: Not a huge fan of this paragraph
@@ -695,15 +736,13 @@ only if \emph{any} $\NP$-complete language is in $\P$.
   problem we defined earlier in \cref{ex:sat-is-np} is $\NP$-complete.
 \end{example}
 
-% TODO: Talk about why we use completeness (if it's true for anything here, it's
-% true for everything in NP)
 The notion of completeness is very important to complexity theorists. Since
 these are the ``hardest'' problems in $\NP$, this means that if we can do
 anything interesting to an $\NP$-complete problem, we can leverage these
 reductions to do that interesting thing to \emph{any} other problem in $\NP$
 with only a little (i.e.\ polynomial) more effort. This will come in especially
 handy when we want to prove that complexity classes are equal or that $\NP$ is a
-subset of some other complexity class--since most complexity classes allow for
+subset of some other complexity class---since most complexity classes allow for
 things to change polynomially, we only need to prove that a single
 $\NP$-complete element is in the other class for the subset relation to follow.
 
@@ -737,7 +776,8 @@ the inclusion of a single complete language.
   remains is to prove that reductions exist for every $\NEXP$ language. Let
   $L \in \NEXP$, and let $x \in \{0, 1\}^{n}$. We aim to construct an algorithm in
   $\P^{\OSAT}$ that computes $L$.
-  % TODO
+
+  \TODO{}
 \end{proof}
 
 Just as we have $\NP$-completeness and $\NEXP$-completeness for time complexity,
@@ -762,23 +802,66 @@ we instead restrict ourselves to polynomial-time reductions.
   in \cref{ex:regex-is-pspace} is $\PSPACE$-complete.
 \end{example}
 
+\subsection{Randomized complexity}\label{sec:rand-complexity}
+
+\TODO{}
+
+\begin{defn}\label{def:bpp}\index{BPP@$\BPP$}
+  A language $L$ is in $\BPP$ if there exists a probabilistic Turing machine $M$
+  such that
+  \begin{enumerate}
+    \item $M$ runs in polynomial time,
+    \item for all $x \in L$, $M$ accepts $x$ with probability at least $2/3$,
+    \item for all $x \notin L$, $M$ rejects $x$ with probability at least $2/3$.
+  \end{enumerate}
+\end{defn}
+
+\begin{thm}\label{thm:p-subset-bpp}
+  $\P \subseteq \BPP$.
+\end{thm}
+
+\begin{thm}\label{thm:bpp-subset-pspace}
+  $\BPP \subseteq \PSPACE$.
+\end{thm}
+
 \subsection{Counting complexity}\index{counting complexity}
 
+So far, all of the problems we have seen are boolean problems, where the answer
+is either yes or no. There exist many interesting questions, however, where we
+would like more than two distinct answers. In particular, there are lots of
+problems where the most interesting answer is a \emph{count} of something: in
+particular, questions of the type ``How many objects are there such that some
+condition is true?'' will be of interest to us.
+
 \begin{defn}\label{def:counting-problem}\index{counting problem}
-  A \emph{counting problem} is % TODO
+  A \emph{counting problem} is a function from $\{0, 1\}^{*}$ to $\mathbb{N}$.
 \end{defn}
+
+Now that we have this definition, we should define a complexity class of
+function problems. The simplest complexity class for function problems is
+$\#\P$, the set of function problems that can be computed in polynomial time.
 
 \begin{defn}[{\cite[Def.\ 9.2]{AB09}}]\label{def:hash-p}\index{P#@$\#\P$}
   The class $\#\P$ is the class of functions $f\colon \{0, 1\}^{*} \rightarrow \mathbb{N}$ such
   that there exists a polynomial $p\colon \mathbb{N} \rightarrow \mathbb{N}$ and a polynomial-time
   Turing machine $M$ such that for every $x \in \{0, 1\}^{*}$,
-  \begin{equation}
+  \begin{equation}\label{eqn:hash-p}
     f(x) = \abs*{\mleft\{y \in \{0, 1\}^{p(\abs{x})} \middlemid M(x, y) = 1\mright\}}.
   \end{equation}
 \end{defn}
 
+As mentioned earlier, questions of the type ``How many objects are there such
+that some condition is true?'' are of the most interest of us, and here we
+actually define $\#\P$ in terms of these problems. \Cref{eqn:hash-p} simply says
+that $f(x)$ needs to be equal to the number of inputs $y$ on which some
+polynomial Turing machine accepts when given both $x$ and $y$. In this case, the
+Turing machine $M$ provides our condition, and a function problem is in $\#\P$
+exactly when we can compute this condition efficiently.
+
+\TODO{Introduce $\#\P$-completeness}
+
 \begin{defn}\label{def:hash-p-complete}\index{P#-complete@$\#\P$-complete}
-  A language is $\#\P$-complete if % TODO: Do I want to use the definition with FP?
+  A language is $\#\P$-complete if \TODO{Do I want to use the definition with $\FP$?}
 \end{defn}
 
 \begin{defn}\label{def:hash-sat}\index{SAT#@$\#\SAT$}
@@ -791,6 +874,8 @@ we instead restrict ourselves to polynomial-time reductions.
 \end{thm}
 
 \section{Polynomials}\label{sec:polynomial}
+
+\TODO{}
 
 \begin{defn}[{\cite{Knu92}}]\label{def:iverson-bracket}\index{Iverson bracket}
   Let $P$ be a mathematical statement. The function $[P]$ is the the function
@@ -808,12 +893,12 @@ we instead restrict ourselves to polynomial-time reductions.
 \end{defn}
 
 \begin{example}
-  Using the Iverson bracket, the Kronecker delta function can be defined as
+  Using the Iverson bracket, the Kronecker delta function\index{Kronecker delta
+    function} can be defined as
   \[
     \delta_{ij} = [i = j].
   \]
 \end{example}
-% TODO: Transition sentence
 
 Much of our work will deal with multivariate polynomials. For a given field
 $\mathbb{F}$, we will denote the set of $m$-variable polynomials over
@@ -843,6 +928,11 @@ able to reference throughout the paper.
   a polynomial is \emph{multiquadratic} if it has multidegree at most 2.
 \end{defn}
 
+\begin{example}
+  The polynomial $x_{1}x_{2} + 4x_{2}x_{3} + x_{1}x_{2}x_{3}$ is multilinear. The
+  polynomial $x_{1}^{2}x_{2}x_{3} - 2x_{1}x_{3} + 3x_{2}^{2}$ is multiquadratic.
+\end{example}
+
 From here, we need to define the notion of an \emph{extension polynomial}. This
 gives the ability to take an arbitrary multivariate function defined on a subset
 of a field and extend it to be a multivariate polynomial over the \emph{whole}
@@ -854,18 +944,40 @@ field.
   $f$ is any polynomial $f' \in \mathbb{F}[x_{1, \ldots, m}]$ such that $f(h) = f'(h)$
   for all $h \in H$.
 \end{defn}
-% TODO: Examples
 
-It turns out that this polynomial needs only to be of a surprisingly low
-multidegree. Since polynomials of lower degree are generally easier to compute,
-we would like to have some measure of what a ``small'' polynomial actually is in
-this context.
+\begin{example}
+  Define $H = \{0, 1\}^{3} \subseteq \mathbb{R}^{3}$. Further define
+  \begin{align*}
+    f\colon H^{3} &\rightarrow \mathbb{R} \\
+    (a, b, c) &\mapsto a \oplus b \oplus c,
+  \end{align*}
+  where $\oplus$ is the xor function; equivalently addition mod $2$. Then an
+  extension polynomial of $f$ is the function
+  \begin{equation*}
+    f'(x, y, z) = xyz - (x - y)(y - z)(z - x).
+  \end{equation*}
+  A second extension polynomial of $f$ is the function
+  \begin{equation*}
+    f''(x, y, z) = x + y + z - 2xy - 2yz - 2xz + 4xyz.
+  \end{equation*}
+\end{example}
 
-% TODO: Rewrite \hat{f} as \tilde{f} to agree with AW09
+There are (at least) two important things to be gleaned from this example.
+First, extension polynomials are not unique: $f'$ and $f''$ are not equal to
+each other (they are not even of the same multidegree). Second, $f''$ is in fact
+multilinear, which might be a somewhat lower multidegree than expected given we
+need to interpolate 8 different points. It turns out that this is not
+particularly unusual: while our choice of $H$ is particularly nice, functions
+from this particular $H$ still happen to be quite nice in general. Even for
+less-nice values of $H$, extension polynomials need only to be of a surprisingly
+low multidegree. Since polynomials of lower degree are generally easier to
+compute, we would like to see exactly what these low-degree extension
+polynomials look like and how they work.
+
 \begin{defn}[{\cite[\defaultS 5.1]{CFGS22}}]\label{def:low-deg-ext}\index{low-degree extension}
   Let $\mathbb{F}$ be a finite field, $H \subseteq \mathbb{F}$, $m \in \mathbb{N}$ a number, and
   $f\colon H^{m} \rightarrow \mathbb{F}$ be a function. A \emph{low-degree extension}
-  $\hat{f}$ of $f$ is an extension of $f$ with multidegree at most
+  $\tilde{f}$ of $f$ is an extension of $f$ with multidegree at most
   $\abs{H} - 1$.
 \end{defn}
 
@@ -879,10 +991,10 @@ we shall now calculate.
 
 \begin{thm}[{\cite[\defaultS 5.1]{CFGS22}}]\label{thm:low-deg-ext-exists}
   Let $\mathbb{F}$ be a finite field, $H \subseteq \mathbb{F}$, $m \in \mathbb{N}$ a number, and
-  $f\colon H^{m} \rightarrow \mathbb{F}$. Then a low-degree extension $\hat{f}$ of $f$ is
-  the function
+  $f\colon H^{m} \rightarrow \mathbb{F}$. Then a low-degree extension $\tilde{f}$ of $f$
+  is the function
   \begin{equation}
-    \hat{f}(x) = \sum_{\beta \in H^{m}}\delta_{\beta}(x)f(\beta),
+    \tilde{f}(x) = \sum_{\beta \in H^{m}}\delta_{\beta}(x)f(\beta),
   \end{equation}
   where $\delta$ is the polynomial
   % TODO? Flip x and y here
@@ -894,18 +1006,17 @@ we shall now calculate.
 \end{thm}
 
 \begin{proof}
-  First, we must show $\hat{f}$ has multidegree $\abs{H} - 1$. First, note that
-  $\hat{f}$ is a linear combination of some $\delta_{x}$es; hence asking about the
-  multidegree of $\hat{f}$ is really just asking about the multidegree of
+  First, we must show $\tilde{f}$ has multidegree $\abs{H} - 1$. First, note
+  that $\tilde{f}$ is a linear combination of some $\delta_{x}$es; hence asking about
+  the multidegree of $\tilde{f}$ is really just asking about the multidegree of
   $\delta_{x}$. Looking at $\delta_{x}$, the innermost product has $\abs{H} - 1$ terms,
   each with the same $y_{i}$; thus those terms have multidegree $\abs{H} - 1$.
   Summing terms preserves their multidegree, and the outer product iterates over
   the variables, thus it preserves multidegree as well. Thus, $\delta_{x}$ has
   multidegree $\abs{H} - 1$.
 
-  % TODO: Turn this into a lemma?
-  To understand why $\hat{f}(x)$ agrees with $f(x)$ on $H$, we first should look
-  at $\delta_{\beta}(x)$. In particular, for all $x, y \in H^{m}$,
+  To understand why $\tilde{f}(x)$ agrees with $f(x)$ on $H$, we first should
+  look at $\delta_{\beta}(x)$. In particular, for all $x, y \in H^{m}$,
   \begin{equation}\label{eqn:delta-is-delta}
     \delta_{y}(x) = [x = y] = \delta_{xy}.
   \end{equation}
@@ -915,9 +1026,8 @@ we shall now calculate.
   delta function over the set $H^{m}$.
 
   Taking the above statement, we get that for all $x \in H^{m}$, the only nonzero
-  term of $\hat{f}(x)$ is the term where $\beta = x$; thus $\hat{f}(x) = f(x)$.
-  Hence, $\hat{f}$ is a low-degree extension of $f$.
-  % TODO: Does this even need a proof or can we leave it as a claim?
+  term of $\tilde{f}(x)$ is the term where $\beta = x$; thus $\tilde{f}(x) = f(x)$.
+  Hence, $\tilde{f}$ is a low-degree extension of $f$.
 \end{proof}
 
 Of particular interest to us will be the case of low-degree extensions where
@@ -932,7 +1042,7 @@ makes it much easier to reason about.
   Let $\mathbb{F}$ be a finite field, $m \in \mathbb{N}$ a number, and
   $f\colon \{0, 1\}^{m} \rightarrow \mathbb{F}$. Then
   \begin{equation}\label{eqn:low-deg-ext-small}
-    \hat{f}(x) = \sum_{\beta \in \{0, 1\}^{m}}\delta_{\beta}(x)f(\beta)
+    \tilde{f}(x) = \sum_{\beta \in \{0, 1\}^{m}}\delta_{\beta}(x)f(\beta)
   \end{equation}
   is a low-degree extension of $f$, where $\delta$ is the polynomial
   \begin{equation}\label{eqn:delta-poly-small}
@@ -960,8 +1070,7 @@ cube.\footnote{As an aside, this fact provides a relatively slick proof of the
   special case of our unproven statement earlier that low-degree extensions are
   both of minimal degree and unique.}
 
-% TODO: Find better statement of this theorem
-\begin{thm}[{\cite[\defaultS 4.1]{AW09}}]
+\begin{thm}[{\cite[\defaultS 4.1]{AW09}}]\label{thm:delta-poly-basis}
   For any field $\mathbb{F}$, the set $\{\delta_{x} \mid x \in \{0, 1\}^{n}\}$ forms a
   basis for the vector space of multilinear polynomials
   $\mathbb{F}^{n} \rightarrow \mathbb{F}$.
@@ -997,7 +1106,7 @@ of qualifiers to them, but they will be useful in later theorems (in particular
 \end{thm}
 
 \begin{proof}
-  % TODO
+  \TODO{}
   % NOTE: AW09 Lemma 4.2 is *almost* a corollary of our Theorem 1.3.5, except
   % for the fact that not all our points are in \{0, 1\}^n
 \end{proof}
@@ -1072,7 +1181,7 @@ of qualifiers to them, but they will be useful in later theorems (in particular
   satisfy our conditions of the theorem.
 \end{proof}
 
-% TODO: Unpack all that
+\TODO{Unpack all that}
 
 % NOTE: JKRS09 is actually even stronger than this (we need it only to be linear
 % in at least one variable)
@@ -1097,6 +1206,11 @@ of qualifiers to them, but they will be useful in later theorems (in particular
 \end{proof}
 
 \section{Statistics}
+
+In this paper, we will be dealing quite a bit with computers that have access to
+randomness. Because these computers now have access to randomness, their outputs
+are no longer deterministic: they can return different results depending on the
+exact rolls of their random dice.
 
 \begin{defn}\label{def:random-var}\index{random variable}
   A \emph{random variable} is % TODO
@@ -2103,6 +2217,22 @@ Unfortunately, this is not the case.\footnote{This is no
 
 \chapter{Interactive proof systems}\label{chap:ips}
 
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[every text node part/.style={align=center}]
+    \draw[rounded corners] (-2.5, -1) rectangle (2.5, 1) node [midway]
+    {$\PCP[\log(n), O(1)]$ \\ $\NP$};
+    \draw[rounded corners] (-3, -1.5) rectangle (3, 2.5);
+    \node[anchor=north] at (0, 2.25) {$\PCP[\poly(n), O(1)]$ \\ $\MIP$ \quad $\NEXP$};
+    \draw[rounded corners] (-3.5, -2) rectangle (3.5, 3.5);
+    \node[anchor=north] at (0, 3.25) {$\IP$ \quad $\PSPACE$};
+    \draw[rounded corners] (-4, -2.5) rectangle (4, 4.5);
+    \node[anchor=north] at (0, 4.25) {$\MIP*$ \quad $\RE$};
+  \end{tikzpicture}
+  \caption{The interactive-proof classes and their
+    relationships}\label{fig:ip-class-venn}
+\end{figure}
+
 Interactive proof systems are models of computation that involve multiple Turing
 machines exchanging messages between each other. In general, the machines are
 split into two categories: those that are computationally unbounded but
@@ -2362,30 +2492,52 @@ all the ``standard'' classes like $\P$ or $\NSPACE$.
   system.
 \end{defn}
 
+\TODO{}
+
+\begin{defn}\label{def:view-ip}\index{view!IP}
+  The \emph{view} of an interactive Turing machine $M_{1}$ communicating with
+  $M_{2}$ is the tuple $(x, m_{1}, \ldots, m_{n})$, where $m_{i}$ is the $i$th
+  message recieved from $M_{2}$.
+\end{defn}
+
 Now that we have seen the formal definition of an interactive proof, let us
-illustrate the formality with an example. To do so, consider the following
-theorem:
+illustrate the formality with an example. To do so, consider the language of
+non-isomorphic graphs:
 
-% \begin{thm}[{\cite{Pra75}}]\label{thm:primes-in-ip}\index{Prime@$\Prime$}
-%   The language $\Prime = \{p \mid p \text{ is prime}\}$ is in $\IP$.
-% \end{thm}
-% % NOTE: See also A Formalization of Pratt’s Primality Certificates (Wimmer, Noschinski)
+\TODO{Move $\GI$ and $\GNI$ definition to Chapter 1?}
+\begin{defn}\label{def:gi}\index{GI@$\GI$}
+  The language $\GI$ (for \emph{graph isomorphism}) is the set
+  \[
+    \GI = \{(G_{0}, G_{1}) \mid G_{0}, G_{1} \text{ graphs and } G_{0} \cong G_{1}\}.
+  \]
+\end{defn}
 
-% \begin{algorithm}[htbp]
-%   \TODO{}
-%   \caption{An interactive proof for the language $\Prime$}\label{alg:prime-ip}
-% \end{algorithm}
+This language is interesting for reasons beyond the scope of this paper,
+especially in that it is known to be in $\NP$ but is believed to be neither in
+$\P$ nor $\NP$-complete.
 
-\FIXME{Move $\GNI$ definition up here}
+\begin{defn}\label{def:gni}\index{GNI@$\GNI$}
+  The language $\GNI$ (for \emph{graph non-isomorphism}) is the set
+  \[
+    \GNI = \{(G_{0}, G_{1}) \mid G_{0}, G_{1} \text{ graphs and } G_{0} \ncong G_{1}\}.
+  \]
+\end{defn}
 
+Here, we will demonstrate that $\GNI$ has an interactive proof.
+
+\FIXME{I think I want $\GI$ here (also in $\IP$ since I'm pretty sure
+  $\IP = co\IP$); perhaps I should include both since the $\GI$ IP isn't
+  particularly interesting ($\GI \in \NP$ so $P$ can just send the isomorphism)}
 \begin{thm}\label{thm:gni-ip}
   The language $\GNI$ is in $\IP$.
 \end{thm}
 
 \begin{algorithm}[htbp]
-  \KwIn{Two $n$-vertex graphs $G_{0}$ and $G_{1}$}
+  \KwIn{Two $n$-vertex graphs $G_{0}$ and $G_{1}$, and a security parameter $s$}
   \KwOut{Whether $G_{0} \ncong G_{1}$}
-  \FIXME{What is $s$?}\;
+  \If{$\abs{V(G_{0})} \ne \abs{V(G_{1})}$ or $\abs{E(G_{0})} \ne \abs{E(G_{1})}$}{
+    accept\;
+  }
   \For{$i \in [s]$}{
     $V$: Pick a random $\sigma_{i} \in S^{n}$\;
     $V$: Pick a random $b_{i} \in \{0, 1\}$\;
@@ -2405,6 +2557,12 @@ theorem:
 \end{algorithm}
 
 \begin{proof}
+  We present an interactive protocol for $\GNI$ in \cref{alg:gni-ip}. In
+  addition to the two graphs, we also give this algorithm one metaparameter $s$:
+  the \emph{security parameter}\index{security parameter}. This parameter does
+  not need to be dynamic; adjusting it only affects the number of rounds of the
+  protocol and correspondingly the probability of outputting the correct value.
+
   First, we show $V$ runs in polynomial time. Picking a random permutation and
   single bit can be done in polynomial time, and computing the action of a
   permutation on a graph is also polynomial.
@@ -2451,13 +2609,19 @@ with a single verifier working twice as hard (which would keep it polynomial).
 However, increasing the number of provers to two turns out to give us more power
 than we would get with a single prover.
 
-\TODO{BGKW88 says that any MIP has a variant that is complete (if $x \in L$ then
-  $V$ always accepts)}
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[>=Stealth]
+    \draw (0, 0) rectangle ++(1, 1) node [midway] {$V$};
+    \draw (-2, 2) rectangle ++(1, 1) node [midway] {$P_{1}$};
+    \draw (2, 2) rectangle ++(1, 1) node [midway] {$P_{1}$};
+    \draw[<->] (0, 1) to (-1, 2);
+    \draw[<->] (1, 1) to (2, 2);
+    \draw[very thick,line cap=round] (0.5, 1.5) to (0.5, 3.5);
+  \end{tikzpicture}
+  \caption{A multi-prover interactive system}\label{fig:mip}
+\end{figure}
 
-\TODO{Should I define this for any $n$ instead of just 2? It's a simpler
-  definition with only 2 but it's pedagogically weird to say ``multi-prover''
-  and then have just 2 items; since this will be cleared up by
-  \cref{thm:mip-unchanged} it's not the end of the world either way.}
 \begin{defn}[{\cite[Def.\ 4.11.2]{Go01}}]\label{def:mps}\index{interactive proof!multi-prover}
   A \emph{multi-prover interactive proof system} is a triplet of interactive
   machines $(P_{1}, P_{2}, V)$ such that $P_{1}$ and $P_{2}$ cannot communicate,
@@ -2491,6 +2655,14 @@ form of communication: the class $\MIP*$, which uses quantum provers that can
 share entangled bits, will be defined in \cref{sec:quant-interactive} and then
 explored in more detail in \cref{chap:ipcp-to-mip}.
 
+\TODO{}
+
+\begin{defn}\label{def:view-mip}\index{view!MIP}
+  The \emph{view} of a multi-prover interactive system is \TODO{}
+\end{defn}
+
+\TODO{}
+
 \begin{defn}\label{def:mip}\index{MIP@$\MIP$}
   The class $\MIP$ is the class of languages that have a multi-prover
   interactive proof system.
@@ -2504,6 +2676,20 @@ verifier ignore $P_{2}$ completely; thus we get the following.
 \begin{lemma}\label{lem:ip-in-mip}
   $\IP \subseteq \MIP$.
 \end{lemma}
+
+\begin{proof}
+  Let $(P, V)$ be an interactive proof system. Consider the system
+  $(P_{1}, P_{2}, V')$, where $P_{1} = P$, and $V'$ simulates $V$ and sends all
+  its messages to $P_{1}$. If $x \in L$, then $\ang{P_{1}, P_{2}, V'}(x)$ will
+  accept with exactly the same probability as $\ang{P, V}(x)$. Since $(P, V)$ is
+  an interactive proof system, it follows that it will accept with probability
+  at least $2/3$. If $x \notin L$, then $\ang{P_{1}^{*}, P_{2}^{*}, V}$ will reject
+  with exactly the same probability as $\ang{P_{1}^{*}, V}$ regardless of the
+  value of $P_{2}^{*}$, since the interaction is exactly the same and since we
+  ignore the second prover completely. Again, since $(P, V)$ is an interactive
+  proof system, it follows that it will reject with probability at least $2/3$
+  in this case. Hence, $(P_{1}, P_{2}, V')$ is a MIP system.
+\end{proof}
 
 A groundbreaking result by Babai, Fortnow, and Lund~\cite{BFL90} is that $\MIP$
 is exactly equal to $\NEXP$. Since it is known that $\NP \ne \NEXP$~\cite{Cook73},
@@ -2527,14 +2713,57 @@ that a third prover is no more powerful than just having two. We formalize this
 below; because we do not get any benefit from three provers we will not work
 with three-prover systems at all in this paper beyond this proof.
 
-\FIXME{Cite (where did this come from?)}
-\begin{thm}\label{thm:mip-unchanged}
-  If we redefine $\MIP$ to have $m(n) = \poly(n)$ provers on an input of size
-  $n$, the class is unchanged.
+\begin{thm}[{\cite[Theorem 4]{BGKW88}}]\label{thm:mip-unchanged}
+  If we redefine $\MIP$ to have $k$ provers instead of $2$, the class is unchanged.
 \end{thm}
 
+\begin{algorithm}[htbp]
+  $\hat{V}$: Generate all random bits and send results to $\hat{P}_{1}$\;
+  $\hat{P}_{1}$: Send transaction log between $(P_{1}, \ldots, P_{k}, V)$ with the
+  chosen randomness\;
+  \If{The simulated log is longer than the worst-case runtime of $V$}{
+    reject\;
+  }
+  $\hat{V}$: Choose random $i \in [k]$\;
+  $\hat{V}$ and $\hat{P}_{2}$: Simulate conversation between $V$ and $P_{i}$
+  given coin tosses\;
+  \eIf{the simulated conversation does not match the result of $\hat{P}_{1}$}{
+    reject\;
+  }{
+    accept if and only if $V$ would accept with the given transcript\;
+  }
+  \caption{A 2-prover MIP simulating a $k$-prover MIP}\label{alg:2-prover-sim-k}
+\end{algorithm}
+
 \begin{proof}
-  \TODO{}
+  Let $(P_{1}, \ldots, P_{k}, V)$ be a $\MIP$ with $k$ provers. We show a simulator
+  for $(P_{1}, \ldots, P_{k}, V)$ in \cref{alg:2-prover-sim-k}. Since $V$ runs in
+  polynomial time and all $\hat{V}$ does is look at the simulated transaction
+  log of $V$ (twice), it follows that $\hat{V}$ runs in polynomial time.
+
+  Let $x \in L$. By definition, we know that
+  \begin{equation}
+    \mathbb{P}[\ang{P_{1}, \ldots, P_{k}, V}(x) = 1] \ge \frac{2}{3}.
+  \end{equation}
+  If $\hat{P}_{1}$ and $\hat{P}_{2}$ are honest, then the simulated
+  conversations will match; hence $\hat{V}$ will reject if and only if $P$ would
+  have. Thus, $\mathbb{P}[\ang{\hat{P}_{1}, \hat{P}_{2}, \hat{V}} = 1] \ge 2/3$.
+
+  Let $x \notin L$, and let $\hat{P}_{1}^{*}$ and $\hat{P}_{2}^{*}$ be arbitrary
+  verifiers. From the definition of MIP, for at least $2/3$ of the choices of
+  randomness, the generated transcript would result in $V$ rejecting; hence
+  $\hat{P}_{1}$ must deviate from it somewhere. Since $\hat{P}_{1}$ deviates
+  from the protocol at least once, it follows there is at least a $1/k$ chance
+  that the simulated conversation between $\hat{V}$ and $\hat{P}_{2}$ is
+  different from what $\hat{V}$ recieved from $\hat{P}_{1}$. Hence, the
+  probability of correctly rejecting here is at least $2/3k$.
+
+  Note that if the two provers ever disagree, it must be that at least one of
+  them is a cheating prover. Thus, if we run it at least $k^{2}$ times we will
+  have at least one run where we catch the cheating with probability
+  $2k^{2}/3k = 2/3$. Thus, we will correctly reject with probablity at least
+  $2/3$ regardless of the cheating prover. Hence, $(P_{1}, P_{2}, V)$ is a valid
+  MIP system.
 \end{proof}
 
 \section{Zero-knowledge proofs}\label{sec:zero-knowledge}
@@ -2608,6 +2837,24 @@ above by $2^{-\poly(\abs{n})}$), but we cannot make it truly perfect. We can do
 this by simply re-running the simulator every time we get a $\bot$ until we get a
 valid answer.
 
+Also note that while the definition of interactive proof systems focus on
+cheating \emph{provers}, the definition of zero-knowledge focuses on cheating
+\emph{verifiers}. This is because we can think of the two as being resilient to
+different threat models. For interactive proofs, we care about verifier
+efficiency: our goal is to show it is possible for some computer with unbounded
+resources to easily convince a verifier of something, and to show that no other
+equally-strong computer could lie.
+
+For zero-knowledge, our main goal is to ensure tha it is impossible for anybody
+except for the honest verifier to extract any information from the honest
+prover. The main way we do this is by ensuring that it is impossible for anybody
+snooping on the transaction to gain any information (hence the simulator), but
+we also want to ensure that the prover cannot be tricked into revealing
+information by a dishonest verifier. We do not care about what happens with a
+dishonest prover in this case because alternate provers could in theory reveal
+anything---there is always a prover that just dumps any relevant information to
+the interaction tape, for example.
+
 As with other interactive proof systems, zero-knowledge proofs are
 probabilistic; in particular this means they do \emph{not} function as proofs in
 the mathematical sense.
@@ -2648,18 +2895,20 @@ to not reveal anything beyond simply whether $G_{0}$ and $G_{1}$ are isomorphic.
 
 \begin{algorithm}[htbp]
   $c \leftarrow 0$\;
+  $L \leftarrow [\,]$\;
   \For{$i \in [2s]$}{
     \If{$c \ge s$}{
-      \KwRet{}\;
+      \KwRet{$L$}\;
     }
     Choose random $\sigma \in S_{n}$\;
     Choose random $b \in \{0, 1\}$\;
     $H \leftarrow \sigma \cdot G_{b}$\;
+    Add $H$ to $L$\;
     Simulate $V^{*}$ on input $(G_{0}, G_{1})$ and recieved message $H$ until it
     sends a message $\sigma'$\;\nllabel{line:sim-vstar-gi}
     \If{$b = b'$}{
       $c \leftarrow c + 1$\;
-      Write $\sigma$ to the log as $P$'s response\;
+      Add $\sigma$ to $L$\;
     }
   }
   \KwRet{$\bot$}\;
@@ -2706,25 +2955,53 @@ to not reveal anything beyond simply whether $G_{0}$ and $G_{1}$ are isomorphic.
   for $\GI$. Since we do not know whether or not $\GI \in \BPP$, we do not yet
   know how to construct any verifier that would do this.
 
-  \FIXME{What if $\GI$ is ``close'' to $\BPP$? All we need is one $x$ and one
-    $V^{*}$ to output the wrong $b'$ slightly more often and we have problems}
+  Since $V^{*}$ never recieves $b$ and $b$ is randomly generated, if $G_{0}$ is
+  isomorphic to $G_{1}$, for any value of $G$ it is just as likely that $b = 0$
+  as it is that $b = 1$. More formally, for all $G$,
+  \[
+    \mathbb{P}[G \mid b = 0] = \mathbb{P}[G \mid b = 1].
+  \]
+  As such, for any $(G_{0}, G_{1}) \in \GI$, it is impossible for any $V^{*}$ to
+  send $b' \ne b$ with probability more than $1/2$.
 
-  \FIXME{This might be reasonable even if $V^{*}$ outputs the correct symbol
-    with probability bounded below by $2^{-\poly(n)}$?}
-
-  Since $V^{*}$ never recieves $b$ and $b$ is randomly generated, it is
-  impossible for $V^{*}$ to reliably output $b' \ne b$ without itself solving
-  which graph $G_{b}$ is isomorphic to (in which case we would have $\GI \in \BPP$
-  and thus have a trivial zero-knowledge proof). Hence, if $\GI \notin \BPP$, it
-  follows that $b \ne b'$ with probability $1/2$. Since each individual round
-  succeeds with probability $1/2$, the probability that $s$ rounds have
-  succeeded after $2s$ rounds is also $1/2$. Hence, the algorithm will output
-  $\bot$ with probability no more than $1/2$.
+  Since, each individual round succeeds with probability at least $1/2$, the
+  binomial theorem tells us that the probability of exactly $k$ successes in
+  $2s$ tries is $\binom{2s}{k}/2^{2s}$. Hence, the probability of at least $s$
+  successes in $2s$ tries is
+  \begin{equation}\label{eqn:binom-sum-2s}
+    \frac{1}{2^{2s}}\sum_{i=s}^{2s}\binom{2s}{i}.
+  \end{equation}
+  Since $\binom{2s}{k} = \binom{2s}{2s - k}$ and the sum of $\binom{2s}{k}$ over
+  all $k$ is $2s$, it follows that \cref{eqn:binom-sum-2s} is equal to
+  \begin{equation}
+    \frac{\displaystyle \sum_{i=s}^{2s}\binom{2s}{i}}{\displaystyle \sum_{i=1}^{2s}\binom{2s}{i}}
+    = \frac{\displaystyle s + \sum_{i=s+1}^{2s}\binom{2s}{i}}{2\displaystyle \sum_{i=s+1}^{2s}\binom{2s}{i}}
+    \ge \frac{1}{2}.
+  \end{equation}
+  Hence, the algorithm will output $\bot$ with probability no more than $1/2$.
 
   Next, we show \cref{alg:gi-simulator} outputs an identically-distributed view
-  to what $V^{*}$ sees, regardless of what $V^{*}$ is.
+  to what $V^{*}$ sees for all $x \in \GI$, regardless of what $V^{*}$ is. We show
+  that it outputs an identical view for a single round; since the simulator will
+  simulate $s$ rounds it follows that the total result will be identical exactly
+  when an individual round is.
 
-  \TODO{}
+  An individual round of \cref{alg:gi-pzk-ip} has a total of three messages
+  sent: two from $P$ and one from $V$. The view of a verifier only consists of
+  the messages from $P$, so after each round we should be adding two items to
+  the log. Our honest prover sends two messages: first, a random graph
+  $H \cong G_{b}$ and second, an isomorphism $\sigma$ that maps $G_{b'}$ to $H$.
+
+  The simulator picks a random $b$ and $H$ in exactly the same way as $P$; thus
+  $H$ will be identically distributed in the simulator as it is in the original
+  algorithm. Next, remember that we only care about the views being identical in
+  the case where $(G_{1}, G_{2}) \in \GI$, that is, where $G_{1} \cong G_{2}$. In this
+  case, picking a random isomorphic copy of $G_{1}$ will give you an
+  identically-distributed random variable to picking a random isomorphic copy of
+  $G_{2}$. Similarly, $H \cong G_{1} \cong G_{2}$ by construction, so picking a random
+  isomorphic copy of $H$ will also give you an identical distribution. As such,
+  $\sigma$ is a random isomorphism and hence the transaction $(H, \sigma)$ is distributed
+  identically to the originally-generated transcript.
 \end{proof}
 
 \subsection{Commitment schemes}\label{sec:commitment-scheme}
@@ -2748,8 +3025,6 @@ preliminaries. First, we define what it means for an interaction to look like a
 commitment from the reciever's perspective; since the reciever needs to be
 convinced of the commitment, we need a definition that only considers its
 perspective.
-
-\TODO{More}
 
 \begin{defn}\label{def:possible-commit}\index{possible commitment}
   Let $\sigma \in \{0, 1\}$. A reciever's view of an interaction
@@ -2776,7 +3051,7 @@ publicly-released information is ambiguous.
 
 \begin{defn}[{\cite[Def.\ 4.4.1]{Go01}}]\label{def:commitment-scheme}\index{commitment scheme}
   A \emph{bit-commitment scheme} is a pair of interactive probabilistic
-  polynomial-time machines $(S, R)$, such that:
+  polynomial-time machines $(S, R)$, such that
   \begin{enumerate}
     \item Both machines recieve an integer $n$ in unary,
     \item $S$ recieves a single bit $v$,
@@ -2788,7 +3063,27 @@ publicly-released information is ambiguous.
   \end{enumerate}
 \end{defn}
 
-\TODO{More explanation and potentially an example?}
+\TODO{More explanation}
+
+\FIXME{The existence of bit-commitment schemes implies the existence of one-way
+  functions (Go01 Exercise 13), but CFGS22 talks about \emph{algebraic}
+  commitment schemes without reference to one-way functions (nor do they mention
+  $\P \ne \NP$)}
+
+The simplest examples of bit-commitment schemes involve one-way functions. A
+one-way function is a function that is computable in polynomial time, but whose
+inverse is \emph{not} computable in polynomial time. These functions are not
+known to exist: in particular their existence implies $\P \ne \NP$, but they are
+still widely believed to exist.
+
+\begin{algorithm}[htbp]
+  \tcc{Commit}
+  \TODO{}\;
+  \tcc{Reveal}
+  \TODO{}\;
+  \caption{A bit-commitment scheme based on a one-way function
+    $f$}\label{alg:bit-commit}
+\end{algorithm}
 
 \TODO{Define decommitment}
 
@@ -2810,11 +3105,9 @@ non-adaptive. Adaptive-query machines allow the machine to change what locations
 it queries based on what it has already seen; non-adaptive machines do not allow
 that. In general, adaptive queries are more powerful---it turns out that any
 adaptive machine can be simulated by a non-adaptive machine using $2^{q}$
-queries. Most interesting results about PCPs can be proven about non-adaptive
-machines, however, so we will be working entirely with those for the rest of
-this paper.
-
-\TODO{Go01 4.10.3.2 talks about adaptive vs non-adaptive proofs}
+queries. Most interesting results about PCPs can be proven even with weaker
+non-adaptive machines, so that is what we will focus on for the rest of this
+paper.
 
 \begin{defn}\label{def:adaptive}\index{adaptive}
   Let $M$ be a Turing machine with query access to some string
@@ -2823,6 +3116,8 @@ this paper.
   generator. If the queries are dependent on previous query results, then $M$ is
   \emph{adaptive}.
 \end{defn}
+
+\TODO{}
 
 \begin{defn}[{\cite[Def.\ 18.1]{AB09}}]\label{def:prob-check}\index{probabilistically-checkable proof}
   Let $L \subseteq \{0, 1\}^{n}$ be a language and $q, r\colon \mathbb{N} \rightarrow \mathbb{N}$. A
@@ -2846,9 +3141,9 @@ this paper.
   \centering
   \begin{tikzpicture}[>=Stealth]
     \draw (0,0) rectangle ++(3,2);
-    \foreach \i in {0,...,10}{
+    \foreach [count=\i] \c in {?,0,?,?,?,1,?,?,1,?,}{
       \pgfmathsetmacro{\xval}{\i*0.5};
-      \draw (\xval,3) rectangle ++(0.5,0.5);
+      \draw (\xval,3) rectangle ++(0.5,0.5) node [midway] {\c};
     }
     % cdots doesn't appear to be centered in the box?
     \path (5.5,3) rectangle ++(0.5,0.5) node [midway] {$\cdots$};
@@ -2877,7 +3172,7 @@ completely and just solving the problem itself) and as such we do not require
 $V$ to always correctly reject.
 
 So far, all of our proof-complexity classes have just had a single class for all
-languages with the proof, regardless of internal complexity, but for
+languages with the proof regardless of internal complexity, but for
 probabilistically-checkable proofs we actually stratify the class further. This
 is for multiple reasons: first, we can actually get astonishingly tight bounds
 on the parameters for PCPs (as we will see in \cref{thm:pcp-theorem}), and
@@ -2885,29 +3180,29 @@ second, because these are ``access'' complexity (i.e.\ we measure the number of
 preexisting bits actually read by the algorithm), they are actually independent
 of computational model, so the need for polynomial equivalence is negated.
 
+In addition, this means PCPs become susceptible to the alphabet the proof is
+written in. Since individual bits carry more data when a larger alphabet is
+used, a larger alphabet will necessarily require fewer queries to transmit the
+same information. As such, while we will by default still work over the alphabet
+$\{0, 1\}$, there are times where we will need to be a little more specific
+about the alphabet we use.
+
 \begin{defn}[{\cite[Def.\ 18.1]{AB09}}]\label{def:pcp}\index{PCP@$\PCP$}
-  For any $q, r\colon \mathbb{N} \rightarrow \mathbb{N}$, the class $\PCP(q(n), r(n))$ is the class of all
-  languages with a $(cq(n), dr(n))$-verifier for some $c, d \in \mathbb{N}$.
+  For any $q, r\colon \mathbb{N} \rightarrow \mathbb{N}$, the class $\PCP_{\Sigma}(q(n), r(n))$ is the class of all
+  languages with a $(cq(n), dr(n))$-verifier for some $c, d \in \mathbb{N}$, where the
+  proof is written over the alphabet $\Sigma$. When $\Sigma = \{0, 1\}$, we sometimes omit
+  it.
 \end{defn}
 
-As an example, consider the language of non-isomorphic graphs:
+A small note on notation: The text ``PCP'' can be used as both a complexity
+class and an abbreviation: in this paper when it is written $\PCP$, we are
+referring to the complexity class (and therefore the set of \emph{languages}
+with a probabilistically-checkable proof); when it is written PCP, we are
+referring to the proofs themselves.
 
-\begin{defn}\label{def:gni}\index{GNI@$\GNI$}
-  The language $\GNI$ (for \emph{graph non-isomorphism}) is the set
-  \[
-    \GNI = \{(G_{0}, G_{1}) \mid G_{0}, G_{1} \text{ graphs and } G_{0} \ncong G_{1}\}.
-  \]
-\end{defn}
-
-This language is interesting for reasons beyond the scope of this paper,
-especially in that it is known to be in $\NP$ but is believed to be neither in
-$\P$ nor $\NP$-complete. Importantly to us, $\GNI$ has a relatively short PCP
-that only uses a single query, as well as polynomial randomness.
-
-It is reasonable to be surprised about the fact that we only need one query to
-determine this problem to the constraints imposed by a PCP. This is our first
-clue that PCPs are surprisingly powerful: in \cref{chap:pcp-theorem} and again
-in \cref{chap:zk-pcp-theorem} we will explore the extremes of the power of PCPs.
+Next, we give an exapmle of a nontrivial probabilistically-checkable proof. As
+with our previous examples, the language $\GNI$ provides a good example for us,
+as it is a relatively simple language that is still not known to be in $\BPP$.
 
 \begin{thm}\label{thm:gni-pcp}
   $\GNI \in \PCP(\poly(n), 1)$.
@@ -2961,15 +3256,12 @@ in \cref{chap:zk-pcp-theorem} we will explore the extremes of the power of PCPs.
   $\pi$.
 \end{proof}
 
-A small note on notation: The text ``PCP'' can be used as both a complexity
-class and an abbreviation: in this paper when it is written $\PCP$, we are
-referring to the complexity class (and therefore the set of \emph{languages}
-with a probabilistically-checkable proof); when it is written PCP, we are
-referring to the proofs themselves.
+It is reasonable to be surprised about the fact that we only need one query to
+determine this problem to the constraints imposed by a PCP\@. This is our first
+clue that PCPs are surprisingly powerful: in \cref{chap:pcp-theorem} and again
+in \cref{chap:zk-pcp-theorem} we will explore the extremes of the power of PCPs.
 
 \subsection{PCPs of proximity}\label{sec:pcpp}
-
-\TODO{}
 
 Since a PCP will always only check a limited proportion of any given proof, for
 any strings in the language, the verifier will still accept any proof that is
@@ -2992,11 +3284,32 @@ originally used for error-correcting codes.
   \]
 \end{defn}
 
-Note that $\Delta(x, y) \in [0, 1]$ for any $x$ and $y$. This normalization is not
-strictly necessary in the general case, since $\Delta$ is only defined between
-strings of equal length (and there exist cases where it is much nicer to keep
-the distance as a natural number). In our case, however, we would like to keep
-the distances all in the same bounded range.
+Note that $\Delta(x, y) \in [0, 1]$ for any strings $x$ and $y$. This normalization is
+not strictly necessary in general, since $\Delta$ is only defined between strings of
+equal length (and there do exist cases where it is much nicer to keep the
+distance as a natural number). In our case, however, we would like to keep the
+distances all in the same bounded range; hence we normalize.
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}
+    \foreach [count=\i] \c in
+        {1,\textcolor{pumpkin}{0},0,0,\textcolor{pumpkin}{1},\textcolor{pumpkin}{0},0,1} {
+      \pgfmathsetmacro{\xval}{\i*0.5};
+      \draw (\xval,0.5) rectangle ++(0.5,0.5) node [midway] {\c};
+    }
+    \foreach [count=\i] \c in
+        {1,\textcolor{pumpkin}{1},0,0,\textcolor{pumpkin}{0},\textcolor{pumpkin}{1},0,1} {
+      \pgfmathsetmacro{\xval}{\i*0.5};
+      \draw (\xval,0) rectangle ++(0.5,0.5) node [midway] {\c};
+    }
+  \end{tikzpicture}
+  \caption{Two strings with Hamming distance $3/8$}\label{fig:hamming-dist}
+\end{figure}
+
+The definition of Hamming distance between two strings also generalizes to the
+notion of distance from a set. Informally, we say the distance from a string to
+a set is simply the distance to the closest element of the set.
 
 \begin{defn}\label{def:far}\index{far}
   Let $\varepsilon > 0$. A vector $x \in \Sigma^{n}$ is \emph{$\varepsilon$-far} from a set $S \subseteq \Sigma^{n}$ if
@@ -3005,7 +3318,36 @@ the distances all in the same bounded range.
   \]
 \end{defn}
 
-\TODO{}
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[>=Stealth]
+    \coordinate (Z) at (0,0) {};
+    \coordinate (X) at (1,-0.25);
+    \draw[use Hobby shortcut,closed=true]
+    (0,0) .. (0,1.5) .. (1,1) .. (1.5,2) .. (-.5,3) .. (-1,1.5) .. (-1,.5);
+    \draw[->] (X) -- (Z) node[midway,below] {$\varepsilon$};
+    \fill (X) circle (1pt) node[right] {$x$};
+    \node (S) at (0.25, 2.25) {$S$};
+    \node [draw,dashed] at (1,-0.25) [circle through=(Z)] {};
+  \end{tikzpicture}
+  \caption{A point $x$ that is $\varepsilon$-far from a set $S$}\label{fig:epsilon-far}
+\end{figure}
+
+Now that we know what proximity means, we can define a PCP of proximity. Unlike
+a PCP, which is defined for any language $L$, a PCPP is only defined for
+\emph{pair languages}\index{pair language}, languages that consist entirely of
+ordered pairs of two objects. This is because we need our language to consist of
+pairs so that we can have a notion of distance between the elements. The good
+news is this will not affect us too much---lots of the languages we care about are
+pair languages already.
+
+The main difference between a PCP and a PCPP is that we relax the rejection
+condition to only require consistent rejection for pairs $(x, y)$ where there is
+no close $y'$ where $(x, y')$ is in the accepted language. There are many pair
+languages that we can think of as being made of function-value pairs $(f, y)$
+with the property that there is some $x$ such that $f(x) = y$. When we have a
+language like this, we have a more intuitive explanation of PCPPs: here, a PCPP
+will accept any $(f, y)$ pair where $f(x)$ is $\delta$-close to $y$.
 
 \begin{defn}[{\cite[Def.\ 2.2]{GOS25}}]\label{def:pcpp}\index{PCPP@$\PCPP$}
   For $\delta\colon \mathbb{N} \rightarrow [0, 1]$, a \emph{probabilistically-checkable proof of
@@ -3013,19 +3355,77 @@ the distances all in the same bounded range.
   proximity parameter $\delta$ consists of a prover $P$ and verifier $V$ such that
   the following holds for all $(x, y)$:
   \begin{enumerate}
-    \item If $(x, y) \in L$,
-          \[
-            \mathbb{P}_{\pi \leftarrow P(x, y)}[V^{(y, \pi)}(x) = 1] = 1
-          \]
+    \item When given an input string $x \in \{0, 1\}^{n}$ and random access to a
+          string $\pi \in \{0, 1\}^{*}$, $V$ uses at most $r(n)$ random coins and
+          makes at most $q(n)$ non-adaptive queries to locations of $\pi$ before
+          either accepting or rejecting.
+    \item If $(x, y) \in L$, $V$ will always accept when given input $(x, y)$ and
+          proof $\pi_{x}$.
     \item If $y$ is $\delta$-far from the set $L(x) = \{y \mid (x, y) \in L\}$, then for
-          every oracle $\pi^{*}$,
-          \[
-            \mathbb{P}[V^{(y, \pi^{*})}(x) = 1] \le \frac{1}{2}.
-          \]
+          every oracle $\pi^{*}$, $V$ will reject on input $(x, y)$ with
+          probability $\ge 1/2$.
   \end{enumerate}
 \end{defn}
 
-\TODO{Example, preferably with $\GNI$}
+\TODO{Introduce example}
+
+% TODO: Is this the best example? These are *extremely* weak bounds and don't
+% actually have any probability involved (will always accept when valid and will
+% always reject when invalid)
+\begin{thm}
+  $\GI \in \PCP[\poly(n), \poly(n)]$.
+\end{thm}
+
+\begin{algorithm}[htbp]
+  \KwIn{Two graphs, $G_{1}$ and $G_{2}$}
+  \KwOut{Whether $G_{1} \cong G_{2}$}
+  \tcc{Proof}
+  Let $\sigma$ be an isomorphism from $G_{1}$ to $G_{2}$\;
+  \KwRet{$(\sigma, \sigma, \sigma)$}\;
+  \tcc{Verifier}
+  $\sigma' \leftarrow [\,]$\;
+  \For{$i \in [\abs{\pi}/3]$}{
+    Pick random $r \in \{0, 1, 2\}$\;
+    Add $\pi[3r + i]$ to $\sigma'$\;
+  }
+  \eIf{$\sigma'$ is a representation of an isomorphism $G_{1} \rightarrow G_{2}$}{
+    accept\;
+  }{
+    reject\;
+  }
+  \caption{A PCP for $\GI$}\label{alg:gi-pcp}
+\end{algorithm}
+
+\begin{proof}
+  We demonstrate a PCP for $\GI$ with the specified parameters in
+  \cref{alg:gi-pcp}. We need to show a few things: that the proof and verifier
+  follow the specified parameters, that the verifier always accepts when given a
+  correct proof for some $(G_{1}, G_{2}) \in \GI$, and that the verifier reliably
+  rejects when given a $(G_{1}, G_{2}) \notin \GI$.
+
+  First, an $n$-bit permutation can be described in $\poly(n)$ bits; for each
+  bit in the permutation we write 3 bits to the proof, hence
+  $\abs{P} \in \poly(n)$. Since $\abs{P} \in \poly(n)$, it follows that we can query
+  at most $\poly(n)$ distinct bits. The verifier generates one random bit for
+  every 3 bits in $P$, so it reads $\poly(n)$ bits of randomness. Finally, all
+  the verifier does is reads $\poly(n)$ bits and then checks that it represents
+  a permutation; this is all doable in polynomial time and thus the verifier is
+  polynomial.
+
+  Next, we show $V$ always accepts if $(G_{1}, G_{2}) \in \GI$ and
+  $\pi = \pi_{(G_{1}, G_{2})}$. The way we have designed our proof is a simple form
+  of error-correcting code: we have just repeated the isomorphism three times
+  and when reconstructing the isomorphism from the proof, we pick each bit from
+  one of the three copies at random. In the event of an honest proof, all of
+  these copies are equal to the original, so no matter what our choices of $r$,
+  our reconstructed $\sigma'$ will always be equal to $\sigma$ (an isomorphism
+  $G_{1} \rightarrow G_{2}$ by definition) and thus $V$ will accept.
+
+  Finally, we show $V$ reliably rejects if $G_{1} \ncong G_{2}$ regardless of what
+  proof $\pi$ is given to $V$. In this case, $\sigma'$ will never be an isomorphism
+  from $G_{1}$ to $G_{2}$ (since no such isomorphism exists); hence $V$ will
+  always reject.
+\end{proof}
 
 \section{Zero-knowledge probabilistically-checkable proofs}\label{sec:pzkpcp}
 
@@ -3044,7 +3444,7 @@ of queries, under which we retain the standard zero-knowledge restrictions.
 \begin{defn}[{\cite[Def.\ 8.6]{GOS24}}]\label{def:pzkpcp}\index{perfect-zero knowledge PCP}
   A probabilistically-checkable proof system is \emph{zero-knowledge} with query
   bound $q$ if for any verifier $V'$ such that $V'$ makes no more than $O(q(n))$
-  queries on an input of length $n$, there exists a probabilistic
+  adaptive queries on an input of length $n$, there exists a probabilistic
   polynomial-time simulator $S$ such that on input $x$, $S$ can simulate every
   interaction of $V'$ with the associated proof of $x$.\footnote{To clarify, $S$
     does \emph{not} have access to the proof of $x$, just $x$ itself.}
@@ -3098,7 +3498,6 @@ during which the verifier can access the proof as an oracle.
     \KwIn{To both $P$ and $V$: a string $x$ of length $n$}
     \KwIn{To $P$ alone: A string $w$}
     \KwOut{Whether $x \in L$}
-    \FIXME{Is this too simple for a full algorithm?}\;
     $P$: Send an oracle $R$ to $V$\;
     $V^{R}$: Engage in an interactive protocol with $P$\;
     \caption{The IPCP protocol}\label{alg:ipcp-protocol}
@@ -3398,6 +3797,42 @@ will make for relatively easy transformations.
   from $\SAT$ to $\CktSAT$; hence $\CktSAT$ is $\NP$-complete.
 \end{proof}
 
+\begin{defn}\label{def:cktval}\index{CktVal@$\CktVal$}
+  The language $\CktVal$ is the language of all pairs $(C, w)$, where $C$ is an
+  algebraic circuit and $w$ is a satisfying assignment (i.e., $C(w) = 1$).
+\end{defn}
+
+\begin{thm}\label{thm:cktval-in-p}
+  $\CktVal$ is in $\P$.
+\end{thm}
+
+\begin{proof}
+  We are given a circuit and an assignment; computing the resultant value of a
+  circuit is possible in polynomial time relative to its length. Hence, we can
+  simply compute $C(w)$ directly and check if the answer is $1$.
+\end{proof}
+
+\begin{thm}[{\cite[Prop.\ 2.4]{BGHSV06}}]\label{thm:cktval-cktsat}
+  If $\CktVal$ has a PCPP, then $\CktSAT$ has a PCP with identical parameters.
+\end{thm}
+
+\begin{proof}
+  % TODO
+\end{proof}
+
+% FIXME: Is this the right theorem?
+\begin{thm}[{\cite[Theorem 3.2]{BGHSV06}}]\label{thm:ckt-val-pcpp}
+  For any $\varepsilon > 0$, $\CktVal$ has a PCPP $(P, V)$ where $P$ is deterministic and
+  polynomial-time, such that
+  \[
+    \CktVal \in \PCPP\pcpp{\log(n) + O(\log^{\varepsilon}(n))}{O(1/\varepsilon)}{\Theta(\varepsilon)}{1/2}.
+  \]
+\end{thm}
+
+\begin{proof}
+  % TODO: Do I even \emph{want} a proof or is this too much?
+\end{proof}
+
 \section{Robust verifiers}\label{sec:robust-verifier}
 
 \begin{defn}[{\cite[Def.\ 2.6]{BGHSV06}}]\label{def:robust-verifer}\index{robust verifier}
@@ -3433,7 +3868,7 @@ PCPPs to make a new (non-robust) PCP with improved bounds.
           robust-soundness error $1 - \varepsilon_{\out}$, and robustness parameter
           $\rho_{\out}$.
           % TODO: Define Circuit-Value problem
-    \item $\lang{CV}$ has a PCPP verifier $V_{\oin}$ with randomness complexity
+    \item $\CktVal$ has a PCPP verifier $V_{\oin}$ with randomness complexity
           $r_{\oin}$, query complexity $q_{\oin}$, decision complexity
           $d_{\oin}$, proximity parameter $\delta_{\oin}$, and soundness error
           $1 - \varepsilon_{\oin}$.
@@ -4631,20 +5066,6 @@ problem, and as before our problem of choice is $\OSAT$.
   Since $P$ is $1$-locally computable from $P_{a}$, it follows from
   \cref{thm:local-comp-pzk} that $P$ is perfect zero-knowledge with the same
   query bound as $P_{a}$.
-\end{proof}
-
-% FIXME: Is this the right theorem?
-\begin{thm}[{\cite[Theorem 3.2]{BGHSV06}}]\label{thm:ckt-val-pcpp}
-  % TODO: Introduce the circuit value problem
-  For any $\varepsilon > 0$, $\CktVal$ has a PCPP $(P, V)$ where $P$ is deterministic and
-  polynomial-time, such that
-  \[
-    \CktVal \in \PCPP\pcpp{\log(n) + O(\log^{\varepsilon}(n))}{O(1/\varepsilon)}{\Theta(\varepsilon)}{1/2}.
-  \]
-\end{thm}
-
-\begin{proof}
-  % TODO: Do I even \emph{want} a proof or is this too much?
 \end{proof}
 
 \begin{cor}\label{cor:constant-query}
