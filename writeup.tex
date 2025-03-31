@@ -245,6 +245,9 @@
 \newlang{\Prime}{Prime}
 \newlang{\Sum}{Sum}
 
+\SetKw{Accept}{accept}
+\SetKw{Reject}{reject}
+
 \newcommand{\shrug}[1][]{%
   \begin{tikzpicture}[baseline,x=0.8\ht\strutbox,y=0.8\ht\strutbox,line width=0.125ex,#1]
     \def\arm{(-2.5,0.95) to (-2,0.95) (-1.9,1) to (-1.5,0) (-1.35,0) to (-0.8,0)};
@@ -921,7 +924,8 @@ important. We shall illustrate the difference with a simple example.
 We denote by $\mathbb{F}[x_{1, \ldots, m}^{\le d}]$ the subset of
 $\mathbb{F}[x_{1, \ldots, m}]$ of polynomials with multidegree at most $d$. We also
 need two special cases of these polynomials, which we will want to quickly be
-able to reference throughout the paper.
+able to reference throughout the paper. Similarly, if we want to refer to
+polynomials with degree at most $d$, we will write $\mathbb{F}^{\le d}[x_{1, \ldots, m}]$.
 
 \begin{defn}[{\cite[8]{AW09}}]\label{def:mlin}\index{multilinear}\index{multiquadratic}
   A polynomial is \emph{multilinear} if it has multidegree at most 1. Similarly,
@@ -1253,16 +1257,25 @@ To do this, we first must define an \emph{oracle}.
 \end{defn}
 There are several ways to think of an oracle; this will extend the most
 naturally when it comes time to define an extension oracle in
-\cref{def:ext-oracle}. Another way to think of an oracle is as a subset
-$A \subseteq \{0, 1\}^{*}$. This allows us to think of $A$ as a language. Since we can
-do this, it gives us the ability to think of the complexity of the oracle. If we
-want to think about the subset in terms of our functions, we can write $A$ as
+\cref{def:ext-oracle}.
+
+Another way to think of an oracle is as a subset $A \subseteq \{0, 1\}^{*}$. This allows
+us to think of $A$ as a language. Since we can do this, it gives us the ability
+to think of the complexity of the oracle. If we want to think about the subset
+in terms of our functions, we can write $A$ as
 \begin{equation}
   A = \bigcup_{m \in \mathbb{N}}\mleft\{x \in \{0, 1\}^{m} \mid A_{m}(x) = 1\mright\}.
 \end{equation}
 % FIXME: Will we actually do this?
 We will use the Iverson bracket defined in \cref{def:iverson-bracket} for this
 purpose: allowing us to think of $A$ as the set and $[A]$ as the function.
+
+The third way to think of an oracle is as a list of bits---this is how a Turing
+machine thinks of an oracle. In this context, we consider the oracle to be a
+string of $2^{n}$ bits $b_{i}$, where $b_{i}$ is the result of $A$ when given
+the binary representation of $i$ as input. We will mostly not think of $A$ this
+way explicitly, but for practical purposes this is how an oracle is encoded
+whenever we pass it to a Turing machine as an input.
 
 \begin{example}\label{ex:oracle-function}
   Let $m = 3$. The function
@@ -1288,13 +1301,21 @@ purpose: allowing us to think of $A$ as the set and $[A]$ as the function.
   set of all binary representations of odd numbers.
 \end{example}
 
-% TODO: Example for oracle
+\TODO{Examples of all the other representations of oracles}
 
 An oracle is not particularly interesting mathematical object on its own (after
 all, it is simply a set of arbitrary Boolean functions); its utility comes from
 when it interacts with a Turing machine. A normal Turing machine does not have
 the facilities to interact with an oracle, so we need to define a small
 extension to a standard Turing machine to allow for this.
+
+\begin{figure}[htbp]
+  \TODO{}
+  % Idea: diagram of TM with three extra states & tapes; elide most of normal
+  % machine
+  % Alternate: some diagram showing the "talking" with the oracle
+  \caption{A Turing machine with an oracle}\label{fig:tm-oracle}
+\end{figure}
 
 \begin{defn}[{\cite[Def.\ 3.6]{AB09}}]\label{def:tm-oracle}\index{Turing machine!with oracle}
   A \emph{Turing machine with an oracle} is a Turing machine with an additional
@@ -1306,6 +1327,13 @@ extension to a standard Turing machine to allow for this.
   $q_{\text{yes}}$ if the answer is 1 and $q_{\text{no}}$ if the answer is 0.
 \end{defn}
 
+\begin{figure}[htbp]
+  \TODO{}
+  % How do I demonstrate the equivalence between an oracle function and a
+  % language here?
+  \caption{How we will think of an oracle TM}\label{fig:tm:concept}
+\end{figure}
+
 Of course, the question now becomes how we can effectively use an oracle in an
 algorithm. The previously-mentioned conception of an oracle as a set of strings
 is useful here. If we consider the set of strings as being a \emph{language} in
@@ -1313,6 +1341,11 @@ its own right, then querying the oracle is the same as determining whether a
 string is in the langauge, just in one step. If the language is computationally
 hard, this means our machine can get a significant power boost from the right
 oracle.
+
+\begin{figure}[htbp]
+  \TODO{}
+  \caption{Bit representation of an oracle}\label{fig:oracle-bits}
+\end{figure}
 
 \begin{defn}[{\cite[Def.\ 2.1]{AW09}}]\label{def:oracle-class}
   For any complexity class $\mathcal{C}$, the complexity class $\mathcal{C}^{A}$ is the class of all
@@ -1477,7 +1510,11 @@ it is outside the scope of this paper.
 % TODO: Find better source for these definitions
 % Perhaps rephrase in the style of AW09 Def. 4.1?
 \begin{defn}[{\cite[17]{AW09}}]\label{def:det-qc}\index{query complexity!deterministic}
-  Let $f\colon \{0, 1\}^{N} \rightarrow \{0, 1\}$ be a Boolean function. Then the
+  % TODO? Split up representation of oracle and rest of definition
+  Let $n \in \mathbb{N}$ and let $A: \{0, 1\}^{n} \rightarrow \{0, 1\}$ be an oracle. We can write
+  $A$ using $2^{n}$ bits, where bit $i$ is the output of $A$ when given the
+  binary representation of $i$ as input. Define $N = 2^{n}$, and let
+  $f\colon \{0, 1\}^{N} \rightarrow \{0, 1\}$ be a Boolean function. Then the
   \emph{deterministic query complexity} of $f$, which we write $D(f)$, is the
   minimum number of queries made by any deterministic algorithm with access to
   an oracle $A$ that determines the value of $f(A)$.
@@ -1763,6 +1800,11 @@ polynomials over finite fields. Since any field contains the set $\{0, 1\}$, we
 can think about our new oracles as \emph{extending} some specific oracle $A$, so
 that both oracles agree on the set $\{0, 1\}^{n} \subseteq \mathbb{F}^{n}$. We formalize
 this notion below.
+
+\begin{figure}[htbp]
+  \TODO{}
+  \caption{An extension oracle}\label{fig:ext-oracle}
+\end{figure}
 
 \begin{defn}[{\cite[Def.\ 2.2]{AW09}}]\label{def:ext-oracle}\index{extension oracle}
   % TODO: Reuse definition of extension polynomial from earlier
@@ -2549,10 +2591,10 @@ Here, we will demonstrate that $\GNI$ has an interactive proof.
       $P$: Send $1$ to $S$\;
     }
     \If{$r_{i} \ne b_{i}$}{
-      reject\;
+      \Reject\;
     }
   }
-  accept\;
+  \Accept\;
   \caption{An interactive proof for the language $\GNI$}\label{alg:gni-ip}
 \end{algorithm}
 
@@ -2722,15 +2764,15 @@ with three-prover systems at all in this paper beyond this proof.
   $\hat{P}_{1}$: Send transaction log between $(P_{1}, \ldots, P_{k}, V)$ with the
   chosen randomness\;
   \If{The simulated log is longer than the worst-case runtime of $V$}{
-    reject\;
+    \Reject\;
   }
   $\hat{V}$: Choose random $i \in [k]$\;
   $\hat{V}$ and $\hat{P}_{2}$: Simulate conversation between $V$ and $P_{i}$
   given coin tosses\;
   \eIf{the simulated conversation does not match the result of $\hat{P}_{1}$}{
-    reject\;
+    \Reject\;
   }{
-    accept if and only if $V$ would accept with the given transcript\;
+    \Accept if and only if $V$ would accept with the given transcript\;
   }
   \caption{A 2-prover MIP simulating a $k$-prover MIP}\label{alg:2-prover-sim-k}
 \end{algorithm}
@@ -2886,7 +2928,7 @@ to not reveal anything beyond simply whether $G_{0}$ and $G_{1}$ are isomorphic.
     $\sigma' \cdot G_{b'} = \sigma \cdot G_{b}$\;\nllabel{line:sigma-prime}
     $P$: send $\sigma'$ to $V$\;
     \If{$\sigma' \cdot G_{b'} \ne \sigma \cdot G_{b}$}{\nllabel{line:confirm-sigma}
-      reject\;
+      \Reject\;
     }
   }
   accept\;
@@ -3389,9 +3431,9 @@ will accept any $(f, y)$ pair where $f(x)$ is $\delta$-close to $y$.
     Add $\pi[3r + i]$ to $\sigma'$\;
   }
   \eIf{$\sigma'$ is a representation of an isomorphism $G_{1} \rightarrow G_{2}$}{
-    accept\;
+    \Accept\;
   }{
-    reject\;
+    \Reject\;
   }
   \caption{A PCP for $\GI$}\label{alg:gi-pcp}
 \end{algorithm}
@@ -4073,7 +4115,7 @@ PCPPs to make a new (non-robust) PCP with improved bounds.
   $P'$: Reply with the coefficients of the polynomial $\rho = R \circ \gamma$\;
   $V'$: query $R$ at $r$ and recieve answer $a$\;
   \If{$a \ne \rho(t)$}{\nllabel{line:check-rho}
-    reject\;
+    \Reject\;
   }
   $V'$: Simulate $V(x)$, answering all queries $a \in A$ with
   $\rho(A)$\;\nllabel{line:proper-sim}
@@ -5104,7 +5146,7 @@ problem, and as before our problem of choice is $\OSAT$.
     \item $m, d \in \mathbb{N}$,
     \item $H \subseteq \mathbb{F}$,
     \item $\gamma \in F$, and
-    \item $F \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]$ with
+    \item $F \in \mathbb{F}^{\le d}[X_{1, \ldots, m}]$ with
           \[
             \sum_{b \in H^{m}}F(b) = \gamma.
           \]
@@ -5117,6 +5159,10 @@ problem, and as before our problem of choice is $\OSAT$.
   $\Sum$ where the co-named parameters in \cref{def:sum-lang} are equal to their
   fixed values.
 \end{defn}
+
+For simplicity, we will often say $F \in \Sum[\mathbb{F}, m, d, H, \gamma]$ in cases
+where we mean $((\mathbb{F}, m, d, H, \gamma), F) \in \Sum[\mathbb{F}, m, d, H, \gamma]$ to
+reduce redundancy.
 
 % FIXME: Separate proof & verifier more cleanly
 \begin{algorithm}[htbp]
@@ -5138,7 +5184,7 @@ problem, and as before our problem of choice is $\OSAT$.
   }
   \For{$i \in \{1, \ldots, m-1\}$}{
     \If{$g_{i} \notin \mathbb{F}[X_{1, \ldots, i}^{\le d}]$}{
-      reject\;
+      \Reject\;
     }
   }
   Check $\sum_{b \in H}g_{1}(b) = \gamma$\;
@@ -5159,7 +5205,7 @@ problem, and as before our problem of choice is $\OSAT$.
 \end{algorithm}
 
 % TODO: I think this can/should be moved to the normal PCP theorem section?
-\begin{thm}
+\begin{thm}\label{thm:pcpp-sum}
   Let $\delta > 0$, $\mathbb{F}$ be a finite field, $H \subseteq \mathbb{F}$,
   $\gamma \in \mathbb{F}$, and $m, d \in \mathbb{N}$ such that $\frac{md}{\abs{\mathbb{F}}} < \delta$
   and $d > \abs{H} + 1$. Then there exists a PCP of
@@ -5170,10 +5216,16 @@ problem, and as before our problem of choice is $\OSAT$.
 \end{thm}
 
 \begin{proof}
-  We construct such an algorithm as \cref{alg:sum-pcpp}. % TODO
+  We construct such an algorithm as \cref{alg:sum-pcpp}. To show this is a PCPP,
+  we will first show that it will always accept when given a valid input and
+  proof; following that we will show it will correctly reject for all inputs not
+  near any polynomial in the language. % TODO Robustness
+
+  % TODO
 \end{proof}
 
 \begin{algorithm}[htbp]
+  % TODO: KwIn/KwOut
   \tcc{Proof}
   Sample $Q \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]$ uniformly\;
   \For{$i \in \{1, \ldots, m\}$}{
@@ -5182,26 +5234,30 @@ problem, and as before our problem of choice is $\OSAT$.
     uniformly\;
   }
   Define $\pi_{P}(x) = (Q(x), T_{1}(x), \ldots, T_{m}(x))$\;
-  Define $Z_{H} = \prod_{a \in H}(X - a)$\;
+  Define $Z_{H}(X) = \prod_{a \in H}(X - a)$\;
   Define $Q_{\text{rev}}(X) = Q(X_{\text{rev}})$\; % FIXME: I think rev means reversed?
-  Define $R(X) = Q(X) - Q_{\text{rev}}(X) + \sum_{i=1}^{m}Z_{H}(X_{i})T_{i}(X)$\;
-  Run \cref{alg:sum-pcpp} with explicit input $(\mathbb{F}, m, d, H, \gamma, \delta)$ and
-  implicit input $F + R$\;
+  Define $R(X) = Q(X) - Q_{\text{rev}}(X) + \sum_{i=1}^{m}Z_{H}(X_{i})T_{i}(X)$\;\nllabel{line:def-r}
+  Compute the proof $\pi_{\Sigma}$ for \cref{alg:sum-pcpp} with explicit input
+  $(\mathbb{F}, m, d, H, \gamma, \delta)$ and implicit input $F + R$\; % FIXME: Alphabet problems
   \KwRet{$(\pi_{\Sigma}, \pi_{P})$}\;
   \tcc{Verifier}
   Emulate \cref{alg:sum-pcpp} on input $F + R$ and proof $\pi_{\Sigma}$. To query
   $F + R$ at some $\alpha \in \mathbb{F}^{m}$, query $F(\alpha)$, $\pi_{P}(\alpha)$, and
   $\pi_{P}(\alpha_{\text{rev}})$, then compute
-  \begin{algomathdisplay}
+  \begin{algomathdisplay}\nllabel{line:emulate-sum-pcpp}
     (F+R)(\alpha) = F(\alpha) + (\pi_{P}(\alpha))_{1} - (\pi_{P}(\alpha_{\text{rev}}))_{1} + \sum_{i=1}^{m}Z_{H}(\alpha_{i})(\pi_{P}(\alpha))_{i+1}
   \end{algomathdisplay}
-  Perform \cref{alg:robust-low-deg} on $\pi_{P}$ with proximity parameter
-  $\varepsilon_{P} = \delta_{R}/8$ and degree parameter $d_{P} = md$\;
+  Perform \cref{alg:robust-low-deg} on $F$ with proximity parameter
+  $\delta_{RM} = \min(d, 1/5)$\;\nllabel{line:deg-test-f}
   \If{\cref{alg:robust-low-deg} fails}{
-    reject\;
+    \Reject\;
   }
-  Accept\;
-  % TODO
+  Perform \cref{alg:robust-low-deg} on $\pi_{P}$ with proximity parameter
+  $\varepsilon_{P} = \delta_{R}/8$ and degree parameter $d_{P} = md$\;\nllabel{line:emulate-deg-test}
+  \If{\cref{alg:robust-low-deg} fails}{
+    \Reject\;
+  }
+  \Accept\;
   \caption{A zero-knowledge robust PCPP for $\Sum$~\cite[Construction
     5.2]{GOS25}}\label{alg:sum-pzk-pcpp}
 \end{algorithm}
@@ -5218,7 +5274,26 @@ problem, and as before our problem of choice is $\OSAT$.
 \end{thm}
 
 \begin{proof}
-  We construct such an algorithm as \cref{alg:sum-pzk-pcpp}. % TODO
+  We construct such an algorithm as \cref{alg:sum-pzk-pcpp}. First, we will show
+  that this is a PCP of proximity by showing correctness in both acceptance and
+  rejection (with high probability), and then we will demonstrate zero
+  knowledge. % TODO: How will we demonstrate zero knowledge? (Simulator?)
+
+  Let $F \in \Sum[\mathbb{F}, m, d, H, \gamma]$, and let $(\pi_{\Sigma}, \pi_{P})$ be the honest
+  proof. In this case, as we showed in \cref{thm:pcpp-sum}, the simulation of
+  \cref{alg:sum-pcpp} we do on line~\ref{line:emulate-sum-pcpp} will always
+  succeed. To show that the equation in line~\ref{line:emulate-sum-pcpp} is
+  true, note that from the definition of $\pi_{P}$, $(\pi_{P}(\alpha))_{1} = Q(x)$ and
+  $(\pi_{P}(\alpha))_{i+1} = T_{i}(\alpha)$ for all $i \ge 1$. Doing these substitutions, the
+  right hand side of the equation is exactly $F(\alpha)$ plus the definition of $R$
+  from line~\ref{line:def-r}. Since $F$ is defined in the problem statement to
+  be a polynomial of degree $d$, the check in line~\ref{line:deg-test-f} will
+  always succeed. Further, $Q$ and each $T_{i}$ are defined to be
+  multidegree-$d$ $m$-variable polynomials and thus their degree will be less
+  than $md$. Hence, the check in line~\ref{line:emulate-deg-test} will pass.
+  As such, when given valid inputs \cref{alg:sum-pzk-pcpp} will always succeed.
+
+  % TODO
 \end{proof}
 
 \section{A zero-knowledge $\PCP$ for $\NP$ and $\NEXP$}\label{sec:pzkpcp-np-nexp}
@@ -5315,7 +5390,10 @@ theorem.
   alphabet, and transform it into one with the exact parameters we seek. We do
   this first through an alphabet reduction (as per \cref{thm:alph-reduction})
   and then through proof-composing it with the algorithm for $\CktVal$ with
-  \cref{cor:constant-query}, we can get a constant query-complexity PCP.
+  \cref{cor:constant-query}, we can get a constant query-complexity PCP\@. Since
+  several of these class inclusions involve modifying a small number of
+  parameters in a relatively complex class, we will be highlighting the changed
+  parameters in each inclusion statement.
 
   Let $q^{*}(n) \le 2^{\poly(n)}$ be arbitrary. This will be the query complexity
   of our final PCP after we do all the class inclusions. As per
@@ -5334,8 +5412,10 @@ theorem.
   % TODO: Highlight changes?
   \begin{equation}\label{eqn:alph-red-np}
     \begin{aligned}
-      \PZKPCP_{\Sigma(n)}&\pzkpcpr{\log(n)+\log(\tilde{q}(n))}{\poly(\log(n) + \log(\tilde{q}(n)))}{\tilde{q}(n)}{\varepsilon}{s}{\Omega(1)} \\
-      \subseteq \PZKPCP_{\{0,1\}}&\pzkpcpr{\log(n)+\log(\tilde{q}(n))}{\poly(\log(n) + \log(\tilde{q}(n)))}{\tilde{q}(n)}{\varepsilon}{s}{\Omega(1)}.
+      \PZKPCP_{\color{pumpkin}{\Sigma(n)}}&\pzkpcpr{\log(n)+\log(\tilde{q}(n))}{\poly(\log(n)
+                             + \log(\tilde{q}(n)))}{\tilde{q}(n)}{\varepsilon}{s}{\Omega(1)} \\
+      \subseteq \PZKPCP_{\color{pumpkin}{\{0,1\}}}&\pzkpcpr{\log(n)+\log(\tilde{q}(n))}{\poly(\log(n)
+                                  + \log(\tilde{q}(n)))}{\tilde{q}(n)}{\varepsilon}{s}{\Omega(1)}.
     \end{aligned}
   \end{equation}
 
@@ -5348,8 +5428,9 @@ theorem.
   \cref{cor:constant-query}, we have that
   \begin{equation}\label{eqn:proof-comb-np}
     \begin{aligned}
-      \PZKPCP_{\{0,1\}}&\pzkpcpr{\log(n)+\log(\tilde{q}(n))}{\poly(\log(n) + \log(\tilde{q}(n)))}{\tilde{q}(n)}{\varepsilon}{s}{\Omega(1)} \\
-      \subseteq \PZKPCP_{\{0,1\}}&\pzkpcp{\log(n)+\log(q^{*}(n))}{1}{q^{*}(n)}{\varepsilon}.
+      \PZKPCP_{\{0,1\}}&\pzkpcpr{\log(n)+\color{pumpkin}{\log(\tilde{q}(n))}}{\color{pumpkin}{\poly(\log(n)
+                         + \log(\tilde{q}(n)))}}{\color{pumpkin}{\tilde{q}(n)}}{\varepsilon}{\color{plum}{s}}{\color{plum}{\Omega(1)}} \\
+      \subseteq \PZKPCP_{\{0,1\}}&\pzkpcp{\log(n)+\color{pumpkin}{\log(q^{*}(n))}}{\color{pumpkin}{1}}{\color{pumpkin}{q^{*}(n)}}{\varepsilon}.
     \end{aligned}
   \end{equation}
 
@@ -5387,8 +5468,8 @@ theorem.
   % TODO: Highlight changes?
   \begin{equation}\label{eqn:alph-red-nexp}
     \begin{aligned}
-      \PZKPCP_{\Sigma(n)}&\pzkpcpr{\poly(n)+\log(\tilde{q}(n))}{\poly(n)}{\tilde{q}(n)}{\varepsilon}{s}{\Omega(1)} \\
-      \subseteq \PZKPCP_{\{0,1\}}&\pzkpcpr{\poly(n)+\log(\tilde{q}(n))}{\poly(n,\log(\tilde{q}(n)))}{\tilde{q}(n)}{\varepsilon}{s}{\Omega(1)}.
+      \PZKPCP_{\color{pumpkin}{\Sigma(n)}}&\pzkpcpr{\poly(n)+\log(\tilde{q}(n))}{\color{pumpkin}{\poly(n)}}{\tilde{q}(n)}{\varepsilon}{s}{\Omega(1)} \\
+      \subseteq \PZKPCP_{\color{pumpkin}{\{0,1\}}}&\pzkpcpr{\poly(n)+\log(\tilde{q}(n))}{\color{pumpkin}{\poly(n,\log(\tilde{q}(n)))}}{\tilde{q}(n)}{\varepsilon}{s}{\Omega(1)}.
     \end{aligned}
   \end{equation}
 
@@ -5400,8 +5481,11 @@ theorem.
   \cref{cor:constant-query}, we have that
   \begin{equation}\label{eqn:proof-comb-nexp}
     \begin{aligned}
-      \PZKPCP_{\{0,1\}}&\pzkpcpr{\poly(n)}{\poly(n, \log(\tilde{q}(n)))}{\tilde{q}(n)}{\varepsilon}{s}{\Omega(1)} \\
-      \subseteq \PZKPCP_{\{0,1\}}&\pzkpcp{\poly(n) + \log(q^{*}(n))}{1}{q^{*}(n)}{\varepsilon}.
+      \PZKPCP_{\{0,1\}}&\pzkpcpr{\color{pumpkin}{\poly(n)}}{\color{pumpkin}{\poly(n,
+                         \log(\tilde{q}(n)))}}{\color{pumpkin}{\tilde{q}(n)}}{\varepsilon
+                         }{\color{plum}{s}}{\color{plum}{\Omega(1)}} \\
+      \subseteq \PZKPCP_{\{0,1\}}&\pzkpcp{\color{pumpkin}{\poly(n) + \log(q^{*}(n))}}{\color{pumpkin}{1}
+                           }{\color{pumpkin}{q^{*}(n)}}{\varepsilon}.
     \end{aligned}
   \end{equation}
 
