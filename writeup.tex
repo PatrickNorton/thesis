@@ -274,6 +274,7 @@
 \newlang{\OR}{OR}
 \newlang{\OSAT}{O3SAT}
 \newlang{\PCPP}{PCPP}
+\newlang{\PolySim}{PolySim}
 \newlang{\Prime}{Prime}
 \newlang{\Sum}{Sum}
 
@@ -281,6 +282,7 @@
 \SetKw{Reject}{reject}
 \SetKwBlock{Proof}{proof}{end}
 \SetKwBlock{Verifier}{verifier}{end}
+\SetKwInput{KwOracle}{Oracle}
 
 \newcommand{\shrug}[1][]{%
   \begin{tikzpicture}[baseline,x=0.8\ht\strutbox,y=0.8\ht\strutbox,line width=0.125ex,#1]
@@ -910,6 +912,10 @@ exactly when we can compute this condition efficiently.
   $\#\SAT$ is $\#\P$-complete.
 \end{thm}
 
+\subsection{Impagliazzo's five worlds}
+
+\TODO{}
+
 \section{Polynomials}\label{sec:polynomial}
 
 \TODO{}
@@ -1243,6 +1249,17 @@ of qualifiers to them, but they will be useful in later theorems (in particular
   \end{align*}
 \end{proof}
 
+\begin{lemma}[Schwartz-Zippel lemma; \cite{Sch80,Zip79}]%
+  \label{lem:schwartz-zippel}\index{Schwartz-Zippel lemma}
+  Let $\mathbb{F}$ be a finite field, and let $m, d \in \mathbb{N}^{+}$. If
+  $F\colon \mathbb{F}^{m} \rightarrow F$ is a nonzero polynomial of degree at most $d$, then
+  $\mathbb{P}[P(x) = 0] \le d/\abs{\mathbb{F}}$.
+\end{lemma}
+
+\begin{proof}
+  \TODO{}
+\end{proof}
+
 \section{Statistics}
 
 In this paper, we will be dealing quite a bit with computers that have access to
@@ -1377,50 +1394,79 @@ a set is simply the distance to the closest element of the set.
 Now that we have some notions of distance, we can define a useful
 error-correcting code. \TODO{Finish}
 
-\FIXME{What is going on when we say $F \in \RM[\mathbb{F}, r, m]$?}
+\TODO{Cite}
 
-\begin{defn}[{\cite{Mul54}}]\label{def:rm-code}\index{Reed-Muller code}\index{RM@$\RM$}
-  Let $\mathbb{F}$ be a finite field, and let $r$ and $m$ be integers with
-  $0 < r \le m$. Further define $n = 2^{m}$. The \emph{Reed-Muller code}
-  $\RM[\mathbb{F}, r, m]$ is the function
+\begin{defn}\label{def:rm-set}\index{RM@$\RM$}
+  Let $\mathbb{F}$ be a finite field, and let $k, r, m \in \mathbb{N}^{+}$. Then the set
+  $\RM^{k}[\mathbb{F}, r, m]$ is
   \begin{equation}
-    \begin{aligned}
-      C\colon \mathbb{F}^{r} &\rightarrow \mathbb{F}^{n} \\
-      x &\mapsto (p_{x}(Z))_{Z \in \{0, 1\}^{m}},
-    \end{aligned}
+    \RM^{k}[\mathbb{F}, r, m] = \mleft\{
+      \begin{aligned}
+        F\colon \mathbb{F}^{m} &\rightarrow \mathbb{F}^{k} \\
+        x &\mapsto (p_{1}(x), \ldots, p_{k}(x))
+      \end{aligned}
+      \middlemid
+      p_{i} \in \mathbb{F}^{\le d}[X_{1, \ldots, m}]
+    \mright\}.
   \end{equation}
-  where $p_{x}$ is a multilinear polynomial defined as
-  \begin{equation}
-    \begin{aligned}
-      p_{x}\colon \mathbb{F}^{m} &\rightarrow \mathbb{F} \\
-      (Z_{1}, \ldots, Z_{m}) &\mapsto \sum_{\substack{S \subseteq \{1, \ldots, m\} \\ \abs{S} < r}}\prod_{i \in S}x_{S}Z_{i}
-    \end{aligned}
-  \end{equation}
-  for all $x \in \{0, 1\}^{r}$.
 \end{defn}
 
-\TODO{Transition to introduce theorem}
+In a strict set-theoretic sense, this means
+$\RM^{k}[\mathbb{F}, r, m] = \mleft(\mathbb{F}^{\le d}[X_{1, \ldots, m}]\mright)^{k}$;
+however, we will be referring to this set in a specific context: that of
+encoding values. \TODO{More (in particular we refer to this set when
+  we care about the specific valuewise encoding into
+  $(\mathbb{F}^{k})^{\abs{\mathbb{F}}^{m}}$)}
 
-\begin{thm}\label{thm:rm-is-linear}
-  The Reed-Muller code is a linear code:
+\begin{defn}\label{def:rm-code}\index{Reed-Muller code}
+  Let $\varphi$ be a bijection from a set $S$ to $\RM^{k}[\mathbb{F}, r, m]$.
+  \FIXME{What are our restrictions on $S$?} Then the \emph{Reed-Muller code} of
+  a value $s \in S$ is the vector
   \begin{equation}
-    \RM[\mathbb{F}, r, m](x) + \RM[\mathbb{F}, r, m](y) = \RM[\mathbb{F}, r, m](x + y).
+    (\varphi(s)(x))_{x \in \mathbb{F}^{m}} \in (\mathbb{F}^{k})^{\abs{\mathbb{F}}^{m}}.
   \end{equation}
-\end{thm}
+\end{defn}
+
+Less formally, what this means is that for our input $s \in S$, we associate it
+with some polynomial $F$; then our encoding is the \emph{entire evaluation
+  table} of $F$ over its domain. If we consider our alphabet to be
+$\mathbb{F}^{k}$ (i.e., the codomain of $F$), then the Hamming distance from $F$
+to any other arbitrary function $F'\colon \mathbb{F}^{m} \rightarrow \mathbb{F}^{k}$ is exactly
+the proportion of inputs $x$ on which $F'(x) \ne F(x)$. The following lemma
+formalizes this notion.
+
+\begin{lemma}\label{lem:rm-distance}
+  Let $F \in \RM[\mathbb{F}, m, d]$, and let
+  $F'\colon \mathbb{F}^{m} \rightarrow \mathbb{F}^{k}$. Then, the Hamming distance $\Delta(F, F')$,
+  when written over the alphabet $\mathbb{F}^{k}$, is
+  \begin{equation}\label{eqn:rm-distance}
+    \frac{\abs*{\{x \in \mathbb{F}^{m} \mid F(x) \ne F'(x)\}}}{\abs{\mathbb{F}}^{m}}.
+  \end{equation}
+\end{lemma}
 
 \begin{proof}
-  To show $\RM[\mathbb{F}, r, m]$ is linear, we will show it is linear in each
-  of its coordinates. Fix some $Z \in \{0, 1\}^{m}$. Then
-  \begin{align*}
-    p_{x+y}(Z) &= \sum_{\substack{S \subseteq \{1, \ldots, m\} \\ \abs{S} < r}}\prod_{i \in S}(x + y)_{S}Z_{i} \\
-               &= \sum_{\substack{S \subseteq \{1, \ldots, m\} \\ \abs{S} < r}}\prod_{i \in S}(x_{S} + y_{S})Z_{i} \\
-               &= \sum_{\substack{S \subseteq \{1, \ldots, m\} \\ \abs{S} < r}}\prod_{i \in S}x_{S}Z_{i}
-    + \sum_{\substack{S \subseteq \{1, \ldots, m\} \\ \abs{S} < r}}\prod_{i \in S}y_{S}Z_{i} \\
-    &= p_{x}(Z) + p_{y}(Z).
-  \end{align*}
-  Hence, for each coordinate function, $\RM[\mathbb{F}, r, m]$ is linear and
-  thus $\RM[\mathbb{F}, r, m]$ is linear.
+  \TODO{}
 \end{proof}
+
+\begin{cor}\label{cor:rm-probability}
+  Let $F \in \RM[\mathbb{F}, m, d]$, and let
+  $F'\colon \mathbb{F}^{m} \rightarrow \mathbb{F}^{k}$. Then,
+  \begin{equation}
+    \Delta(F, F') = \mathbb{P}[F(x) \ne F'(x)].
+  \end{equation}
+\end{cor}
+
+\begin{proof}
+  \TODO{}
+\end{proof}
+
+\TODO{Plenty of explanation (in particular, how will we be using this?)}
+
+\TODO{Examples}
+
+\TODO{Can we pull any proofs from \cref{sec:polynomial} that will give us more
+  information? (In particular, min distance between elements of
+  $\RM^{k}[\mathbb{F}, m, d]$)}
 
 \chapter{Relativization}
 
@@ -1689,7 +1735,7 @@ it is outside the scope of this paper.
 % Perhaps rephrase in the style of AW09 Def. 4.1?
 \begin{defn}[{\cite[17]{AW09}}]\label{def:det-qc}\index{query complexity!deterministic}
   % TODO? Split up representation of oracle and rest of definition
-  Let $n \in \mathbb{N}$ and let $A: \{0, 1\}^{n} \rightarrow \{0, 1\}$ be an oracle. We can write
+  Let $n \in \mathbb{N}$ and let $A\colon \{0, 1\}^{n} \rightarrow \{0, 1\}$ be an oracle. We can write
   $A$ using $2^{n}$ bits, where bit $i$ is the output of $A$ when given the
   binary representation of $i$ as input. Define $N = 2^{n}$, and let
   $f\colon \{0, 1\}^{N} \rightarrow \{0, 1\}$ be a Boolean function. Then the
@@ -3316,6 +3362,12 @@ still widely believed to exist.
 
 \TODO{Define decommitment}
 
+\subsection{Hybrid simulators}\label{sec:hybrid-sim}
+
+\begin{defn}\label{def:hybrid-sim}\index{hybrid simulator}
+  A \emph{hybrid simulator} is \TODO{}
+\end{defn}
+
 \section{Probabilistically-checkable proofs}\label{sec:pcp}
 
 So far, all of our computational proofs have focused on the interaction between
@@ -3600,6 +3652,67 @@ will accept any $(f, y)$ pair where $f(x)$ is $\delta$-close to $y$.
   from $G_{1}$ to $G_{2}$ (since no such isomorphism exists); hence $V$ will
   always reject.
 \end{proof}
+
+\subsection{Robustness}\label{sec:robust-verifiers}
+
+\TODO{}
+
+\begin{defn}\label{def:acc(v)}\index{Acc@$\Acc$}
+  Let $V$ be a non-adaptive PCP verifier that makes $q$ queries. The set of
+  \emph{accepting views} of $V$ for some input $x$ and randomness $\mu$, denoted
+  $\Acc(V(x; \mu))$, is the set of all elements $a \in \Sigma^{q}$ such that $V$ accepts
+  when given input $x$, randomness $\mu$, and has its queries answered by the
+  sequential elements of $a$.
+\end{defn}
+
+\begin{defn}[{\cite[Def.\ 2.6]{BGHSV06}}]\label{def:robust-verifer}\index{robust verifier}
+  Let $s, \rho\colon \mathbb{N} \rightarrow [0, 1]$. A PCP verifier $V$ has
+  \emph{robust-soundness error} $s$ with \emph{robustness parameter} $\rho$ if for
+  all $x \notin L$, the bits read by $V$ are $\rho$-close to being accepted with
+  probability strictly less than $s$. More formally,
+  \begin{equation}
+    \mathbb{P}[\Delta(\pi^{*}|_{Q(x)}, \Acc(V(x; \mu))) \le \rho] \le s.
+  \end{equation}
+\end{defn}
+
+We will denote robust PCP classes with
+\[
+  \PCP\pcpr{q(n)}{r(n)}{s(n)}{\rho(n)}.
+\]
+
+\begin{defn}\label{def:exp-rob-pcp}\index{expected robustness!PCP@$\PCP$}
+  Let $\rho: \mathbb{N} \rightarrow [0,1]$. A PCP for some language $L$ has \emph{expected
+    robustness} $\rho$ if for all $x \notin L$, we have for every oracle $\pi^{*}$, the
+  expected distance between any accepting view and the set of actually-seen
+  elements is no more than $\rho(x)$. More formally,
+  \begin{equation}
+    \underset{\mu}{\mathbb{E}}\mleft[\Delta(\pi^{*}|_{Q(x)}, \Acc(V(x, \mu)))\mright] \ge \rho(x).
+  \end{equation}
+\end{defn}
+
+\begin{defn}\label{def:exp-rob-pcpp}\index{expected robustness!PCPP@$\PCPP$}
+  Let $\rho: \mathbb{N} \rightarrow [0,1]$. A PCPP for some pair language $L$ has \emph{expected
+    robustness} $\rho$ if for all $(x, y)$ where $y$ is $\delta$-far from $L[x]$, we
+  have for every oracle $\pi^{*}$, the expected distance between any accepting
+  view and the set of actually-seen elements is no more than $\rho(x)$. More
+  formally,
+  \begin{equation}
+    \underset{\mu}{\mathbb{E}}\mleft[\Delta(\pi^{*}|_{Q(x)}, \Acc(V(x, \mu)))\mright] \ge \rho(x).
+  \end{equation}
+\end{defn}
+
+\begin{lemma}[{\cite[Proposition 2.10]{BGHSV06}}]\label{lem:exp-rob-to-rs}
+  If a PCPP has expected robustness $\rho$, then for all $\varepsilon \le \rho$, it has
+  robust-soundness error $1 - \varepsilon$ with robustness parameter $\rho - \varepsilon$.
+\end{lemma}
+
+\begin{proof}
+  \TODO{Do they not even prove this? Probably means I ought to}
+\end{proof}
+
+This lemma will allow us to prove statements in terms of expected robustness
+instead of normal robustness. In general, we will find expected robustness much
+easier to prove; hence
 
 \section{Zero-knowledge probabilistically-checkable proofs}\label{sec:pzkpcp}
 
@@ -3994,8 +4107,7 @@ will make for relatively easy transformations.
   % TODO
 \end{proof}
 
-% FIXME: Is this the right theorem?
-\begin{thm}[{\cite[Theorem 3.2]{BGHSV06}}]\label{thm:ckt-val-pcpp}
+\begin{thm}[{\cite[Theorem 3.3]{BGHSV06}}]\label{thm:ckt-val-pcpp}
   For any $\varepsilon > 0$, $\CktVal$ has a PCPP $(P, V)$ where $P$ is deterministic and
   polynomial-time, such that
   \[
@@ -4006,20 +4118,6 @@ will make for relatively easy transformations.
 \begin{proof}
   % TODO: Do I even \emph{want} a proof or is this too much?
 \end{proof}
-
-\section{Robust verifiers}\label{sec:robust-verifier}
-
-\begin{defn}[{\cite[Def.\ 2.6]{BGHSV06}}]\label{def:robust-verifer}\index{robust verifier}
-  Let $s, \rho\colon \mathbb{N} \rightarrow [0, 1]$. A PCP verifier $V$ has
-  \emph{robust-soundness error} $s$ with \emph{robustness parameter} $\rho$ if for
-  all $x \notin L$, the bits read by $V$ are $\rho$-close to being accepted with
-  probability strictly less than $s$.
-\end{defn}
-
-We will denote robust PCP classes with
-\[
-  \PCP\pcpr{q(n)}{r(n)}{s(n)}{\rho(n)}.
-\]
 
 \section{The composition theorem}\label{sec:comp-theorem}
 
@@ -4074,16 +4172,27 @@ PCPPs to make a new (non-robust) PCP with improved bounds.
 
 \section{Alphabet reduction}\label{sec:alph-reduction}
 
+One major difference between PCPs and many other types of computational model is
+that the size of the alphabet proofs are written can have a non-trivial impact.
+This is because when we talk about query complexity, we are no longer simply
+looking at classes with the coarseness of e.g.\ $\P$, but are instead looking at
+much finer complexities.
+
+Despite this, we would like to be able to construct some PCPs over non-binary
+languages. Non-binary PCPs can be more intuitive in certain circumstances, and
+the complexity bounds can be more apparent. As such, we would like a theorem for
+how changing the language we work over affects our parameters.
+
 \begin{thm}[{\cite[Lemma 2.13]{BGHSV06}}]%
   \label{thm:alph-reduction}\index{alphabet reduction}
   Let $L$ be a language with a PCP over the language $\{0, 1\}^{a}$ such
   that
   \[
-    L \in \PCP\pcpr{q}{r}{s}{\rho}.
+    L \in \PCP_{\{0, 1\}^{a}}\pcpr{q}{r}{s}{\rho}.
   \]
   Then $L$ has a PCP over the language $\{0, 1\}$ such that
   \[
-    L \in \PCP\pcpr{r}{O(aq)}{s}{\Omega(\rho)}.
+    L \in \PCP_{\{0, 1\}}\pcpr{O(aq)}{r}{s}{\Omega(\rho)}.
   \]
 \end{thm}
 
@@ -4101,6 +4210,220 @@ PCPPs to make a new (non-robust) PCP with improved bounds.
 \begin{proof}
   We show that \cref{alg:boolean-reduction} is a boolean reduction algorithm.
   % TODO
+\end{proof}
+
+This is relatively good: it tells us that query complexity is not made much
+worse by changing around our language. It is also worth pointing out that one
+can always scale \emph{up} the size of their language for free: simply
+zero-padding the extra bits will leave you with a functioning PCP for a larger
+language. This is particularly useful since later on we will be working with
+languages whose base is not $\{0, 1\}$ but some finite field $\mathbb{F}$, and
+this way we can scale them to some $\{0, 1\}^{a}$ where $2^{a} \ge \abs{F}$
+without worry.
+
+\section{PCPPs for polynomial summation}\label{sec:pcpp-poly-sum}
+
+\FIXME{Determine difference between the various sumchecks we've seen so far}
+% TODO: This looks like the same language we've seen earlier in this paper: do
+% we want this as the formal definition somewhere or are there better ones?
+\begin{defn}[{\cite[Def.\ 4.1]{GOS25}}]\label{def:sum-lang}\index{Sum@$\Sum$}
+  The language $\Sum$ is the set of all ordered pairs
+  $((\mathbb{F}, 1^{m}, 1^{d}, H, \gamma), F)$, where
+  \begin{itemize}
+    \item $\mathbb{F}$ is a finite field,
+    \item $m, d \in \mathbb{N}$,
+    \item $H \subseteq \mathbb{F}$,
+    \item $\gamma \in F$, and
+    \item $F \in \mathbb{F}^{\le d}[X_{1, \ldots, m}]$ with
+          \[
+            \sum_{b \in H^{m}}F(b) = \gamma.
+          \]
+  \end{itemize}
+\end{defn}
+
+While the general language $\Sum$ can be very useful, it can be a little
+unwieldy, especially since it includes polynomials over all finite fields (so
+determining the language can be a little strange). As such, we define a subset
+of $\Sum$ where we restrict the possible values of everything except $F$ to a
+fixed constant. This is much easier to work with, and it will still be very
+useful to us later on.
+
+\begin{defn}\label{def:sum-params}
+  For a fixed finite field $\mathbb{F}$, $m, d \in \mathbb{N}$, $H \subseteq \mathbb{F}$, and
+  $\gamma \in \mathbb{F}$, the language $\Sum[\mathbb{F}, m, d, H, \gamma]$ is the subset of
+  $\Sum$ where the co-named parameters in \cref{def:sum-lang} are equal to their
+  fixed values.
+\end{defn}
+
+For simplicity, we will often say $F \in \Sum[\mathbb{F}, m, d, H, \gamma]$ in cases
+where we mean $((\mathbb{F}, m, d, H, \gamma), F) \in \Sum[\mathbb{F}, m, d, H, \gamma]$ to
+reduce redundancy, since every parameter save $F$ is fixed in this definition.
+
+\FIXME{These need to go after we've introduced $V$ in the next theorem somehow}
+
+\begin{lemma}[{\cite[Lemma 4.4]{GOS25}}]\label{lem:sum-ev}
+  Let $\tilde{F}\colon \mathbb{F}^{m} \rightarrow \mathbb{F}$ be $\delta_{\Sigma}$-far from
+  $\Sum[\mathbb{F}, m, d, H, \gamma]$, but $\delta_{\RM}$-close to
+  $\RM[\mathbb{F}, m, d]$ for some
+  $\frac{md}{\abs{\mathbb{F}}} < \delta_{\RM} \le \delta_{\Sigma}$ and $d \ge \abs{H} + 1$. Then,
+  for all proofs $\pi^{*}$,
+  \begin{multline} % NOTE: This is the view of the verifier in alg:sum-pcpp
+    \underset{c \leftarrow \mathbb{F}^{m-1}}{\mathbb{E}}\mleft[
+      \Delta\mleft(
+        (\pi^{*}(c_{1}, \ldots, c_{m-2}, \alpha)_{\alpha \in \mathbb{F}}, \tilde{F}(c_{1}, \ldots, c_{m-1}, \alpha)_{\alpha \in \mathbb{F}}),
+        \Acc(V)
+      \mright)
+    \mright] \\
+    \ge \frac{\min(\delta_{\RM}, 1 - 4\delta_{\RM})}{2}.
+  \end{multline}
+\end{lemma}
+
+\begin{lemma}[{\cite[Lemma 5.3]{GOS25}}]\label{lem:sum-ev-close}
+  Let $\tilde{F}\colon \mathbb{F}^{m} \rightarrow \mathbb{F}$ be $\delta_{\Sigma}$-far from
+  $\Sum[\mathbb{F}, m, d, H, \gamma]$, but $\delta_{\RM}$-close to $\RM[\mathbb{F}, m, d]$
+  for $\delta_{\Sigma} > \delta_{\RM} \ge \frac{md}{\abs{\mathbb{F}}}$, $\delta_{\RM} < 1/5$, and
+  $d \ge \abs{H} + 1$. Then, for all proofs $(\pi_{\Sigma}^{*}, \pi_{P}^{*})$,
+  \begin{multline}
+    \underset{c \leftarrow \mathbb{F}^{m-1}}{\mathbb{E}}\mleft[
+      \Delta\mleft(
+        (\pi_{\Sigma}^{*}(c_{m-2}, \alpha)_{\alpha \in \mathbb{F}}, \pi_{P}^{*}(c, \alpha)_{\alpha \in \mathbb{F}},
+        \pi_{P}^{*}(\alpha, c_{\rev})_{\alpha \in \mathbb{F}}, \tilde{F}(c, \alpha)_{\alpha \in \mathbb{F}}),
+        \Acc(V)
+      \mright)
+    \mright] \\
+    \in \Omega(\delta_{\RM}).
+  \end{multline}
+\end{lemma}
+
+The proofs of these lemmata are highly technical and not particulary
+enlightening; hence we defer them to \cref{app:exp-dist-proofs}.
+
+\begin{algorithm}[htbp]
+  \Proof{
+    \For{$i \in \{1, \ldots, m - 1\}$}{
+      $g_{i}(X) \leftarrow \sum_{b \in H^{m-i}}F(X, b)$\;
+    }
+    Define $\pi\colon \mathbb{F}^{m-1} \rightarrow \mathbb{F}^{m-1}$ by
+    \[
+      \pi(c_{1}, \ldots, c_{m-2}, \alpha) = (g_{1}(\alpha), g_{2}(c_{1}, \alpha), \ldots, g_{m-1}(c_{1}, \ldots, c_{m-2}, \alpha))
+    \]
+    for each $(c_{1}, \ldots, c_{m-2}, \alpha) \in \mathbb{F}^{m-1}$\;
+    \KwRet{$\pi$}\;
+  }
+  \Verifier{
+    Sample $c \in \mathbb{F}^{m-1}$ at random\;
+    \For{$\alpha \in \mathbb{F}$}{
+      Query $\pi(c_{1}, \ldots, c_{m-2}, \alpha)$\;\nllabel{line:query-pi}
+      Query $F(c_{1}, \ldots, c_{m-1}, \alpha)$\;\nllabel{line:query-f}
+    }
+    \For{$i \in \{1, \ldots, m-1\}$}{
+      \If{$g_{i} \notin \mathbb{F}[X_{1, \ldots, i}^{\le d}]$}{
+        \Reject\;
+      }
+    }
+    % FIXME: Replace "Check" with if... reject
+    Check $\sum_{b \in H}g_{1}(b) = \gamma$\;\nllabel{line:check-g_1}
+    \For{$i \in \{1, \ldots, m - 2\}$}{
+      Check
+      \begin{algomathdisplay}\nllabel{line:check-g_i}
+        \sum_{b \in H}g_{i+1}(c_{1}, \ldots, c_{i}, b) = g_{i}(c_{1}, \ldots, c_{i})
+      \end{algomathdisplay}
+    }
+    Check
+    \begin{algomathdisplay}\nllabel{line:check-g_last}
+      \sum_{b \in H}F(c, b) = g_{m-1}(c)
+    \end{algomathdisplay}
+    Run \cref{alg:robust-low-deg} on $F$, with proximity parameter
+    $\delta_{R} = \min(\delta, 1/5)$\;\nllabel{line:check-f-degree}
+    \Accept{} if and only if the prior test passes\;
+  }
+  \caption{A robust PCPP for $\Sum$~\cite[Construction 4.3]{GOS25}}\label{alg:sum-pcpp}
+\end{algorithm}
+
+Finally, it is time to introduce a verifier for $\Sum$. \TODO{More}
+
+% TODO: I think this can/should be moved to the normal PCP theorem section?
+\begin{thm}[{\cite[Lemma 4.2]{GOS25}}]\label{thm:pcpp-sum}
+  Let $\delta > 0$, $\mathbb{F}$ be a finite field, $H \subseteq \mathbb{F}$,
+  $\gamma \in \mathbb{F}$, and $m, d \in \mathbb{N}$ such that $\frac{md}{\abs{\mathbb{F}}} < \delta$
+  and $d > \abs{H} + 1$. Then there exists a PCP of proximity for
+  $\Sum[\mathbb{F}, m, d, H, \gamma]$ over the alphabet $\mathbb{F}^{m+1}$ with
+  proximity parameter $\delta$ and robustness parameter $\rho = \Omega(\delta)$. Further, the
+  verifier makes $O(\abs{\mathbb{F}})$ queries to $F$ and $\pi$ and the proof
+  length is $O(\abs{\mathbb{F}}^{m})$. Alternately,
+  \[
+    \Sum[\mathbb{F}, m, d, H, \gamma] \in
+    \PCPP_{\mathbb{F}^{m+1}}\pcppr{\poly(n)}{\abs{\mathbb{F}}}{\delta}{\varepsilon}{s}{\Omega(\delta)}.
+  \]
+\end{thm}
+
+\begin{proof} % TODO: Show poly-time
+  We construct such an algorithm as \cref{alg:sum-pcpp}. To show this is a PCPP,
+  we will first show that the verifier will always accept when given a valid
+  input and proof; following that we will show it will correctly reject for all
+  inputs not near any polynomial in the language. \TODO{Is this a correct
+    summary?}
+
+  Let $F \in \Sum[\mathbb{F}, m, d, H, \gamma]$ and let $\pi$ be the honest proof. In
+  this case, our definition of $g_{i}$ is as
+  \begin{equation}
+    g_{i}(x_{1}, \ldots, x_{i}) = \sum_{b \in H^{m-i}}F(x_{1}, \ldots, x_{i}, b_{1}, \ldots, b_{m-i}).
+  \end{equation}
+  In particular, this means
+  \begin{align*}
+    \sum_{b \in H}g_{1}(b) &= \sum_{b \in H}\sum_{c \in H^{m-1}}F(b, c_{1}, \ldots, c_{m-1}) \\
+                      &= \sum_{b \in H^{m}}F(b_{1}, \ldots, b_{m}) \\
+                      &= \gamma.
+  \end{align*}
+  Hence, the check in line~\ref{line:check-g_1} will always pass.
+
+  Further, we have that
+  \begin{align*}
+    g_{i}(x_{1}, \ldots, x_{i}) &= \sum_{b \in H^{m-i}}F(x_{1}, \ldots, x_{i}, b_{1}, \ldots, b_{m-i}) \\
+                           &= \sum_{a \in H}\sum_{b \in H^{m-i-1}}F(x_{1}, \ldots, x_{i}, a, b_{1}, \ldots, b_{m-i-1}) \\
+                           &= \sum_{a \in H}g_{i+1}(x_{1}, \ldots, x_{i}, a).
+  \end{align*}
+  Hence, the check in line~\ref{line:check-g_i} will always pass.
+
+  The check in line~\ref{line:check-g_last} follows immediately from the
+  definition of $g_{m-1}$, and thus it will pass. Since $F$ is in our language,
+  it follows that it has degree at most $d$ and therefore the check in
+  line~\ref{line:check-f-degree} will pass. Since all the checks pass, it
+  follows that \cref{alg:sum-pcpp} will always accept when given an $F$ in the
+  language and an honest proof.
+
+  Next, let $F$ be $\delta$-far from $\Sum[\mathbb{F}, m, d, H, \gamma]$. We break this
+  into two cases: those where $F$ is $\delta_{\RM}$-far from $\RM[\mathbb{F}, m, d]$
+  and those where $F$ is $\delta_{\RM}$-close to $\RM[\mathbb{F}, m, d]$.
+
+  Before that, note that the simulation of the low-degree test in
+  line~\ref{line:check-f-degree} makes $O(\mathbb{F})$ queries (as per
+  \cref{thm:robust-low-deg}), and the rest of the algorithm makes
+  $2\abs{\mathbb{F}}$ queries, all in lines~\ref{line:query-pi}
+  and~\ref{line:query-f}. Both of these are independent of the length of the
+  input, meaning the proportion of the queries made by each of the two halves of
+  the verifier are constant.
+
+  If $F$ is $\delta_{\RM}$-far from $\RM[\mathbb{F}, m, d]$, then
+  \cref{alg:robust-low-deg} will always have its view at least $\Omega(\delta)$ from any
+  accepting view \TODO{Cite theorem}. Since the low-degree test is a constant
+  fraction of the total number of queries, this means that the expected distance
+  between the low-degree verifier's view and any accepting view is also $\Omega(\delta)$.
+  Thus, $V$ has expected robustness $\Omega(\delta)$ in this case.
+
+  If $F$ is $\delta_{\RM}$-close to $\RM[\mathbb{F}, m, d]$, then by
+  \cref{lem:sum-ev}, we know that the view of the verifier is at least
+  $\min(\delta_{\RM}, 1 - 4\delta_{\RM})/2$ from any accepting view. Since we defined
+  $\delta_{\RM} = \min(\delta, 1/5)$, this means the distance is at least
+  $\min(\delta/2, 1/10)$, which is in $\Omega(\delta)$. Since a constant proportion of
+  \cref{alg:sum-pcpp}'s queries occur outside of line~\ref{line:check-f-degree},
+  this means the total distance between the view of $V$ and any accepting view
+  is still $\Omega(\delta)$. Thus, $V$ has expected robustness $\Omega(\delta)$ in this case as well.
+
+  Since $V$ has expected robustness $\Omega(\delta)$ regardless of whether or not $F$ is
+  $\delta_{\RM}$-close to $\RM[\mathbb{F}, m, d]$, this means that $V$ has expected
+  robustness $\Omega(\delta)$ overall. Hence, \cref{alg:sum-pcpp} is a robust PCPP for
+  the language $\Sum$.
 \end{proof}
 
 \section{Robust PCP verifiers for $\CktSAT$}\label{sec:robust-pcp-cktsat}
@@ -4344,7 +4667,7 @@ Next, we construct an algorithm that can transform a single-query IPCP oracle
 into a MIP* program. Like before, we only give the result of the algorithm on a
 given input $(P', V')$, as opposed to the transformation algorithm itself.
 Interestingly, the transformed MIP* requires only one more round than the
-non-transformed IPCP. This is thanks to the algorithm we showed earlier in
+non-transformed IPCP\@. This is thanks to the algorithm we showed earlier in
 \cref{sec:reduce-queries}; that way we need only deal with a single oracle query
 besides the interactive-proof portion of the simulation.
 
@@ -4768,7 +5091,7 @@ at least $\abs{G}^{k}$. That is, if we query $Z$ no more than $\abs{G}^{k}$
 times, then we we will recieve \emph{no information} about the polynomial
 $R(X) = \sum_{\beta \in G^{k}}Z(X, \beta)$.
 
-\begin{cor}[{\cite[Corollary 12.3]{CFGS22}}]
+\begin{cor}[{\cite[Corollary 12.3]{CFGS22}}]\label{cor:indep-ensemble}
   Let $\mathbb{F}$ be a finite field, $G \subseteq \mathbb{F}$, and $d, d' \in \mathbb{N}$ with
   $d' \ge 2(\abs{G} - 1)$. Let $Q$ be a subset of $\mathbb{F}^{m+k}$ with
   $\abs{Q} \le \abs{G}^{k}$, and let $Z$ be uniformly random in
@@ -4962,80 +5285,7 @@ protocols we will construct later.
 To illustrate this, in \cref{fig:sumcheck-ex} we provide an example of an
 iteration of the protocol when the answer is affirmative and $P$ is honest.
 
-\subsection{A weakly zero-knowledge sumcheck protocol}
-
-\TODO{I've "inlined" this into the fully zero-knowledge algorithm, so I think
-I can remove this section now? The question remains whether I need to do this
-for the simulator as well, I think}
-
-Now that we have a non-zero-knowledge interactive protocol for the sumcheck
-problem, we need to turn it into a zero-knowledge protocol. While we would very
-much like to jump straight from \cref{alg:sumcheck-std} to a perfect
-zero-knowledge algorithm, we need to go through one intermediate step first. We
-first construct \cref{alg:sumcheck-wzk}, which is only \emph{weakly}
-zero-knowledge: while an outside observer to the protocol can learn
-\emph{something}, it will only learn a limited amount about the polynomial in
-question. Only once we have this will we be able to proceed to the fully
-zero-knowledge algorithm.
-
-\begin{defn}\label{def:weak-zk}\index{weak zero-knowledge}\index{zero-knowledge proof!weak}
-  A sumcheck protocol is \emph{weak zero-knowledge} if any verifier that makes
-  $q$ queries to $R$ learns at most $q$ evaluations of $F$.
-\end{defn}
-
-\begin{thm}
-  There exists a weakly zero-knowledge algorithm for the sumcheck protocol.
-\end{thm}
-
-\begin{algorithm}[htbp]
-  % FIXME: This is a model where both also get access to a polynomial R as an
-  % oracle
-  \KwIn{A subset $H \subseteq \mathbb{F}$ and integer $a$}
-  \KwIn{A polynomial $F$, as an algebraic oracle to $P$}
-  \KwOut{Whether $\sum_{x \in H^{m}}F(x) = a$}
-  $z \leftarrow \sum_{\alpha \in H^{m}}R(a)$\;
-  $P$: send $z$ to $V$\;
-  $V$: draw random $\rho \in \mathbb{F}$\;
-  $V$: send $\rho$ to $P$\;
-  $Q \leftarrow \rho F + R$\;
-  Both: run \cref{alg:sumcheck-std} on the statement $\sum_{\alpha \in H^{m}}Q(\alpha) = \rho v + z$\;
-  \caption{A weakly zero-knowledge sumcheck protocol~\cite[Construction
-    5.4]{BCFGRS17}}\label{alg:sumcheck-wzk}
-\end{algorithm}
-
-\begin{proof}
-  We describe the weakly zero-knowledge algorithm in \cref{alg:sumcheck-wzk}. We
-  begin by showing this algorithm implements the sumcheck protocol. Notice that
-  this protocol is a very small wrapper around \cref{alg:sumcheck-std}; hence we
-  only need to demonstrate that the modified statement will always have the same
-  result as the original.
-  % TODO
-\end{proof}
-
 \subsection{Making the sumcheck protocol zero-knowledge}
-
-% \begin{thm}[{\cite{BCFGRS17}}]
-%   There exists a probabilistic algorithm $\mathcal{A}$ such that, for every finite field
-%   $\mathbb{F}$, $m, d \in \mathbb{N}$, $H \subseteq \mathbb{F}$, subset
-%   $S = \{(\alpha_{1}, \beta_{1}), \ldots, (\alpha_{\ell}, \beta_{\ell})\} \subseteq \mathbb{F}^{\le m} \times \mathbb{F}$,
-%   and $(\alpha, \beta) \in \mathbb{F}^{\le m} \times \mathbb{F}$,
-%   \begin{equation}
-%     \mathbb{P}[\mathcal{A}(\mathbb{F}, m, d, H, S, \alpha) = \beta] =
-%     \underset{R \leftarrow \mathbb{F}[X_{1, \ldots, m}^{\le d}]}{\mathbb{P}}\mleft[R(\alpha) = \beta \middlemid
-%       \begin{matrix}
-%         R(\alpha_{1}) = \beta_{1} \\
-%         \vdots \\
-%         R(\alpha_{\ell}) = \beta_{\ell}
-%       \end{matrix}
-%     \mright]
-%   \end{equation}
-%   Further, $\mathcal{A}$ runs in time
-%   $m(d\ell\abs{H} + d^{3}\ell^{3})\poly(\log(\abs{\mathbb{F}})) = \ell^{3}\poly(m, d, \abs{H}, \log(\abs{\mathbb{F}}))$.
-% \end{thm}
-
-% \begin{proof}
-%   % TODO
-% \end{proof}
 
 % TODO: Mention that in 7.1, both P and V get F, but here only P does (for
 % zero-knowledge)
@@ -5043,7 +5293,7 @@ zero-knowledge algorithm.
 % is leaked as part of the protocol
 \begin{thm}[{\cite[Theorem 13.3]{CFGS22}}]\index{zero-knowledge proof!for sumcheck}\label{thm:zk-sumcheck}
   % TODO
-  There exists a zero-knowledge variant of \cref{alg:sumcheck-wzk}.
+  There exists a zero-knowledge variant of \cref{alg:sumcheck-std}.
 \end{thm}
 
 \begin{algorithm}[htbp]
@@ -5093,18 +5343,20 @@ zero-knowledge algorithm.
   Both: run \cref{alg:sumcheck-std} on the statement
   $\sum_{\alpha \in H^{m}}Q'(\alpha) = \rho_{2}w + z'$\;\nllabel{line:sumcheck-2}
   % FIXME: What does "output the claim" mean here?
-  $V$: output the claim $F(c) = \frac{g_{m}(c_{m}) - w}{\rho_{1}}$\;\nllabel{line:sumcheck-2}
+  $V$: output the claim $F(c) = \frac{g_{m}(c_{m}) - w}{\rho_{1}}$\;\nllabel{line:return-claim}
   \caption{Strong zero-knowledge sumcheck~\cite[Construction 3]{CFGS22}}\label{alg:zk-sumcheck}
 \end{algorithm}
 
-\TODO{Split into theorems (lemmata?) with one proving correctness and the other
-  zero-knowledge}
+To avoid an overly long-winded proof, we will split the above theorem into two
+lemmata. The first will show that \cref{alg:zk-sumcheck} is correct, and the
+second will show that it is in fact zero-knowledge.
+
+\begin{lemma}\label{lem:sumcheck-is-correct}
+  \Cref{alg:zk-sumcheck} is a MIP* algorithm for sumcheck.
+\end{lemma}
 
 \begin{proof}
   % TODO
-  We describe the algorithm in \cref{alg:zk-sumcheck}, and then show it is
-  zero-knowledge by constructing a simulator in \cref{alg:zk-sumcheck-fast}.
-
   If $P$ is honest in \cref{alg:zk-sumcheck}, then both sumcheck protocols will
   pass if and only if $(F, H, a)$ is valid. From the various definitions in the
   program, we have
@@ -5188,12 +5440,17 @@ zero-knowledge algorithm.
   line~\ref{line:sumcheck-2} accepts and
   $F(c) = \frac{g_{m}(c_{m}) - w}{\rho_{1}}$. \TODO{Wrap up all the individual
     probabilities into one total probability (Boole's inequality)}
+\end{proof}
 
-  Lastly, we show that \cref{alg:zk-sumcheck} is perfect zero-knowledge. We do
-  this by constructing a simulator. We construct a simulator in two phases:
-  first we construct a simulator that is slow but correct as
-  \cref{alg:zk-sumcheck-sim}, and then work it up into a fast (and still
-  correct) simulator in \cref{alg:zk-sumcheck-fast}.
+\begin{lemma}\label{lem:sumcheck-is-pzk}
+  \cref{alg:zk-sumcheck} is perfect zero-knowledge.
+\end{lemma}
+
+\begin{proof}
+  We construct a simulator for \cref{alg:zk-sumcheck} in two phases: first we
+  construct a simulator that is slow but correct as \cref{alg:zk-sumcheck-sim},
+  and then work it up into a fast (and still correct) simulator in
+  \cref{alg:zk-sumcheck-fast}.
 
   \TODO{}
 \end{proof}
@@ -5264,7 +5521,8 @@ problem, and as before our problem of choice is $\OSAT$.
   }
   \TODO{}\;
   \For{$i \in \{1, 2, 3\}$}{
-    $P$ and $V$ implement \cref{alg:sumcheck-wzk} on the claim
+    % FIXME: Should be wzk; inline
+    $P$ and $V$ implement \cref{alg:sumcheck-std} on the claim
     $\sum_{\beta \in H^{k}}Z(c_{i}', \beta) = h_{i}$\;
   }
   \caption{A low-degree IPCP for $\OSAT$~\cite[p.\ 15:36]{CFGS22}}\label{alg:ipcp-o3sat}
@@ -5273,9 +5531,15 @@ problem, and as before our problem of choice is $\OSAT$.
 \begin{algorithm}[htbp]
   Draw a random polynomial
   $Z_{s} \in \mathbb{F}[X_{1, \ldots, m_{2}}^{\le \abs{H}+2}, Y_{1, \ldots, k}^{\le 2\abs{H}}]$\;
-  \TODO{}\; % Step 2 is weird
-  Recieve $x, y \in \mathbb{F}^{3s + r}$ from $\tilde{V}$\;
-  \TODO{}\; % Step 4 is also weird
+  Let $S_{0}$ be a simulated copy of \cref{alg:zk-sumcheck-fast} on input
+  $(\mathbb{F}, m_{1} + 3m_{2}, \deg(f), H, 0)$\;
+  \For{$i \in \{1, 2, 3\}$}{
+    \FIXME{Should be weak-ZK simulator (inline how?)}\;
+    Let $S_{i}$ be a simulated copy of \cref{alg:zk-sumcheck-fast} on input
+    $(\mathbb{F}, k, 2\abs{H}, \abs{H}, \cdot)$\;
+  }
+  Simulate $\tilde{V}$ to recieve $x, y \in \mathbb{F}^{r + 3s}$\;
+  \TODO{Simulate \cref{alg:zk-sumcheck}}\;
   \For{$i \in \{1, 2, 3\}$}{
     % TODO: Simulation is a little strange and I want to check what the shared
     % secret polynomial is
@@ -5308,58 +5572,38 @@ take any IPCP and lift it into a MIP* while preserving zero-knowledge. Since
 $\NEXP$-complete, it follows that there exists a MIP* for every problem in
 $\NEXP$.
 
-% TODO: Rename chapter
-\chapter{Zero-knowledge PCPs for $\#\P$}\label{chap:zk-pcp-for-hp}
-
-\section{Constraint location}\label{sec:constraint-loc}
-
-\section{ZKPCPs for $\#\SAT$}\label{sec:zkpcp-hsat}
-
-\begin{thm}[{\cite[Theorem 8.1]{GOS24}}]\label{thm:pzkpcp-for-sat}
-  There exists a perfect zero-knowledge PCP for $\#\SAT$.
-\end{thm}
-
-\begin{cor}\label{cor:hashp-subset-pzkpcp}
-  $\#\P \subseteq \PZKPCP$.
-\end{cor}
-
 \chapter{A zero-knowledge PCP theorem}\label{chap:zk-pcp-theorem}
 
 \section{Locally-computable proofs}\label{sec:loc-comp-proof}
 
-% TODO: This will probably need to be moved to the original PCP theorem chapter
+Locally-computable proofs are a notion of closeness for Turing machines.
+Abstractly, a Turing machine is $\ell$-locally computable from another if it can be
+simulated in polynomial time using no more than $\ell$ queries about the behavior
+of the source machine.
 
 \begin{defn}[{\cite[Def.\ 3.1]{GOS25}}]\label{def:loc-comp}%
-  \index{locally-computable proof}
-  Let $A$ and $A_{0}$ be randomized Turing machines, and let $\ell: \mathbb{N} \rightarrow \mathbb{N}$. Then
-  $A$ is \emph{$\ell$-locally computable} from $A_{0}$ on a subset
-  % FIXME: What is the oracle of f?
-  $C \subseteq \{0, 1\}^{*}$ if there exists an oracle Turing machine $f$ that runs in
-  polynomial time and makes no more than $\ell$ queries to its oracle such that for
-  every $x \in C$, the distribution of $A(x)$ is identical to the distribution of
-  $f$ with oracle $\pi_{0} = A_{0}(x)$.
-  % TODO: Be more clear about what this oracle actually is
-  % $(f^{\pi_{0}} \mid \pi_{0} \leftarrow A_{0}(x))$
+  \index{locally-computable proof} Let $A$ and $A_{0}$ be randomized Turing
+  machines, and let $\ell\colon \mathbb{N} \rightarrow \mathbb{N}$. Then $A$ is \emph{$\ell$-locally computable}
+  from $A_{0}$ on a subset $C \subseteq \{0, 1\}^{*}$ if there exists an oracle Turing
+  machine $f$ that runs in polynomial time and makes no more than $\ell(n)$ queries
+  to its oracle such that for every $x \in C$, the distribution of $A(x)$ is
+  identical to the distribution of $f$ with oracle $\pi_{0} = A_{0}(x)$.
 \end{defn}
 
-% FIXME: This paper refers to proofs as algorithms computable from their input:
-% this conflicts with how we have been referring to PCPs so far
+For us, the most important piece of locally-computable proofs is that they
+preserve zero knowledge. \TODO{A little more}
 
 \begin{thm}[{\cite[Lemma 3.2]{GOS25}}]\label{thm:local-comp-pzk}
-  % TODO
-  % FIXME: Is (P, V) supposed to have the same language as (P_0, V_0)?
   Let $(P_{0}, V_{0})$ be a PZK-PCP for some language $L$ with query bound
   $q^{*}$, and let $(P, V)$ be a PCP for a langauge $M$ such that $P$ is
   $\ell$-locally computable from $V$ on $M$. Then $(P, V)$ is perfect
   zero-knowledge with query bound $q^{*}/\ell$.
 \end{thm}
 
-% TODO: Define hybrid simulator somewhere
 \begin{algorithm}[htbp]
-  \KwIn{A string $x$ and random coins $r$, as well as oracle access to a
-    function $\pi_{0}$}
+  \KwIn{A string $x$ and random coins $r$}
+  \KwOracle{A function $\pi_{0}$}
   \KwOut{The interaction transcript of $(P, V^{*})$ on input $x$}
-  % TODO: KwIn/KwOut
   % NOTE: r is an input
   $T \leftarrow \lbrack\,\rbrack$\;
   Run $V^{*}$ on random coins $r$\;
@@ -5423,6 +5667,11 @@ $\NEXP$.
 
 \section{Zero-knowledge proof composition}\label{sec:zk-proof-comp}
 
+Essential to our theorems will be the ability to combine proofs in a way that
+preserves zero knowledge. In \cref{thm:composition}, we showed that composing
+robust PCPs and PCPPs can result in further PCPs; here we show that that
+combination also preserves zero knowledge.
+
 \begin{thm}[{\cite[Theorem 3.7]{GOS25}}]\label{thm:comp-pzk}
   The construction in \cref{thm:composition} is perfect zero-knowledge with
   query bound $q^{*}/q_{\out}$ if $V_{\out}$ is perfect zero-knowledge with
@@ -5436,7 +5685,7 @@ $\NEXP$.
   \KwOut{The function $\pi_{r}$}
   $I_{\out} \leftarrow Q_{\out}(x, r)$\;
   Compile $D_{\out}$ on input $r$ into a circuit
-  $C_{\out}: \{0, 1\}^{n} \times \{0, 1\}^{\ell_{\out}} \rightarrow \{0, 1\}$\;
+  $C_{\out}\colon \{0, 1\}^{n} \times \{0, 1\}^{\ell_{\out}} \rightarrow \{0, 1\}$\;
   Run $P_{\oin}(C_{\out}, \pi_{\out}|_{I_{\out}})$ to get $\pi_{r}$\;
   \KwRet{$\pi_{r}$}\;
   \caption{An algorithm for $\pi_{r}$ from $\pi_{0}$}\label{alg:pi-r-from-pi-0}
@@ -5481,20 +5730,47 @@ $\NEXP$.
   with query bound $q^{*}/q_{\out}$.
 \end{proof}
 
+\begin{cor}[{\cite[Corollary 3.11]{GOS25}}]\label{cor:constant-query}
+  % FIXME: Get this equation number to be in a reasonable place
+  \begin{equation}\label{eqn:constant-query}
+    \PZKPCP\pzkpcpr{r}{q}{q^{*}}{\varepsilon}{s}{\Omega(1)} \subseteq
+    \PZKPCP\pzkpcpr{r + \log(n)}{q}{q^{*}/q}{\varepsilon}{s}{\Omega(1)}.
+  \end{equation}
+\end{cor}
+
+\begin{proof}
+  Let
+  \begin{equation}
+    L \in \PZKPCP_{\{0, 1\}}\pzkpcpr{r}{q}{q^{*}}{\varepsilon}{s}{\Omega(1)}.
+  \end{equation}
+  Then as per \cref{thm:ckt-val-pcpp}, we have
+  \begin{equation}
+    \CktVal \in \PCPP\pcpp{\log(n) + O(\log^{\varepsilon}(n))}{O(1/\varepsilon)}{k\varepsilon}{1/2},
+  \end{equation}
+  for some $\varepsilon > 0$ and constant $k$. Define $\varepsilon = \rho/k$. Then, as per
+  \cref{thm:comp-pzk}, we have $L$ as desired.
+\end{proof}
+
 \section{Zero-knowledge alphabet reduction}\label{sec:zk-alph-red}
 
-% TODO: Talk a little about what alphabet reduction means (also earlier)
+Back in \cref{sec:alph-reduction}, we talked about the importance of alphabet
+reduction in our proofs. As before, alphabet reduction will be important, but
+here we need to show that an alphabet reduction also preserves zero knowledge.
+Luckily for us, it does. The idea behind our alphabet reducion is to use
+error-correcting codes: since error-correcting codes are designed with the idea
+that correct values are far from incorrect ones, so too can they help guard
+against incorrect proofs here.
 
 \begin{thm}[{\cite[Lemma 2.13]{BGHSV06}}]%
   \label{thm:zk-alph-red}\label{alphabet reduction!zero-knowledge}
   Let $L$ be a language with a PZK-PCP over the language $\{0, 1\}^{a}$ such
   that
   \[
-    L \in \PZKPCP\pzkpcpr{r}{q}{q^{*}}{\varepsilon}{s}{\rho}.
+    L \in \PZKPCP_{\{0,1\}^{a}}\pzkpcpr{r}{q}{q^{*}}{\varepsilon}{s}{\rho}.
   \]
   Then $L$ has a PZK-PCP over the language $\{0, 1\}$ such that
   \[
-    L \in \PZKPCP\pzkpcpr{r}{O(aq)}{q^{*}}{\varepsilon}{s}{\Omega(\rho)}.
+    L \in \PZKPCP_{\{0,1\}}\pzkpcpr{r}{O(aq)}{q^{*}}{\varepsilon}{s}{\Omega(\rho)}.
   \]
 \end{thm}
 
@@ -5506,8 +5782,6 @@ $\NEXP$.
   First, we show $P$ is $1$-locally computable from $P_{a}$. Consider the
   function $f$ (with oracle $\pi_{a}$) defined by
   % TODO: Refresher on the terms
-  % TODO: Calling O \pi_a and \tau is a little confusing since we are not passing the
-  % functions themselves, just a marker
   \begin{equation}\label{eqn:local-alph-red}
     \begin{aligned}
       % FIXME: Do I have the codomain right?
@@ -5541,207 +5815,61 @@ $\NEXP$.
   query bound as $P_{a}$.
 \end{proof}
 
-\begin{cor}\label{cor:constant-query}
-  % TODO: Define all these
-  % FIXME: Get this equation number to be in a reasonable place
-  \begin{equation}\label{eqn:constant-query}
-    \PZKPCP\pzkpcpr{r}{q}{q^{*}}{\varepsilon}{s}{\Omega(1)} \subseteq
-    \PZKPCP\pzkpcpr{r + \log(n)}{q}{q^{*}/q}{\varepsilon}{s}{\Omega(1)}.
-  \end{equation}
-\end{cor}
-
-\begin{proof}
-  % TODO
-\end{proof}
-
 \section{Robust total-degree test}\label{sec:robust-degree}
 
+\TODO{Connect to algebraic query complexity}
+
+An important algorithm to have in our back pocket for the rest of this chapter
+will be a robust way for a PCP verifier to check if a given polynomial is in
+fact a low-total-degree polynomial or not. This will allow us to test for
+membership in $\RM[\mathbb{F}, m, d]$ relatively easily.
+
 \begin{thm}[{\cite[Prop.\ 5.7]{Par21}}]\label{thm:robust-low-deg}
-  % TODO: Rephrase in terms of PCPPs if possible
+  Let $\delta > 0$, and $k, m, d \in \mathbb{N}^{+}$. Let $\mathbb{F}$ be a finite field with
+  $\abs{\mathbb{F}} > 25k$. Then there exists a test that,
+  \begin{enumerate}
+    \item has oracle access to a function $F\colon \mathbb{F}^{m} \rightarrow \mathbb{F}^{k}$,
+    \item makes $\abs{F}$ queries to $F$,
+    \item runs in time $\poly(\abs{\mathbb{F}}, m, d, k)$,
+    \item accepts with probability $1$ if $F \in \RM^{k}[\mathbb{F}, m, d]$, and
+    \item if $\Delta(F, \RM^{k}[\mathbb{F}, m, d]) > \varepsilon$, then the expected distance
+          between the tester's view of $F$ and any accepting view is in $\Omega(\varepsilon)$.
+  \end{enumerate}
 \end{thm}
 
 \begin{algorithm}[htbp]
-  % TODO
+  \KwIn{A function $F\colon \mathbb{F}^{m} \rightarrow \mathbb{F}^{k}$}
+  \KwOut{Whether $F \in \RM[\mathbb{F}, m, d]$}
+  Sample a uniformly random line $L \in \mathbb{F}^{m}$\;
+  \For{$\ell \in L$}{
+    $x_{i} \leftarrow$ query $F$ at $\ell$\;
+  }
+  \eIf{$F|_{\{x_{i} \mid i \in \abs{L}\}}$ agrees with a polynomial
+    $p \in \mathbb{F}^{\le d}[X_{1, \ldots, m}]$}{
+    \Accept\;
+  }{
+    \Reject\;
+  }
   \caption{A robust low-degree test~\cite[Prop.\ 5.7]{Par21}}\label{alg:robust-low-deg}
 \end{algorithm}
 
-\section{PCPPs for polynomial summation}\label{sec:pcpp-poly-sum}
-
-% TODO: This looks like the same language we've seen earlier in this paper: do
-% we want this as the formal definition somewhere or are there better ones?
-\begin{defn}[{\cite[Def.\ 4.1]{GOS25}}]\label{def:sum-lang}\index{Sum@$\Sum$}
-  The language $\Sum$ is the set of all ordered pairs
-  $((\mathbb{F}, 1^{m}, 1^{d}, H, \gamma), F)$, where
-  \begin{itemize}
-    \item $\mathbb{F}$ is a finite field,
-    \item $m, d \in \mathbb{N}$,
-    \item $H \subseteq \mathbb{F}$,
-    \item $\gamma \in F$, and
-    \item $F \in \mathbb{F}^{\le d}[X_{1, \ldots, m}]$ with
-          \[
-            \sum_{b \in H^{m}}F(b) = \gamma.
-          \]
-  \end{itemize}
-\end{defn}
-
-\begin{defn}\label{def:sum-params}
-  For a fixed finite field $\mathbb{F}$, $m, d \in \mathbb{N}$, $H \subseteq \mathbb{F}$, and
-  $\gamma \in \mathbb{F}$, the language $\Sum[\mathbb{F}, m, d, H, \gamma]$ is the subset of
-  $\Sum$ where the co-named parameters in \cref{def:sum-lang} are equal to their
-  fixed values.
-\end{defn}
-
-For simplicity, we will often say $F \in \Sum[\mathbb{F}, m, d, H, \gamma]$ in cases
-where we mean $((\mathbb{F}, m, d, H, \gamma), F) \in \Sum[\mathbb{F}, m, d, H, \gamma]$ to
-reduce redundancy.
-
-\begin{lemma}[{\cite[Lemma 4.4]{GOS25}}]\label{lem:sum-ev}
-  % FIXME: Define Acc
-  Let $\tilde{F}\colon \mathbb{F}^{m} \rightarrow \mathbb{F}$ be $\delta_{\Sigma}$-far from
-  $\Sum[\mathbb{F}, m, d, H, \gamma]$, but $\delta_{\RM}$-close to
-  $\RM[\mathbb{F}, m, d]$ for some
-  $\frac{md}{\abs{\mathbb{F}}} < \delta_{\RM} \le \delta_{\Sigma}$ and $d \ge \abs{H} + 1$. Then,
-  for all proofs $\pi^{*}$,
-  \begin{multline}
-    \underset{c \leftarrow \mathbb{F}^{m-1}}{\mathbb{E}}\mleft[
-      \Delta\mleft(
-        (\pi^{*}(c_{1}, \ldots, c_{m-2}, \alpha)_{\alpha \in \mathbb{F}}, \tilde{F}(c_{1}, \ldots, c_{m-1}, \alpha)_{\alpha \in \mathbb{F}}),
-        \Acc(V)
-      \mright)
-    \mright] \\
-    \ge \frac{\min(\delta_{\RM}, 1 - 4\delta_{\RM})}{2}.
-  \end{multline}
-\end{lemma}
-
 \begin{proof}
-  Let $\hat{F} \in \mathbb{F}^{\le d}[X_{1, \ldots, m}]$ such that
-  $\Delta(\tilde{F}, \hat{F}) < \delta_{\RM}$. Since $\Delta(\tilde{F}, \hat{F}) < \delta_{\RM}$ and
-  $\delta_{\RM} \le \delta_{\Sigma}$, we have that $\hat{F} \notin \Sum[\mathbb{F}, m, d, H, \gamma]$,
-  since $\tilde{F}$ has distance at least $\delta_{\Sigma}$ to all elements of
-  $\Sum[\mathbb{F}, m, d, H, \gamma]$.
+  We describe such an algorithm in \cref{alg:robust-low-deg}.
 
-  Fix some $c = (c_{1}, \ldots, c_{m-1}) \in \mathbb{F}^{m-1}$.
+  If $F \in \RM[\mathbb{F}, m, d]$, then the restriction of $F$ to a subset $L$
+  will agree with some polynomial $p$ (in particular, the case $p = F$), so in
+  this case \cref{alg:robust-low-deg} will always accept.
 
-  \TODO{Defer this to appendix?}
+  If $F \notin \RM[\mathbb{F}, m, d]$, then $\Delta(F, \RM[\mathbb{F}, m, d]) = \varepsilon$ for
+  some $\varepsilon > 0$. \TODO{}
 \end{proof}
 
-\begin{lemma}[{\cite[Lemma 5.3]{GOS25}}]\label{lem:sum-ev-close}
-  Let $\tilde{F}\colon \mathbb{F}^{m} \rightarrow \mathbb{F}$ be $\delta_{\Sigma}$-far from
-  $\Sum[\mathbb{F}, m, d, H, \gamma]$, but $\delta_{\RM}$-close to $\RM[\mathbb{F}, m, d]$
-  for $\delta_{\Sigma} > \delta_{\RM} \ge \frac{md}{\abs{\mathbb{F}}}$, $\delta_{\RM} < 1/5$, and
-  $d \ge \abs{H} + 1$. Then, for all proofs $(\pi_{\Sigma}^{*}, \pi_{P}^{*})$,
-  \begin{multline}
-    \underset{c \leftarrow \mathbb{F}^{m-1}}{\mathbb{E}}\mleft[
-      \Delta\mleft(
-        (\pi_{\Sigma}^{*}(c_{m-2}, \alpha)_{\alpha \in \mathbb{F}}, \pi_{P}^{*}(c, \alpha)_{\alpha \in \mathbb{F}},
-        \pi_{P}^{*}(\alpha, c_{\rev})_{\alpha \in \mathbb{F}}, \tilde{F}(c, \alpha)_{\alpha \in \mathbb{F}}),
-        \Acc(V)
-      \mright)
-    \mright] \\
-    \in \Omega(\delta_{\RM}).
-  \end{multline}
-\end{lemma}
+\section{Zero-knowledge PCPPs for $\Sum$}\label{sec:zk-pcpp-sum}
 
-\begin{proof}
-  \TODO{Defer this to appendix?}
-\end{proof}
-
-\begin{algorithm}[htbp]
-  \Proof{
-    \For{$i \in \{1, \ldots, m - 1\}$}{
-      $g_{i}(X) \leftarrow \sum_{b \in H^{m-i}}F(X, b)$\;
-    }
-    Define $\pi\colon \mathbb{F}^{m-1} \rightarrow \mathbb{F}^{m-1}$ by
-    \[
-      \pi(c_{1}, \ldots, c_{m-2}, \alpha) = (g_{1}(\alpha), g_{2}(c_{1}, \alpha), \ldots, g_{m-1}(c_{1}, \ldots, c_{m-2}, \alpha))
-    \]
-    for each $(c_{1}, \ldots, c_{m-2}, \alpha) \in \mathbb{F}^{m-1}$\;
-    \KwRet{$\pi$}\;
-  }
-  \Verifier{
-    Sample $c \in \mathbb{F}^{m-1}$ at random\;
-    \For{$\alpha \in \mathbb{F}$}{
-      Query $\pi(c_{1}, \ldots, c_{m-2}, \alpha)$\;
-      Query $F(c_{1}, \ldots, c_{m-1}, \alpha)$\;
-    }
-    \For{$i \in \{1, \ldots, m-1\}$}{
-      \If{$g_{i} \notin \mathbb{F}[X_{1, \ldots, i}^{\le d}]$}{
-        \Reject\;
-      }
-    }
-    % FIXME: Replace "Check" with if... reject
-    Check $\sum_{b \in H}g_{1}(b) = \gamma$\;\nllabel{line:check-g_1}
-    \For{$i \in \{1, \ldots, m - 2\}$}{
-      Check
-      \begin{algomathdisplay}\nllabel{line:check-g_i}
-        \sum_{b \in H}g_{i+1}(c_{1}, \ldots, c_{i}, b) = g_{i}(c_{1}, \ldots, c_{i})
-      \end{algomathdisplay}
-    }
-    Check
-    \begin{algomathdisplay}\nllabel{line:check-g_last}
-      \sum_{b \in H}F(c, b) = g_{m-1}(c)
-    \end{algomathdisplay}
-    Run \cref{alg:robust-low-deg} on $F$, with proximity parameter
-    $\delta_{R} = \min(\delta, 1/5)$\;\nllabel{line:check-f-degree}
-    \Accept{} if and only if the prior test passes\;
-  }
-  \caption{A robust PCPP for $\Sum$~\cite[Construction 4.3]{GOS25}}\label{alg:sum-pcpp}
-\end{algorithm}
-
-% TODO: I think this can/should be moved to the normal PCP theorem section?
-\begin{thm}[{\cite[Lemma 4.2]{GOS25}}]\label{thm:pcpp-sum}
-  Let $\delta > 0$, $\mathbb{F}$ be a finite field, $H \subseteq \mathbb{F}$,
-  $\gamma \in \mathbb{F}$, and $m, d \in \mathbb{N}$ such that $\frac{md}{\abs{\mathbb{F}}} < \delta$
-  and $d > \abs{H} + 1$. Then there exists a PCP of
-  proximity for $\Sum[\mathbb{F}, m, d, H, \gamma]$ over the alphabet
-  $\mathbb{F}^{m+1}$ with proximity parameter $\delta$ and robustness parameter
-  $\rho = \Omega(\delta)$. Further, the verifier makes $O(\abs{m})$ queries to $F$ and $\pi$
-  and the proof length is $O(\abs{\mathbb{F}}^{m})$. Alternately,
-  \[
-    \Sum[\mathbb{F}, m, d, H, \gamma] \in
-    \PCPP_{\mathbb{F}^{m+1}}\pcppr{\poly(n)}{\abs{\mathbb{F}}}{\delta}{\varepsilon}{s}{\Omega(\delta)}.
-  \]
-\end{thm}
-
-\begin{proof} % TODO: Show poly-time
-  We construct such an algorithm as \cref{alg:sum-pcpp}. To show this is a PCPP,
-  we will first show that it will always accept when given a valid input and
-  proof; following that we will show it will correctly reject for all inputs not
-  near any polynomial in the language. % TODO Robustness
-
-  Let $F \in \Sum[\mathbb{F}, m, d, H, \gamma]$ and let $\pi$ be the honest proof. In
-  this case, our definition of $g_{i}$ is as
-  \begin{equation}
-    g_{i}(x_{1}, \ldots, x_{i}) = \sum_{b \in H^{m-i}}F(x_{1}, \ldots, x_{i}, b_{1}, \ldots, b_{m-i}).
-  \end{equation}
-  In particular, this means
-  \begin{align*}
-    \sum_{b \in H}g_{1}(b) &= \sum_{b \in H}\sum_{c \in H^{m-1}}F(b, c_{1}, \ldots, c_{m-1}) \\
-                      &= \sum_{b \in H^{m}}F(b_{1}, \ldots, b_{m}) \\
-                      &= \gamma.
-  \end{align*}
-  Hence, the check in line~\ref{line:check-g_1} will always pass.
-
-  Further, we have that
-  \begin{align*}
-    g_{i}(x_{1}, \ldots, x_{i}) &= \sum_{b \in H^{m-i}}F(x_{1}, \ldots, x_{i}, b_{1}, \ldots, b_{m-i}) \\
-                           &= \sum_{a \in H}\sum_{b \in H^{m-i-1}}F(x_{1}, \ldots, x_{i}, a, b_{1}, \ldots, b_{m-i-1}) \\
-                           &= \sum_{a \in H}g_{i+1}(x_{1}, \ldots, x_{i}, a).
-  \end{align*}
-  Hence, the check in line~\ref{line:check-g_i} will always pass.
-
-  The check in line~\ref{line:check-g_last} follows immediately from the
-  definition of $g_{m-1}$, and thus it will pass. Since $F$ is in our language,
-  it follows that it has degree at most $d$ and therefore the check in
-  line~\ref{line:check-f-degree} will pass. Since all the checks pass, it
-  follows that \cref{alg:sum-pcpp} will always accept when given an $F$ in the
-  language and an honest proof.
-
-  Next, let $F$ be $\delta$-far from $\Sum[\mathbb{F}, m, d, H, \gamma]$. We break this
-  into two cases: those where $F$ is $\delta_{\RM}$-far from $\RM[\mathbb{F}, m, d]$
-  and those where $F$ is $\delta_{\RM}$-close to $\RM[\mathbb{F}, m, d]$.
-  % TODO
-\end{proof}
+In \cref{sec:pcpp-poly-sum}, we described a PCPP for the language $\Sum$. Since
+we are now working with zero-knowledge proofs, the question arises of whether
+this PCPP can be made zero knowledge. It can, although it requires an algorithm
+with a little more complexity than the non-zero knowledge \cref{alg:sum-pcpp}.
 
 \begin{algorithm}[htbp]
   % TODO: KwIn/KwOut
@@ -5765,7 +5893,8 @@ reduce redundancy.
     $F + R$ at some $\alpha \in \mathbb{F}^{m}$, query $F(\alpha)$, $\pi_{P}(\alpha)$, and
     $\pi_{P}(\alpha_{\text{rev}})$, then compute
     \begin{algomathdisplay}\nllabel{line:emulate-sum-pcpp}
-      (F+R)(\alpha) = F(\alpha) + (\pi_{P}(\alpha))_{1} - (\pi_{P}(\alpha_{\text{rev}}))_{1} + \sum_{i=1}^{m}Z_{H}(\alpha_{i})(\pi_{P}(\alpha))_{i+1}
+      (F+R)(\alpha) = F(\alpha) + (\pi_{P}(\alpha))_{1} - (\pi_{P}(\alpha_{\text{rev}}))_{1}
+      + \sum_{i=1}^{m}Z_{H}(\alpha_{i})(\pi_{P}(\alpha))_{i+1}
     \end{algomathdisplay}
     Perform \cref{alg:robust-low-deg} on $F$ with proximity parameter
     $\delta_{RM} = \min(d, 1/5)$\;\nllabel{line:deg-test-f}
@@ -5774,10 +5903,11 @@ reduce redundancy.
     }
     Perform \cref{alg:robust-low-deg} on $\pi_{P}$ with proximity parameter
     $\varepsilon_{P} = \delta_{R}/8$ and degree parameter $d_{P} = md$\;\nllabel{line:emulate-deg-test}
-    \If{\cref{alg:robust-low-deg} fails}{
+    \eIf{\cref{alg:robust-low-deg} fails}{
       \Reject\;
+    }{
+      \Accept\;
     }
-    \Accept\;
   }
   \caption{A zero-knowledge robust PCPP for $\Sum$~\cite[Construction
     5.2]{GOS25}}\label{alg:sum-pzk-pcpp}
@@ -5790,15 +5920,24 @@ reduce redundancy.
   and $d > \abs{H} + 1$. Then there exists a perfect zero-knowledge PCP of
   proximity for $\Sum[\mathbb{F}, m, d, H, \gamma]$ over the alphabet
   $\mathbb{F}^{m+1}$ with proximity parameter $\delta$ and robustness parameter
-  $\rho = \Omega(\delta)$. Further, the verifier makes $O(\abs{m})$ queries to $F$ and $\pi$
-  and the proof length is $O(\abs{\mathbb{F}}^{m})$.
+  $\rho = \Omega(\delta)$. Further, the verifier makes $O(\abs{\mathbb{F}})$ queries to $F$
+  and $\pi$ and the proof length is $O(\abs{\mathbb{F}}^{m})$.
 \end{thm}
 
 \begin{proof}
   We construct such an algorithm as \cref{alg:sum-pzk-pcpp}. First, we will show
-  that this is a PCP of proximity by showing correctness in both acceptance and
-  rejection (with high probability), and then we will demonstrate zero
+  that the verifier runs in polynomial time. Then, we will show that this is a
+  PCP of proximity by showing correctness in both acceptance and rejection (with
+  high probability), and then we will demonstrate zero
   knowledge. % TODO: How will we demonstrate zero knowledge? (Simulator?)
+
+  We know from \cref{thm:pcpp-sum} that \cref{alg:sum-pcpp} runs in polynomial
+  time. Since we also do nontrivial work for each query, we need to show that
+  that work is itself polynomial---since the sum is over $m$ terms, it is. As per
+  \cref{thm:robust-low-deg}, \cref{alg:robust-low-deg} is also computable in
+  polynomial time. The rest of the algorithm is just running
+  \cref{alg:robust-low-deg} twice; hence in total the verifier in
+  \cref{alg:sum-pzk-pcpp} runs in polynomial time.
 
   Let $F \in \Sum[\mathbb{F}, m, d, H, \gamma]$, and let $(\pi_{\Sigma}, \pi_{P})$ be the honest
   proof. In this case, as we showed in \cref{thm:pcpp-sum}, the simulation of
@@ -5810,16 +5949,146 @@ reduce redundancy.
   from line~\ref{line:def-r}. Since $F$ is defined in the problem statement to
   be a polynomial of degree $d$, the check in line~\ref{line:deg-test-f} will
   always succeed. Further, $Q$ and each $T_{i}$ are defined to be
-  multidegree-$d$ $m$-variable polynomials and thus their degree will be less
-  than $md$. Hence, the check in line~\ref{line:emulate-deg-test} will pass.
-  As such, when given valid inputs \cref{alg:sum-pzk-pcpp} will always succeed.
+  multidegree-$d$ $m$-variable polynomials and thus their total degree will be
+  less than $md$. Hence, the check in line~\ref{line:emulate-deg-test} will
+  pass. As such, when given valid inputs \cref{alg:sum-pzk-pcpp} will always
+  succeed.
 
-  Let $F$ be $\delta$-far from $\Sum[\mathbb{F}, m, d, H, \gamma]$.
+  Let $F$ be $\delta$-far from $\Sum[\mathbb{F}, m, d, H, \gamma]$. We split into two
+  cases: where $F$ is $\delta_{\RM}$-close to $\RM[\mathbb{F}, m, d]$ and where $F$
+  is $\delta_{\RM}$-far from $\RM[\mathbb{F}, m, d]$.
 
-  % TODO
+  If $F$ is $\delta_{\RM}$-close to $\RM[\mathbb{F}, m, d]$, then by
+  \cref{lem:sum-ev-close}, we have that the expected view of the verifier (more
+  specifically, the non-low-degree-test portions thereof) is
+  $\Omega(\delta_{\RM}) = \Omega(\delta)$-far from an accepting view. Like we saw in
+  \cref{thm:pcpp-sum}, the total proportion of the queries made by this portion
+  of the proof is constant. Hence, regardless of the failure rate of the
+  low-degree test, the expected distance of any accepting view from the
+  verifier's view is $\Omega(\delta)$.
+
+  If $F$ is $\delta_{\RM}$-far from $\RM[\mathbb{F}, m, d]$, then since
+  \cref{alg:robust-low-deg} is robust, we know that the distance between any
+  accepting view and the verifier's view is in $\Omega(\delta_{\RM}) = \Omega(\delta)$. Like in the
+  other case, this forms a constant fraction of the overall queries; hence the
+  expected distance is $\Omega(\delta)$.
+
+  To show \cref{alg:sum-pzk-pcpp} is zero-knowledge, we show it is
+  $(m+1)$-locally computable from \cite[Construction 8.4]{GOS24}.
+  \TODO{Originally planned to include this construction in previous chapter but
+    looks like that's getting cut---how do I introduce this?}
 \end{proof}
 
-\section{A zero-knowledge $\PCP$ for $\NP$ and $\NEXP$}\label{sec:pzkpcp-np-nexp}
+\section{A zero-knowledge PCP for $\NP$ and $\NEXP$}\label{sec:pzkpcp-np-nexp}
+
+The next step in our journey is to define any sort of zero-knowledge PCP for
+both $\NP$ and $\NEXP$. We will not be defining these to have any of the query
+properties we want (they will not even be in the language $\{0, 1\}$ for the
+time being), but that is okay for now. For now, it is more important to show
+that \emph{any} zero-knowledge PCPs exist, and then in the next section we will
+show that these are reducible to zero-knowledge PCPs with the query properties
+that we want.
+
+To begin defining a zero-knowledge $\PCP$ for $\NP$ and $\NEXP$, we must first
+define a few convenience polynomials.
+
+\begin{defn}\label{def:g_a}
+  Let $B$ be an instance of $\OSAT$ and let $\hat{B}$ be the low-degree
+  extension of $1 - B$. Let $\hat{A}\colon \mathbb{F}^{m_{2}} \rightarrow \mathbb{F}$. We
+  define $g_{\hat{A}}\colon \mathbb{F}^{m_{1} + 3m_{2} + 3} \rightarrow \mathbb{F}$ to be
+  \begin{multline}
+    g_{\hat{A}}(z, b_{1}, b_{2}, b_{3}, a_{1}, a_{2}, a_{3}) \\ =
+    \hat{B}(\gamma_{1}(z), \gamma_{2}(b_{1}), \gamma_{2}(b_{2}), \gamma_{2}(b_{3}), a_{1}, a_{2}, a_{3})
+    \prod_{i=1}^{3}(\hat{A}(b_{i}) + a_{i} - 1).
+  \end{multline}
+\end{defn}
+
+\begin{defn}\label{def:h_c}
+  Let $B$ be an instance of $\OSAT$ and let $\hat{B}$ be the low-degree
+  extension of $1 - B$. Let $\hat{C}\colon \mathbb{F}^{m_{2} + k} \rightarrow \mathbb{F}$.
+  We define
+  $h_{\hat{C}}\colon \mathbb{F}^{m_{1} + 3m_{2} + 3 + 3k} \rightarrow \mathbb{F}$ to be
+  \begin{multline}
+    h_{\hat{c}}(z, b_{1}, b_{2}, b_{3}, a_{1}, a_{2}, a_{3}, c_{1}, c_{2}, c_{3}) \\ =
+    \hat{B}(\gamma_{1}(z), \gamma_{2}(b_{1}), \gamma_{2}(b_{2}), \gamma_{2}(b_{3}), a_{1}, a_{2}, a_{3})
+    \prod_{i=1}^{3}(\hat{C}(b_{i}, c_{i}) + (a_{i} - 1)\delta(0^{k}, c_{i})).
+  \end{multline}
+\end{defn}
+
+As a reminder, $\delta$ is the polynomial defined in \cref{eqn:delta-poly} that for
+all $x, y \in \{0, 1\}^{n}$, $\delta(x, y) = [x = y]$.
+
+From here, we will prove a nice relationship between these two polynomials.
+This correspondence will come in handy when proving the next lemma, which will
+eventually give us some nice equivalent statements to $\OSAT$.
+
+\begin{lemma}\label{lem:g_a-vs-h_c}
+  If $\hat{A}(X) = \sum_{c \in H^{k}}\hat{C}(X, c)$, then
+  \begin{equation}\label{eqn:g_a-vs-h_c}
+    \sum_{c_{1}, c_{2}, c_{3} \in H^{k}}h_{\hat{C}}(z, b_{1}, b_{2}, b_{3}, a_{1}, a_{2}, a_{3}, c_{1}, c_{2}, c_{3})
+    = g_{\hat{A}}(z, b_{1}, b_{2}, b_{3}, a_{1}, a_{2}, a_{3}).
+  \end{equation}
+\end{lemma}
+
+\begin{proof}
+  From the definitions of $g$ and $h$, we have
+  \begin{multline}\label{eqn:expand-gh-defs}
+    \sum_{c_{1}, c_{2}, c_{3} \in H^{k}}\hat{B}(\gamma_{1}(z), \gamma_{2}(b_{1}), \gamma_{2}(b_{2}), \gamma_{2}(b_{3}), a_{1}, a_{2}, a_{3})
+    \prod_{i=1}^{3}(\hat{C}(b_{i}, c_{i}) + (a_{i} - 1)\delta(0^{k}, c_{i})) \\
+    = \hat{B}(\gamma_{1}(z), \gamma_{2}(b_{1}), \gamma_{2}(b_{2}), \gamma_{2}(b_{3}), a_{1}, a_{2}, a_{3})
+    \prod_{i=1}^{3}(\hat{A}(b_{i}) + a_{i} - 1).
+  \end{multline}
+  We can pull the $\hat{B}(\cdots)$ call out of both sides and cancel them; giving us
+  \begin{equation}\label{eqn:cancel-b-call}
+    \sum_{c_{1}, c_{2}, c_{3} \in H^{k}}\prod_{i=1}^{3}(\hat{C}(b_{i}, c_{i}) + (a_{i} - 1)\delta(0^{k}, c_{i})).
+    = \prod_{i=1}^{3}(\hat{A}(b_{i}) + a_{i} - 1)
+  \end{equation}
+  Substituting in the definition of $\hat{A}$, we get
+  \begin{equation}\label{eqn:subst-a-def}
+    \sum_{c_{1}, c_{2}, c_{3} \in H^{k}}\prod_{i=1}^{3}(\hat{C}(b_{i}, c_{i}) + (a_{i} - 1)\delta(0^{k}, c_{i})).
+    = \prod_{i=1}^{3}\mleft(\sum_{c \in H^{k}}\hat{C}(b_{i}, c) + a_{i} - 1\mright).
+  \end{equation}
+  \TODO{}
+\end{proof}
+
+From the above lemma, we get two equivalent statements to whether $B \in \OSAT$.
+These equivalent statements will play an important role in our proof of
+\cref{thm:nexp-zk-pcp}.
+
+\begin{lemma}[{\cite[Claim 6.5]{GOS25}}]\label{lem:three-equiv}
+  Let $B\colon \{0, 1\}^{m} \rightarrow \{0, 1\}$. Then the following statements are
+  equivalent:
+  \begin{enumerate}
+    \item\label{item:b-in-osat} $B \in \OSAT$;
+    \item\label{item:exists-a} there exists a polynomial
+          $\hat{A}\colon \mathbb{F}^{m} \rightarrow \mathbb{F}$ such that for all
+          $z \in H^{m_{1}}$, $b_{1}, b_{2}, b_{3} \in H^{m_{2}}$, and
+          $a_{1}, a_{2}, a_{3} \in \{0, 1\}$,
+          \begin{equation}
+            g_{\hat{A}}(z, b_{1}, b_{2}, b_{3}, a_{1}, a_{2}, a_{3}) = 0;
+          \end{equation}
+    \item\label{item:exists-c} there exists a polynomial
+          $\hat{C}\colon \mathbb{F}^{m_{2}+k} \rightarrow \mathbb{F}$ such that for all
+          $z \in H^{m_{1}}$, $b_{1}, b_{2}, b_{3} \in H^{m_{2}}$, and
+          $a_{1}, a_{2}, a_{3} \in \{0, 1\}$,
+          \begin{equation}
+            \sum_{c_{1}, c_{2}, c_{3} \in H^{k}}h_{\hat{C}}(z, b_{1}, b_{2}, b_{3}, a_{1}, a_{2}, a_{3}, c_{1}, c_{2}, c_{3}) = 0.
+          \end{equation}
+  \end{enumerate}
+\end{lemma}
+
+\begin{proof}
+  \Cref{lem:g_a-vs-h_c} tells that \cref{item:exists-a,item:exists-c}
+  are equivalent. Hence, all we need to show is that
+  \cref{item:b-in-osat,item:exists-a} are equivalent.
+
+  Let $B \in \OSAT$, and let $\hat{A}$ be the low-degree extension of a satisfying
+  assignment $A$. Further fix
+  $z, b_{1}, b_{2}, b_{3}, a_{1}, a_{2}, a_{3} \in \{0, 1\}$. In the case where
+  $B(z, b_{1}, b_{2}, b_{3}, a_{1}, a_{2}, a_{3}) = 1$, it follows
+  $\hat{B} = 1 - B = 0$, so we are done. In the other case,
+  \TODO{}
+\end{proof}
 
 \begin{thm}[{\cite[Theorem 6.3]{GOS25}}]\label{thm:np-zk-pcp}
   For any query bound $q^{*}(n) \le 2^{\poly(n)}$,
@@ -5830,19 +6099,35 @@ reduce redundancy.
   where $\abs{\Sigma(n)} = \poly(n, q)$.
 \end{thm}
 
-\begin{algorithm}[htbp]
-  % TODO
-  \caption{A $\PZKPCP$ for $\NP$~\cite[Theorem 6.3]{GOS25}}\label{alg:pzkpcp-np}
-\end{algorithm}
-
-\begin{algorithm}[htbp]
-  % TODO
-  \caption{A simulator for \cref{alg:pzkpcp-np}}\label{alg:pzkpcp-np-sim}
-\end{algorithm}
-
 \begin{proof}
-  % TODO
+  \TODO{\cite{GOS25} does this by a reduction from $\SAT$ to $\OSAT(\log n)$---do
+    that here too?}
 \end{proof}
+
+\begin{lemma}[{\cite[Corollary 4.10]{BCFGRS17}}]\label{lem:polysim}\index{PolySim@$\PolySim$}
+  There exists a probabilistic algorithm $\PolySim$ such that, for every
+  \begin{enumerate}
+    \item $\mathbb{F}$ a finite field,
+    \item $m, d \in \mathbb{N}$,
+    \item $S = \{(\alpha_{1}, \beta_{1}), \ldots, (\alpha_{\ell}, \beta_{\ell})\} \subseteq \mathbb{F}^{m} \times \mathbb{F}$,
+    \item and $(\alpha, \beta) \in \mathbb{F}^{m} \times \mathbb{F}$,
+  \end{enumerate}
+  then
+  \begin{equation}
+    \mathbb{P}\mleft[\PolySim(\mathbb{F}, m, d, S, \alpha) = \beta\mright]
+    = \underset{Q \in \mathbb{F}^{\le d}[X_{1, \ldots, m}]}{\mathbb{P}}\mleft[
+      Q(\alpha) = \beta \middlemid
+      \begin{array}{c}
+        Q(\alpha_{1}) = \beta_{1} \\
+        \vdots \\
+        Q(\alpha_{\ell}) = \beta_{\ell}
+      \end{array}
+    \mright].
+  \end{equation}
+\end{lemma}
+
+\TODO{Probably won't have time to write up proof here, so defer to
+  \cite{BCFGRS17}}
 
 \begin{thm}[{\cite[Theorem 6.3]{GOS25}}]\label{thm:nexp-zk-pcp}
   For any query bound $q^{*}(n) \le 2^{\poly(n)}$,
@@ -5853,58 +6138,168 @@ reduce redundancy.
   where $\Sigma(n)$ is any alphabet with $\abs{\Sigma(n)} \in \poly(n, q)$.
 \end{thm}
 
-\begin{algorithm}[htbp]
-  % TODO: KwIn/KwOut
+\begin{algorithm}[htbp] % TODO: If this gets longer, may need to split into proof/verifier
+  \KwIn{A 3-CNF $B\colon \{0, 1\}^{r+3s+3} \rightarrow \{0, 1\}$}
+  \KwOut{Whether $B$ is implicitly satisfiable}
   \Proof{
     Let $A\colon \{0, 1\}^{n} \rightarrow \{0, 1\}$ be a satisfying assignment for $B$\;
     Choose $\hat{C} \in \mathbb{F}[X_{m_{2} + k}^{\le 2(\abs{H} - 1)}]$ randomly such
-    that
-    \[
-      \sum_{c \in H^{k}}\hat{C}(b, c) = A(\gamma_{2}, b)
-    \]
-    for all $b \in H^{m_{2}}$\;
+    that $\sum_{c \in H^{k}}\hat{C}(b, c) = A(\gamma_{2}, b)$ for all
+    $b \in H^{m_{2}}$\;\label{line:sample-c}
     \For{$\tau \in \mathbb{F}^{m_{1}+3m_{2}+3}$}{
       Let $\pi_{\tau}$ be a PZK-PCPP for the claim
       % FIXME: There *has* to be a better way to do this
       \begin{algomathdisplay}
-        \sum_{\substack{z \in H^{m_{1}} \\ b_{1}, b_{2}, b_{3} \in H^{m_{2}}}}
-        \sum_{a_{1}, a_{2}, a_{3} \in \{0, 1\}}\sum_{c_{1}, c_{2}, c_{3} \in H^{k}}
-        L_{H_{m_{1}+3m_{2}} \times \{0, 1\}^{3},(z,b,a)}(\tau)h_{\hat{C}}(\tau, c_{1}, c_{2}, c_{3}) = 0
+        \sum_{\substack{z \in H^{m_{1}} \\ b_{1}, b_{2}, b_{3} \in H^{m_{2}} \\
+          a \in \{0, 1\}^{3} \\ c_{1}, c_{2}, c_{3} \in H^{k}}}
+        [(z, b, a) = \tau]h_{\hat{C}}(\tau, c_{1}, c_{2}, c_{3}) = 0
       \end{algomathdisplay}
     }
     \KwRet{$(\pi_{C}, (\pi_{\tau})_{\tau \in \mathbb{F}^{m_{1}+3m_{2}+3}})$}\;
   }
   \Verifier{
-    \TODO{}
+    \For{\TODO{``sufficiently many times so that each test accounts for at least
+        1/3 of the verifier’s view.''}}{
+      Run \cref{alg:robust-low-deg} on the proof, with $\varepsilon = 1/100$ and
+      $\delta = 1/2$\;
+      \If{the above rejects}{
+        \Reject\;
+      }
+      Choose
+      $\tau \in \mathbb{F}^{m_{1}} \times (\mathbb{F}^{m_{2}})^{3} \times \mathbb{F}^{3}$ at random\;
+      Simulate \cref{alg:sum-pzk-pcpp} with proof $\pi_{\tau}$\;\nllabel{line:sumcheck-pi-tau} % FIXME: State yielded claim
+      \For{$i \in \{1, 2, 3\}$}{
+        Query $\hat{C}$ at $(\nu_{i}, \eta_{i})$\;
+      }
+      Compute $h_{\hat{C}}(\tau, \eta_{1}, \eta_{2}, \eta_{3})$\;
+      \If{the claim in line~\ref{line:sumcheck-pi-tau} is false}{
+        \Reject\;
+      }
+    }
+    \Accept\;
   }
   \caption{A $\PZKPCP$ for $\OSAT$~\cite[Construction 6.4]{GOS25}}\label{alg:pcp-osat}
 \end{algorithm}
 
 \begin{algorithm}[htbp]
-  % TODO
   \KwIn{A query $\alpha$ to an oracle $O$, either $\pi_{C}$ or $\pi_{\tau}$}
   \KwOut{The result of the query}
+  $S \leftarrow \varnothing$\tcp*[r]{$S$ is the set of all previous queries to $\pi_{C}$}
+  $T \leftarrow \varnothing$\tcp*[r]{$T$ is the set of all started $\Sim_{\tau}'$ instances}
   \eIf{The query request is to $\pi_{C}$}{
-    % TODO
+    Sample $\beta \leftarrow \PolySim(\mathbb{F}, m+k, d, S, q)$\;\nllabel{line:query-polysim}
+    Add $(\alpha, \beta)$ to $S$\;
+    Respond with $\beta$\;
   }{
-    \If{This is the first query to $\pi_{\tau}$}{
-      % TODO
+    \If(\tcp*[f]{When we have not queried this $\tau$ before}){$\tau \notin T$}{
+      Add $\tau$ to $T$\;
+      Start an instance $\Sim'_{\tau}$ of a simulator for \cref{alg:sum-pzk-pcpp}\;
     }
-    % TODO
+    Use $\Sim'_{\tau}$ to answer $\alpha$: it may make queries to $\tau$ by asking
+    $\pi_{C}$ (answered as in line~\ref{line:query-polysim})\;
   }
   \caption{A simulator for \cref{alg:pcp-osat}~\cite[Construction 6.7]{GOS25}}\label{alg:pcp-osat-sim}
 \end{algorithm}
 
 \begin{proof}
   We construct a PZK-PCP for $\OSAT$, a $\NEXP$-complete language, in
-  \cref{alg:pcp-osat}.
-  % TODO
+  \cref{alg:pcp-osat}. We begin by showing the verifier runs in polynomial
+  time.
+
+  We know \cref{alg:robust-low-deg} runs in polynomial time, as does the
+  simulator for \cref{alg:sum-pzk-pcpp}. Computing the value of a known
+  polynomial is also polynomial time, as is querying values; hence the entire
+  algorithm runs in polynomial time.
+
+  Next, we show \cref{alg:pcp-osat} will accept with probability at least $2/3$
+  when given a $B \in \OSAT$ and the honest proof. \TODO{}
+
+  Next, we show \cref{alg:pcp-osat} will reject with probability at least $2/3$
+  when given a $B \notin \OSAT$. Define $\varepsilon = 1/100$. If $\pi_{C}$ is $\varepsilon$-close to
+  $\RM[\mathbb{F}, m_{2}+k, m_{2}+d]$, then let
+  $\hat{C} \in \RM[\mathbb{F}, m_{2}+k, m_{2}+d]$ be the closest element to
+  $\pi_{C}$. By the definition of distance and since $\pi_{C}$ is $\varepsilon$-cloes, this
+  means $\Delta(\hat{C}, \pi_{C}) \le \varepsilon$. Next, note that a random evaluation of $h_{f}$
+  depends on three random evaluations of $f$; as such it must be that
+  $\Delta(h_{\hat{C}}, h_{\pi_{C}}) \le 3\varepsilon$.
+
+  By \cref{lem:three-equiv}, there exists $z \in H^{m_{1}}$,
+  $b_{1}, b_{2}, b_{3} \in H^{m_{2}}$, and $a_{1}, a_{2}, a_{3} \in \{0, 1\}$ such
+  that
+  \begin{equation}
+    \sum_{\substack{z \in H^{m_{1}} \\ b_{1}, b_{2}, b_{3} \in H^{m_{2}}}}\sum_{a_{1}, a_{2}, a_{3} \in \{0, 1\}}
+    \delta((z, b, a), X)\sum_{c_{1}, c_{2}, c_{3} \in H^{k}}h_{\hat{C}}(X, c_{1}, c_{2}, c_{3})
+  \end{equation}
+  is a nonzero polynomial in
+  $\mathbb{F}[X_{1, \ldots, m_{1}+m_{2}+m_{3}}^{O(d_{B}\abs{H})}]$. Hence, the claim
+  our verifier makes in line~\ref{line:sumcheck-pi-tau} is false with
+  probability $1 - O((m_{1}+m_{2}+m_{3})d_{b}\abs{H}/\abs{\mathbb{F}})$.
+
+  If $\pi_{C}$ is $\varepsilon$-far from $\RM[\mathbb{F}, m_{2}+k, (m_{2}+k)d]$, then the
+  verifier's view is $\Omega(\varepsilon)$-far from accepting, as per
+  \cref{thm:robust-low-deg}.
+
+  Finally, we show \cref{alg:pcp-osat-sim} is a simulator for
+  \cref{alg:pcp-osat} and thus it is zero-knowledge. For this, we will use a
+  hybrid argument: we will start by constructing a simulator that uses an
+  external oracle (and thus is not technically a valid simulator for our
+  purposes) and reduce it until we get to a simulator that does not query an
+  oracle, proving an equivalence at each step along the way. In the intermediate
+  steps, our oracle $Z$ replaces the queries to $\pi_{C}$.
+
+  % NOTE: This is backwards from the original paper since I think it follows
+  % more closely that way
+  Our sequence of algorithms is as follows:
+  \begin{enumerate}
+    \item $H_{0}$: $\View_{V^{*}, P}(x)$
+    \item $H_{1}$: $\overline{\Sim}^{V^{*}, Z}(x)$, where
+          $Z\colon \mathbb{F}^{m_{2}+k}$ is sampled as $\hat{C}$ in
+          line~\ref{line:sample-c} in \cref{alg:pcp-osat}
+    \item $H_{2}$: $\overline{\Sim}^{V^{*}, Z}(x)$, where
+          $Z\colon \mathbb{F}^{m_{2}+k}$ is a uniformly random polynomial of
+          multidegree $\abs{H} - 1$
+    \item $H_{4}$: $\Sim^{V^{*}}(x)$ (\cref{alg:pcp-osat-sim})
+  \end{enumerate}
+
+  To show $H_{0} \equiv H_{1}$, we use the zero-knowledge guarantee of
+  \cref{alg:sum-pzk-pcpp}. As per \cref{thm:pcpp-sum-pzk},
+  \cref{alg:sum-pzk-pcpp} has an efficient simulator that outputs an identical
+  distribution to the view of the verifier. Hence, our $\Sim'_{\tau}$ will output
+  a response statistically identical to the verifier's query of $\tau$.
+
+  To show $H_{1} \equiv H_{2}$, we rely on \cref{cor:indep-ensemble} proven earlier.
+  From earlier, we know $V^{*}$ makes at most $q^{*}$ queries to the proof, and
+  thus $\overline{\Sim}$ makes at most $p(q^{*})$ queries to $Z$. Since
+  $p(q^{*}) \le \abs{H}^{k}$, these query answers will be independent from
+  $\mleft(\sum_{y \in H^{k}}Z(\alpha, y)\mright)_{\alpha \in \mathbb{F}^{m}}$ as per
+  \cref{cor:indep-ensemble}. As such, for all $v$,
+  \begin{align*}
+    \mathbb{P}[v \leftarrow H_{2}(x)] &= \underset{Z}{\mathbb{P}}\mleft[
+                        v \leftarrow \overline{\Sim}^{V^{*}, Z}(x) \middlemid
+                        \forall b \in H^{m_{2}},\,\sum_{c \in H^{k}}\hat{C}(b, c) = A(\gamma_{2}(b))
+                      \mright] \\
+                    &= \underset{Z}{\mathbb{P}}\mleft[
+                        v \leftarrow \overline{\Sim}^{V^{*}, Z}(x)
+                      \mright] \\
+                    &= \mathbb{P}[v \leftarrow H_{1}(x)].
+  \end{align*}
+
+  To show $H_{2} \equiv H_{3}$, we use the property of $\PolySim$: the output of the
+  algorithm is distributed identically to output of a random polynomial $Z$
+  conditional on all the previous results being true about $Z$. Hence, the
+  output of $H_{2}$ must be identically distributed to $H_{3}$.
+
+  Since equivalence is transitive, it follows therefore that $H_{0} \equiv H_{3}$ and
+  thus the view of $V^{*}$ is always identical to the output of
+  \cref{alg:pcp-osat-sim}.
 \end{proof}
 
 \subsection{Reducing query complexity to constant}\label{sec:constant-pcp-np}
 
 We are now finally able to present our analogues to the classical $\PCP$
-theorem.
+theorem. Through our work with $\OSAT$, we do not only have a version of the
+standard $\PCP$ theorem (the one involving $\NP$), but another stronger one
+involving $\PCP$'s relationship with $\NEXP$.
 
 \begin{thm}[{\cite[Theorem 2]{GOS25}}]\label{thm:zk-pcp}\index{PCP theorem@$\PCP$ theorem!zero-knowledge}
   $\NP \subseteq \PZKPCP[\log(n), 1]$.
@@ -6209,6 +6604,58 @@ Finally, we simplify, bringing us to \cref{eqn:delta-poly-small}.
 %   \cref{alg:compute-gn}, it follows that the algorithm computes the value of
 %   $g_{n}$ for arbitrary inputs.
 % \end{proof}
+
+\chapter{Proofs of expected-distance lemmata}\label[appendix]{app:exp-dist-proofs}
+
+\begin{lemma}[{\cref{lem:sum-ev}}]
+  Let $\tilde{F}\colon \mathbb{F}^{m} \rightarrow \mathbb{F}$ be $\delta_{\Sigma}$-far from
+  $\Sum[\mathbb{F}, m, d, H, \gamma]$, but $\delta_{\RM}$-close to
+  $\RM[\mathbb{F}, m, d]$ for some
+  $\frac{md}{\abs{\mathbb{F}}} < \delta_{\RM} \le \delta_{\Sigma}$ and $d \ge \abs{H} + 1$. Then,
+  for all proofs $\pi^{*}$,
+  \begin{multline} % NOTE: This is the view of the verifier in alg:sum-pcpp
+    \underset{c \leftarrow \mathbb{F}^{m-1}}{\mathbb{E}}\mleft[
+      \Delta\mleft(
+        (\pi^{*}(c_{1}, \ldots, c_{m-2}, \alpha)_{\alpha \in \mathbb{F}}, \tilde{F}(c_{1}, \ldots, c_{m-1}, \alpha)_{\alpha \in \mathbb{F}}),
+        \Acc(V)
+      \mright)
+    \mright] \\
+    \ge \frac{\min(\delta_{\RM}, 1 - 4\delta_{\RM})}{2}.
+  \end{multline}
+\end{lemma}
+
+\begin{proof}
+  Let $\hat{F} \in \mathbb{F}^{\le d}[X_{1, \ldots, m}]$ such that
+  $\Delta(\tilde{F}, \hat{F}) < \delta_{\RM}$. Since $\Delta(\tilde{F}, \hat{F}) < \delta_{\RM}$ and
+  $\delta_{\RM} \le \delta_{\Sigma}$, we have that $\hat{F} \notin \Sum[\mathbb{F}, m, d, H, \gamma]$,
+  since $\tilde{F}$ has distance at least $\delta_{\Sigma}$ to all elements of
+  $\Sum[\mathbb{F}, m, d, H, \gamma]$.
+
+  Fix some $c = (c_{1}, \ldots, c_{m-1}) \in \mathbb{F}^{m-1}$.
+
+  \TODO{}
+\end{proof}
+
+\begin{lemma}[{\cref{lem:sum-ev-close}}]
+  Let $\tilde{F}\colon \mathbb{F}^{m} \rightarrow \mathbb{F}$ be $\delta_{\Sigma}$-far from
+  $\Sum[\mathbb{F}, m, d, H, \gamma]$, but $\delta_{\RM}$-close to $\RM[\mathbb{F}, m, d]$
+  for $\delta_{\Sigma} > \delta_{\RM} \ge \frac{md}{\abs{\mathbb{F}}}$, $\delta_{\RM} < 1/5$, and
+  $d \ge \abs{H} + 1$. Then, for all proofs $(\pi_{\Sigma}^{*}, \pi_{P}^{*})$,
+  \begin{multline}
+    \underset{c \leftarrow \mathbb{F}^{m-1}}{\mathbb{E}}\mleft[
+      \Delta\mleft(
+        (\pi_{\Sigma}^{*}(c_{m-2}, \alpha)_{\alpha \in \mathbb{F}}, \pi_{P}^{*}(c, \alpha)_{\alpha \in \mathbb{F}},
+        \pi_{P}^{*}(\alpha, c_{\rev})_{\alpha \in \mathbb{F}}, \tilde{F}(c, \alpha)_{\alpha \in \mathbb{F}}),
+        \Acc(V)
+      \mright)
+    \mright] \\
+    \in \Omega(\delta_{\RM}).
+  \end{multline}
+\end{lemma}
+
+\begin{proof}
+  \TODO{}
+\end{proof}
 \end{appendices}
 
 \printbibliography[heading=bibintoc]{}
