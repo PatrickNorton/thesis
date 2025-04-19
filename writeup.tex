@@ -300,6 +300,12 @@
   \end{tikzpicture}
 }
 
+\makeatletter
+\renewenvironment{algomathdisplay}
+ {\[}
+ {\@endalgocfline\vspace{-\baselineskip}\]{\DontPrintSemicolon\;}}
+\makeatother
+
 \newcommand{\TODO}[1]{\textcolor{red}{TODO: #1}}
 \newcommand{\FIXME}[1]{\textcolor{red}{\ul{FIXME: #1}}}
 
@@ -336,8 +342,6 @@ complexity theory.
 \chapter{Preliminaries}
 
 \section{Turing machines}
-
-% TODO: Do we even need to formally define a TM?
 
 Central to our definitions of complexity is that of a Turing machine. This is
 the most common mathematical model of a computer, and is the jumping-off point
@@ -415,8 +419,6 @@ Turing machine must exist.
 
 \section{Complexity classes}
 
-% TODO: Do I need to define big-O for this?
-
 \begin{figure}[htbp]
   \centering
   \begin{tikzpicture}
@@ -467,7 +469,6 @@ it into a complexity class.
 \begin{defn}\label{def:re}\index{RE@$\RE$}
   The class $\RE$ is the class of all Turing-recognizable languages.
 \end{defn}
-% TODO: Example (and non-example)
 
 For most other classes, we want our Turing machines to halt on \emph{all}
 inputs, not just those in the class. From a practical perspective, this is
@@ -484,14 +485,13 @@ to solve a problem. We begin with an abstract base for our time classes, and
 will then introduce some specific ones that we care about.
 
 \begin{defn}[{\cite[Def.\ 1.19]{AB09}}]\label{def:dtime}\index{DTIME@$\DTIME$}
-  % FIXME: Reword to make more clear what $n$ is
   Let $f\colon \mathbb{N} \rightarrow \mathbb{N}$ be a function. The class $\DTIME(f(n))$ is the class of all
   problems computable by a deterministic Turing machine in $O(f(n))$ steps for
   some constant $c > 0$.
 \end{defn}
 
 While $\DTIME$ is a useful base to start from, it is rare that we deal with
-$\DTIME$ classes directly. % TODO
+$\DTIME$ classes directly. \TODO{}
 
 \begin{defn}[{\cite[Def.\ 1.20]{AB09}}]\label{def:p}\index{P@$\P$}
   The complexity class $\P$ is the class
@@ -550,8 +550,6 @@ $\NP$.
   machine.
 \end{thm}
 
-% TODO: Should I prove this?
-
 \begin{example}\label{ex:sat-np-verifier}
   The language $\SAT$ we defined in \cref{ex:sat-is-np} can be verified
   efficiently, where the certificate is an accepting set of variables. Since we
@@ -600,7 +598,7 @@ interest is the relationship between $\NP$ and $\NEXP$.
   $\EXP$.
 \end{proof}
 
-It is perhaps illustrative to see an example of a problem in $\NEXP$. % TODO
+It is perhaps illustrative to see an example of a problem in $\NEXP$. \TODO{}
 
 \begin{defn}[{\cite[Def.\ 14.1]{CFGS22}}]\label{def:oracle-3sat}\index{O3SAT@$\OSAT$}
   The \emph{oracle 3-satisfiability problem}, denoted $\OSAT$, is the language
@@ -614,7 +612,6 @@ It is perhaps illustrative to see an example of a problem in $\NEXP$. % TODO
   \end{equation*}
 \end{defn}
 
-% TODO: Cite
 \begin{thm}\label{thm:o3sat-in-nexp}
   $\OSAT \in \NEXP$.
 \end{thm}
@@ -629,13 +626,13 @@ It is perhaps illustrative to see an example of a problem in $\NEXP$. % TODO
     Nondeterministically choose a function $A\colon \{0, 1\}^{s} \rightarrow \{0, 1\}$\;
     \For{$z \in \{0, 1\}^{r}$}{
       \For{$b_{1}, b_{2}, b_{3} \in \{0, 1\}^{s}$}{
-        Compute $B(z, b_{1}, b_{2}, b_{3}, A(b_{1}), A(b_{2}), A(b_{3}))$\;
+        Compute $B(z, b_{1}, b_{2}, b_{3}, A(b_{1}), A(b_{2}), A(b_{3}))$\;\nllabel{line:compute-b}
         \If{the above is not $1$}{
-          \KwRet{0}\;
+          \Reject\;
         }
       }
     }
-    \KwRet{1}\;
+    \Accept\;
     \caption{A $\NEXP$-time algorithm for determining $\OSAT$}\label{alg:osat-nexp}
   \end{algorithm}
 
@@ -655,7 +652,20 @@ It is perhaps illustrative to see an example of a problem in $\NEXP$. % TODO
   about the worst case there thus exist inputs that cannot be computed in
   polynomial time relative to their length.
 
-  \TODO{}
+  Next, we want to show that \cref{alg:osat-nexp} actually recognizes $\OSAT$.
+  If $(r, s, B) \in \OSAT$, then there exists a function $A$ such that for any
+  values $z$ and $b_{i}$, $B$ evaluates to $1$. Since we nondeterministically
+  choose $A$, one of our nondeterministic branches will pick it, and in that
+  branch every one of the computations in line~\ref{line:compute-b} will be $1$.
+  Thus, that branch will accept and therefore so will the entire machine.
+
+  If $(r, s, B) \notin \OSAT$, then no matter what nondeterministic branch we are on,
+  the value of $A$ means that the computation in line~\ref{line:compute-b} will
+  be $0$. Hence, every branch will reject and thus \cref{alg:osat-nexp} as a
+  whole will.
+
+  Since \cref{alg:osat-nexp} runs in exponential time and will accept if and
+  only if its input is in $\OSAT$, it follows that $\OSAT \in \NEXP$.
 \end{proof}
 
 \subsection{Space complexity}\index{space complexity}
@@ -725,12 +735,11 @@ nondeterministic class.
   \[
     \{(x, y) \mid x, y \text{ regexes that accept the same set of strings}\}
   \]
-  is in $\PSPACE$. % TODO: Explain why
+  is in $\PSPACE$.
 \end{example}
 
 \subsection{Completeness}
 
-% TODO: Not a huge fan of this paragraph
 Even within a complexity class, not all problems are created equal. The notion
 of \emph{completeness} gives us a mathematically-rigorous way to talk about
 which problems in a class are the hardest. Since putting upper bounds on hard
@@ -805,18 +814,32 @@ Of particular interest to us will again be the ease with which
 $\NEXP$-completeness allows us to determine subset relations, simply by proving
 the inclusion of a single complete language.
 
-\begin{thm}[{\cite[Proposition 4.2]{BFL90}}]\label{thm:o3sat-nexp-complete}
-  The language $\OSAT$ (as defined in \cref{def:oracle-3sat}) is
-  $\NEXP$-complete.
+For our language $\OSAT$ we defined earlier, we actually have an even
+\emph{stronger} notion of completeness, with a polynomial-time reduction for
+arbitrary time functions $T(n)$. We will get the standard $\NEXP$-completeness
+of $\OSAT$ as a corollary, but we will actually find the stronger
+characterization here useful in later chapters.
+
+\begin{thm}[{Cook-Levin}]\label{thm:cook-levin-general}
+  Let $M$ be a $\NTIME(T(n))$ Turing machine, with $T \in \Omega(n)$. Then, there
+  exists a polynomial-time reduction $R_{M}$ such that for any input
+  $x \in \{0, 1\}^{n}$, $R_{m}(x) \in \OSAT$ if and only if there exists a $w$ with
+  $M(x, w) = 1$. Furthermore, $R_{m}(x)$ outputs a formula in $O(\log(T(n)))$
+  variables, with size $\poly(n, \log(T(n)))$.
 \end{thm}
 
-\begin{proof}
-  We demonstrated in \cref{thm:o3sat-in-nexp} that $\OSAT \in \NEXP$, so all that
-  remains is to prove that reductions exist for every $\NEXP$ language. Let
-  $L \in \NEXP$, and let $x \in \{0, 1\}^{n}$. We aim to construct an algorithm in
-  $\P^{\OSAT}$ that computes $L$.
+\begin{cor}[{\cite[Proposition 4.2]{BFL90}}]\label{thm:o3sat-nexp-complete}
+  The language $\OSAT$ (as defined in \cref{def:oracle-3sat}) is
+  $\NEXP$-complete.
+\end{cor}
 
-  \TODO{}
+\begin{proof}
+  Let $T(n) = 2^{n^{k}}$ for some $k$. Then, the output formula of $R_{m}(x)$ is
+  a formula in $O(\log(2^{n^{k}})) = O(n^{k})$ variables, with size
+  \begin{equation}
+    \poly(n, \log(2^{n^{k}})) = \poly(n^{k}) = \poly(n).
+  \end{equation}
+  This is the normal definition of $\OSAT$; hence it is $\NEXP$-complete.
 \end{proof}
 
 Just as we have $\NP$-completeness and $\NEXP$-completeness for time complexity,
@@ -843,7 +866,22 @@ we instead restrict ourselves to polynomial-time reductions.
 
 \subsection{Randomized complexity}\label{sec:rand-complexity}
 
-\TODO{}
+All the complexity classes we have seen so far are \emph{deterministic}: they do
+not allow a Turing machine to consult any source of randomness. In these models,
+a Turing machine's output is always the same when it is given the same input.
+However, as we have seen, there exist Turing machines that can consult a
+random-bit generator. Because of their different capabilities, we can define
+separate complexity classes to the languages corresponding to those machines.
+
+The main probabilistic class we care about is $\BPP$ (short for ``bounded-error
+probabilistic polynomial''). This class is similar to $\P$ in that it requires
+its machines to run in polynomial time, but it has one large difference. Because
+these are probabilistic machines, we want to be able to leverage that
+randomness. As such, we do not insist that we \emph{always} accept when given a
+string in the language, only most of the time. So long as we accept with a
+probability noticably greater than $1/2$ (and reject similarly), we can always
+boost the probability arbitrarily high by repeating the simulation multiple
+times and taking the majority vote.
 
 \begin{defn}\label{def:bpp}\index{BPP@$\BPP$}
   A language $L$ is in $\BPP$ if there exists a probabilistic Turing machine $M$
@@ -855,66 +893,57 @@ we instead restrict ourselves to polynomial-time reductions.
   \end{enumerate}
 \end{defn}
 
+Next, it is important to see how $\BPP$ relates to the other complexity classes.
+We have also included $\BPP$ on the Venn diagram in \cref{fig:ip-class-venn}
+earlier. It is important to note that neither of the following inclusions are
+known to be strict.
+
 \begin{thm}\label{thm:p-subset-bpp}
   $\P \subseteq \BPP$.
 \end{thm}
+
+\begin{proof}
+  A deterministic Turing machine is equivalent to a randomized machine that
+  never consults its oracle. In this way, a polynomial-time Turing machine
+  fulfills all the requirements of \cref{def:bpp}: it runs in polynomial time,
+  it accepts each $x \in L$ with probability $1 > 2/3$, and it rejects each
+  $x \notin L$ with probability $1 > 2/3$.
+\end{proof}
 
 \begin{thm}\label{thm:bpp-subset-pspace}
   $\BPP \subseteq \PSPACE$.
 \end{thm}
 
-\subsection{Counting complexity}\index{counting complexity}
+\begin{proof}
+  Consider a $\BPP$ machine $M$ that reads $r$ random bits on input $x$. Then,
+  consider a machine $M'$ that loops through every $\rho \in \{0, 1\}^{r}$ and
+  simulates $M$ on input $x$ and random coins $r$, finally accepting if at least
+  $2/3$ of the instances accepted and rejecting if $2/3$ of the instances
+  rejected. This machine is deterministic and would accept the same language as
+  $M$, but it would run in polynomial space, since simulating $M$ is polynomial
+  space and after each iteration we can throw out the scratchwork, only keeping
+  the total accept/reject count.
+\end{proof}
 
-So far, all of the problems we have seen are boolean problems, where the answer
-is either yes or no. There exist many interesting questions, however, where we
-would like more than two distinct answers. In particular, there are lots of
-problems where the most interesting answer is a \emph{count} of something: in
-particular, questions of the type ``How many objects are there such that some
-condition is true?'' will be of interest to us.
+\subsection{Impagliazzo's five worlds}\label{sec:five-worlds}
 
-\begin{defn}\label{def:counting-problem}\index{counting problem}
-  A \emph{counting problem} is a function from $\{0, 1\}^{*}$ to $\mathbb{N}$.
-\end{defn}
+The question of $\P$ vs $\NP$ is a large and important one, and one that is not
+particularly close to being resolved. However, the possible resolutions to this
+central dilemma are more nuanced than just ``yes'' or ``no''. In particular,
+there are many, many results that depend on the answer to the $\P$ vs $\NP$
+question, either a positive result or a negative one.
 
-Now that we have this definition, we should define a complexity class of
-function problems. The simplest complexity class for function problems is
-$\#\P$, the set of function problems that can be computed in polynomial time.
-
-\begin{defn}[{\cite[Def.\ 9.2]{AB09}}]\label{def:hash-p}\index{P#@$\#\P$}
-  The class $\#\P$ is the class of functions $f\colon \{0, 1\}^{*} \rightarrow \mathbb{N}$ such
-  that there exists a polynomial $p\colon \mathbb{N} \rightarrow \mathbb{N}$ and a polynomial-time
-  Turing machine $M$ such that for every $x \in \{0, 1\}^{*}$,
-  \begin{equation}\label{eqn:hash-p}
-    f(x) = \abs*{\mleft\{y \in \{0, 1\}^{p(\abs{x})} \middlemid M(x, y) = 1\mright\}}.
-  \end{equation}
-\end{defn}
-
-As mentioned earlier, questions of the type ``How many objects are there such
-that some condition is true?'' are of the most interest of us, and here we
-actually define $\#\P$ in terms of these problems. \Cref{eqn:hash-p} simply says
-that $f(x)$ needs to be equal to the number of inputs $y$ on which some
-polynomial Turing machine accepts when given both $x$ and $y$. In this case, the
-Turing machine $M$ provides our condition, and a function problem is in $\#\P$
-exactly when we can compute this condition efficiently.
-
-\TODO{Introduce $\#\P$-completeness}
-
-\begin{defn}\label{def:hash-p-complete}\index{P#-complete@$\#\P$-complete}
-  A language is $\#\P$-complete if \TODO{Do I want to use the definition with $\FP$?}
-\end{defn}
-
-\begin{defn}\label{def:hash-sat}\index{SAT#@$\#\SAT$}
-  The function $\#\SAT$ is the function that, given a Boolean formula $\phi$,
-  returns the number of distinct assignments such that $\phi$ is true.
-\end{defn}
-
-\begin{thm}\label{thm-hash-sat-is-complete}
-  $\#\SAT$ is $\#\P$-complete.
-\end{thm}
-
-\subsection{Impagliazzo's five worlds}
-
-\TODO{}
+A 1995 paper by Impagliazzo~\cite{Imp95} talks about this problem in more depth.
+In this paper, he identifies five ``worlds'', ranging the full spectrum from
+``$\P = \NP$ efficiently'' all the way to ``$\P \ne \NP$ and cryptography is
+possible in full''. This is relevant to us because we will be working with
+zero-knowledge a lot for this paper, and as we will see in
+\cref{sec:zero-knowledge}, several important building blocks of zero-knowledge
+proofs are impossible in many of Impagliazzo's worlds. For this reason, for the
+rest of this paper we will be assuming we are in ``cryptomania'', his most
+cryptographic world. The most important assumption we will be pulling from this,
+besides that $\P \ne \NP$, is that one-way functions\footnote{We will be defining
+  one-way functions in more depth in \cref{sec:commitment-scheme}.} exist.
 
 \section{Polynomials}\label{sec:polynomial}
 
@@ -1025,7 +1054,6 @@ polynomials look like and how they work.
   $\abs{H} - 1$.
 \end{defn}
 
-% TODO: Cite these statements
 It turns out that this is the minimum possible degree of any extension
 polynomial. Further, it turns out that for any $f$, there is a \emph{unique}
 low-degree extension. Neither of these statements are particularly important for
@@ -1041,7 +1069,6 @@ we shall now calculate.
     \tilde{f}(x) = \sum_{\beta \in H^{m}}\delta_{\beta}(x)f(\beta),
   \end{equation}
   where $\delta$ is the polynomial
-  % TODO? Flip x and y here
   \begin{equation}\label{eqn:delta-poly}
     \delta_{x}(y) = \prod_{i = 1}^{m}\mleft(\sum_{\omega \in H}\mleft(
         \prod_{\gamma \in H \setminus \{\omega\}}\frac{(x_{i} - \gamma)(y_{i} - \gamma)}{(\omega - \gamma)^{2}}
@@ -1095,7 +1122,6 @@ makes it much easier to reason about.
 \end{cor}
 Note that in the product bound $i:y_{i} = 1$, we mean the product over all
 numbers $i$ such that $y_{i} = 1$.
-% TODO: Prove?
 
 As we can see, the form of $\delta$ in \cref{eqn:delta-poly-small} is much more
 manageable than the form in \cref{eqn:delta-poly}, and it is perhaps more
@@ -1155,8 +1181,6 @@ of qualifiers to them, but they will be useful in later theorems (in particular
   % for the fact that not all our points are in \{0, 1\}^n
 \end{proof}
 
-% TODO: Do we want this here?
-% TODO: Add preceding lemmas
 % TODO: Come up with descriptive names for these things (adversary polynomials?)
 \begin{lemma}[{\cite[Lemma 4.5]{AW09}}]\label{lem:multiquad-adversary}
   Let $\mathcal{F}$ be a collection of fields. Let $f\colon \{0, 1\}^{n} \rightarrow \{0, 1\}$ be a
@@ -1188,7 +1212,6 @@ of qualifiers to them, but they will be useful in later theorems (in particular
     \item\label{item:delta-zero} $u_{\mathbb{F},z} = 0$ for all
           $w \in \{0, 1\}^{n} \setminus \{z\}$.
   \end{enumerate}
-  % TODO: Rephrase w/more explanation
   From \cref{thm:multiquad-extension}, each $\mathbb{F} \in \mathcal{F}$ can prevent at most
   $\abs{\mathcal{Y}_{\mathbb{F}}}$ points from being good. Since
   $t = \abs{\mathcal{Y}_{\mathbb{F}}}$, there are at least $2^{n} - t$ good points.
@@ -1249,16 +1272,12 @@ of qualifiers to them, but they will be useful in later theorems (in particular
   \end{align*}
 \end{proof}
 
-\begin{lemma}[Schwartz-Zippel lemma; \cite{Sch80,Zip79}]%
+\begin{lemma}[Schwartz-Zippel lemma;~\cite{Sch80,Zip79}]%
   \label{lem:schwartz-zippel}\index{Schwartz-Zippel lemma}
   Let $\mathbb{F}$ be a finite field, and let $m, d \in \mathbb{N}^{+}$. If
   $F\colon \mathbb{F}^{m} \rightarrow F$ is a nonzero polynomial of degree at most $d$, then
   $\mathbb{P}[P(x) = 0] \le d/\abs{\mathbb{F}}$.
 \end{lemma}
-
-\begin{proof}
-  \TODO{}
-\end{proof}
 
 \section{Statistics}
 
@@ -1297,6 +1316,17 @@ will need to use a few ideas from statistics.
   \end{equation}
 \end{thm}
 
+\begin{defn}\label{def:restrict-vs}\index{restriction!of a vector space}
+  Let $V \subseteq \mathbb{F}^{D}$ be a vector space (with corresponding basis
+  $\{e_{i} \mid i \in D\}$) and subset $S \subseteq D$. We define the \emph{restriction} of
+  $V$ to $S$ to be the set
+  \begin{equation}
+    V|_{S} = \spn_{V}(\{e_{i} \mid i \in S\}).
+  \end{equation}
+  Similarly, for a vector $v \in V$ we define the restriction $v|_{S}$ to be the
+  vector $(v_{i})_{i \in S} \in V|_{S}$.
+\end{defn}
+
 % TODO: Talk about "linear independence equals statistical independence" as an intro
 
 \begin{thm}[{\cite[Claim 2]{CFGS22}}]\label{thm:lin-indep-stat-indep}
@@ -1304,10 +1334,10 @@ will need to use a few ideas from statistics.
   $V \subseteq \mathbb{F}^{D}$ be a vector space, and let $v$ be a uniform random
   variable over $V$. For any subdomains $S, S' \subseteq D$, the restrictions $v|_{S}$
   and $v|_{S'}$ are statistically dependent if and only if there exist constants
-  $c \in \mathbb{F}^{S}$ and $d \in \mathbb{F}^{S'}$ such that
+  $c \in V|_{S}$ and $d \in V|_{S'}$ such that
   \begin{enumerate}
-    \item There exists $w \in V$ such that $c \cdot w \ne 0$, and
-    \item For all $w \in V$, $c \cdot w = d \cdot w$.
+    \item There exists $w \in V$ such that $c \cdot w|_{S} \ne 0$, and
+    \item For all $w \in V$, $c \cdot w|_{S} = d \cdot w|_{S'}$.
   \end{enumerate}
 \end{thm}
 
@@ -1419,9 +1449,8 @@ encoding values. \TODO{More (in particular we refer to this set when
   $(\mathbb{F}^{k})^{\abs{\mathbb{F}}^{m}}$)}
 
 \begin{defn}\label{def:rm-code}\index{Reed-Muller code}
-  Let $\varphi$ be a bijection from a set $S$ to $\RM^{k}[\mathbb{F}, r, m]$.
-  \FIXME{What are our restrictions on $S$?} Then the \emph{Reed-Muller code} of
-  a value $s \in S$ is the vector
+  Let $\varphi$ be an injection from a set $S$ to $\RM^{k}[\mathbb{F}, r, m]$.Then the
+  \emph{Reed-Muller code} of a value $s \in S$ is the vector
   \begin{equation}
     (\varphi(s)(x))_{x \in \mathbb{F}^{m}} \in (\mathbb{F}^{k})^{\abs{\mathbb{F}}^{m}}.
   \end{equation}
@@ -1437,40 +1466,47 @@ formalizes this notion.
 
 \begin{lemma}\label{lem:rm-distance}
   Let $F \in \RM[\mathbb{F}, m, d]$, and let
-  $F'\colon \mathbb{F}^{m} \rightarrow \mathbb{F}^{k}$. Then, the Hamming distance $\Delta(F, F')$,
-  when written over the alphabet $\mathbb{F}^{k}$, is
+  $F'\colon \mathbb{F}^{m} \rightarrow \mathbb{F}^{k}$, where $F'$ is also laid out as an
+  evaluation table, in the same order as $F$. Then, the Hamming distance
+  $\Delta(F, F')$, when written over the alphabet $\mathbb{F}^{k}$, is
   \begin{equation}\label{eqn:rm-distance}
     \frac{\abs*{\{x \in \mathbb{F}^{m} \mid F(x) \ne F'(x)\}}}{\abs{\mathbb{F}}^{m}}.
   \end{equation}
 \end{lemma}
 
 \begin{proof}
-  \TODO{}
+  First, note that since our alphabet is exactly the codomain of $F$ (and $F'$),
+  each entry in the evaluation table has length $1$. Hence, there is a bijection
+  between inputs $x \in \mathbb{F}^{m}$ and indexes in the evaluation table.
+  Further, two items in the table are equal if and only if $F(x) = F'(x)$.
+  Hence, the total number of distinct values in their representations is exactly
+  $\abs{\{x \in \mathbb{F}^{m} \mid F(x) \ne F(x)\}}$. The total length of both
+  evaluation tables is exactly the number of inputs, i.e.
+  $\abs{\mathbb{F}^{m}} = \abs{\mathbb{F}}^{m}$. Hence, by the definition of the
+  Hamming distance, \cref{eqn:rm-distance} is true.
 \end{proof}
 
 \begin{cor}\label{cor:rm-probability}
   Let $F \in \RM[\mathbb{F}, m, d]$, and let
   $F'\colon \mathbb{F}^{m} \rightarrow \mathbb{F}^{k}$. Then,
-  \begin{equation}
+  \begin{equation}\label{eqn:rm-probability}
     \Delta(F, F') = \mathbb{P}[F(x) \ne F'(x)].
   \end{equation}
 \end{cor}
 
 \begin{proof}
-  \TODO{}
+  The probability over $x$ that $F(x) \ne F'(x)$ is exactly the number of inputs
+  in which $F(x) \ne F'(x)$, divided by the number of values $x$ can be. We know
+  $x$ can be any of $\abs{\mathbb{F}}^{m}$ choices, and by definition the number
+  of values of $x$ where $F(x) \ne F'(x)$ is
+  $\abs{\{x \in \mathbb{F}^{m} \mid F(x) \ne F(x)\}}$. Hence, we get that
+  \cref{eqn:rm-distance} is exactly $\mathbb{P}[F(x) \ne F'(x)]$, and thus by
+  \cref{lem:rm-distance}, \cref{eqn:rm-probability} is true.
 \end{proof}
 
 \TODO{Plenty of explanation (in particular, how will we be using this?)}
 
-\TODO{Examples}
-
-\TODO{Can we pull any proofs from \cref{sec:polynomial} that will give us more
-  information? (In particular, min distance between elements of
-  $\RM^{k}[\mathbb{F}, m, d]$)}
-
 \chapter{Relativization}
-
-% TODO: Examples
 
 An important prerequisite to understanding algebrization is the similar, but
 simpler, concept of \emph{relativization}, also called \emph{oracle separation}.
@@ -1490,7 +1526,6 @@ in terms of our functions, we can write $A$ as
 \begin{equation}
   A = \bigcup_{m \in \mathbb{N}}\mleft\{x \in \{0, 1\}^{m} \mid A_{m}(x) = 1\mright\}.
 \end{equation}
-% FIXME: Will we actually do this?
 We will use the Iverson bracket defined in \cref{def:iverson-bracket} for this
 purpose: allowing us to think of $A$ as the set and $[A]$ as the function.
 
@@ -1623,15 +1658,15 @@ recurse for classes in both of our most common classes.
 \end{thm}
 
 \begin{proof}
-  % TODO: Rewrite?
-  Let $L \in \P$ and let $K \in \P^{L}$. Let $M(L)$ be the determiner of $L$ and
-  $M(K)$ be the determiner of $K$. Further, let $\hat{M}(K)$ be the determiner
-  of $K$ but with access to $L$ as an oracle. We aim to show $K \in \P$. Let
-  $p_{L}(n)$ be a polynomial upper bound of the runtime of $M(L)$ on an input of
-  length $n$, and let $p_{\hat{K}}(n)$ be similar. Since $M(K)$ can call $M(L)$ no
-  more than $p_{\hat{K}}(n)$ times, it follows that
+  Let $L \in \P$ and let $K \in \P^{L}$. Let $M(L)$ be a determiner for $L$ and
+  $M(K)$ be a determiner for $K$. Further, let $\hat{M}(K)$ be a determiner of
+  $K$, but with access to $L$ as an oracle. Our goal is to show that $K \in \P$.
+
+  Let $p_{L}(n)$ be a polynomial upper bound of the runtime of $M(L)$ on an
+  input of length $n$, and let $p_{\hat{K}}(n)$ be similar. Since $M(K)$ can
+  call $M(L)$ no more than $p_{\hat{K}}(n)$ times, it follows that
   $p_{K}(n) \le p_{\hat{K}}(p_{L}(n))$. Hence, the runtime of $M(K)$ is bounded
-  above by a polynomial, and thus $K \in P$.
+  above by a polynomial, and thus $K \in \P$.
 \end{proof}
 
 \begin{thm}\label{thm:pspace-low}
@@ -1721,6 +1756,7 @@ interchangeably think of $A$ as a \emph{function} as well as a bit string of
 length $N = 2^{n}$, where each string element is $A$ applied to the $i$th string
 of length $n$, arranged in some lexicographical
 order. % TODO: Better way to phrase this
+
 We can further think of the property itself as being a Boolean function; a
 function that takes as input the bit-string representation of $A$ and outputs
 whether or not $A$ has the given property. We will call the function
@@ -1731,10 +1767,7 @@ randomized, and quantum. Nondeterministic query complexity is interesting, but
 it is outside the scope of this paper.
 % TODO: Why on earth does this paper not define nondeterministic query complexity?
 
-% TODO: Find better source for these definitions
-% Perhaps rephrase in the style of AW09 Def. 4.1?
 \begin{defn}[{\cite[17]{AW09}}]\label{def:det-qc}\index{query complexity!deterministic}
-  % TODO? Split up representation of oracle and rest of definition
   Let $n \in \mathbb{N}$ and let $A\colon \{0, 1\}^{n} \rightarrow \{0, 1\}$ be an oracle. We can write
   $A$ using $2^{n}$ bits, where bit $i$ is the output of $A$ when given the
   binary representation of $i$ as input. Define $N = 2^{n}$, and let
@@ -1742,7 +1775,6 @@ it is outside the scope of this paper.
   \emph{deterministic query complexity} of $f$, which we write $D(f)$, is the
   minimum number of queries made by any deterministic algorithm with access to
   an oracle $A$ that determines the value of $f(A)$.
-  % TODO: I don't quite understand the phrasing here; perhaps rephrase
 \end{defn}
 
 To make this more clear, let us give an example problem.
@@ -1802,11 +1834,9 @@ computers.
   number of queries made by any quantum algorithm with access to an oracle $A$
   that evaluates $f(A)$ with probability at least $2/3$.
 \end{defn}
-% TODO: Examples
 
 \section{Relativization of $\P$ vs.\ $\NP$}\label{sec:rel-p-np}
 
-% TODO? move to relativization section as an example?
 An important example of relativization is that of $\P$ and $\NP$. While the
 question of if $\P = \NP$ is still open, we aim to show that \emph{regardless of
 the answer}, the result does not algebrize. To do this, we show that there are
@@ -1904,7 +1934,6 @@ With this lemma as a base, we can now move on to our main theorem.
   length $n$. We aim to show that \cref{alg:construct-b} constructs $B$.
 
   \begin{algorithm}[htbp]
-    % FIXME: Do the P_i need to be P machines? Everybody is unclear on this
     \KwIn{A sequence of $\P$ oracle machines $\{P_{i}\}_{i=1}^{\infty}$}
     \KwOut{A set $B$ such that $L(B) \notin \P^{B}$}
     % TODO: Define p_i(n)
@@ -1941,7 +1970,6 @@ With this lemma as a base, we can now move on to our main theorem.
   on each query by only running the algorithm until $n_{i}$ is greater than the
   length of the query.
 
-  % FIXME: Should this "end goal" section be moved to before the algorithm?
   Next, we demonstrate that $L(B) \notin \P^{B}$. The end goal of our instruction is
   a set $B$ such that if $P_{i}^{B}$ accepts $0^{n}$ then there are no strings
   of length $n$ in $B$, and if $P_{i}^{B}$ rejects, then there is a string of
@@ -2013,8 +2041,6 @@ arithmetization for two reasons: because it is a non-relativizing technique (as
 we are about to see) and because we will be using it later on in this paper as
 an important part of several proofs. % TODO: List proofs
 
-% TODO
-
 \chapter{Algebrization}\label{chap:algebrization}
 
 Algebrization, originally described by Aaronson and Wigderson~\cite{AW09}, is an
@@ -2033,20 +2059,16 @@ this notion below.
 \begin{defn}[{\cite[Def.\ 2.2]{AW09}}]\label{def:ext-oracle}\index{extension oracle}
   % TODO: Reuse definition of extension polynomial from earlier
   Let $A_{m}\colon \{0, 1\}^{m} \rightarrow \{0, 1\}$ be a Boolean function and let
-  $\mathbb{F}$ be a finite field. Then an \emph{extension} of $A_{m}$ over
-  $\mathbb{F}$ is a polynomial
-  $\tilde{A}_{m,\mathbb{F}}\colon \mathbb{F}^{m} \rightarrow \mathbb{F}$ such that
-  $\tilde{A}_{m,\mathbb{F}}(x) = A_{m}(x)$ whevever $x \in \{0, 1\}^{m}$. Also,
-  given an oracle $A = (A_{m})$, an \emph{extension} $\tilde{A}$ of $A$ is a
-  collection of polynomials
+  $\mathbb{F}$ be a finite field. Also, given an oracle $A = (A_{m})$, an
+  \emph{extension} $\tilde{A}$ of $A$ is a collection of polynomials
   $\tilde{A}_{m,\mathbb{F}}\colon \mathbb{F}^{m} \rightarrow \mathbb{F}$, one for each
   positive integer $m$ and finite field $\mathbb{F}$, such that
   \begin{enumerate}
-    \item $\tilde{A}_{m,\mathbb{F}}$ is an extension of $A_{m}$ for all
-          $m,\mathbb{F}$, and
+    \item $\tilde{A}_{m,\mathbb{F}}$ is an extension polynomial of $A_{m}$ for
+          all $m,\mathbb{F}$, and
     \item there exists a constant $c$ such that
-          $\mdeg(\tilde{A}_{m,\mathbb{F}}) \le c$ for all $m, \mathbb{F}$.
-          % TODO: Rephrase point 2 in terms of F[x_{1,...,n}^{<= c}]
+          $\tilde{A}_{m,\mathbb{F}} \in \mathbb{F}[X_{1, \ldots, n}^{\le c}]$ for all
+          $m, \mathbb{F}$.
   \end{enumerate}
 \end{defn}
 
@@ -2082,8 +2104,6 @@ oracles in potentially-interesting ways.
   Notice that on $\{0, 1\}$, $x^{2} = x$, which allows us to see that
   $\tilde{f}$ is a valid extension of $f$.
 \end{example}
-
-% TODO: Example of an extension oracle
 
 \begin{defn}[{\cite[Def.\ 2.2]{AW09}}]\label{def:ext-oracle-class}
   For any complexity class $\mathcal{C}$ and extension oracle $\tilde{A}$, the complexity
@@ -2121,8 +2141,8 @@ complexity. % TODO: More (connect to previous section)
   deterministic algorithms $M$ such that $M^{\tilde{A}}$ outputs $f(A)$ for
   every oracle $A\colon \{0, 1\}^{n} \rightarrow \{0, 1\}$ and every finite field
   extension $\tilde{A}\colon \mathbb{F}^{n} \rightarrow \mathbb{F}$ of $A$ with
-  $\mdeg(\tilde{A}) \le c$. Then, the deterministic algebraic query complexity of
-  $f$ over $\mathbb{F}$ is defined as
+  $\mdeg(\tilde{A}) \le c$. Then, the \emph{deterministic algebraic query
+    complexity} of $f$ over $\mathbb{F}$ is defined as
   \begin{equation}
     \tilde{D}_{\mathbb{F}, c}(f) = \min_{M \in \mathcal{M}}\mleft(
       \max_{A, \tilde{A}: \mdeg(\tilde{A}) \le c}T_{M}(\tilde{A})
@@ -2130,7 +2150,6 @@ complexity. % TODO: More (connect to previous section)
   \end{equation}
   where $T_{M}(\tilde{A})$ is the number of queries to $\tilde{A}$ made by
   $M^{\tilde{A}}$.
-  % TODO: Can this be made more intelligible?
 \end{defn}
 
 Our goal here is to find the \emph{worst}-case scenario for the \emph{best}
@@ -2143,7 +2162,6 @@ multidegree 2, which is enough to get the results we want.
 As an example, let us look at the same $\OR$ problem we defined in
 \cref{def:or-problem}.
 
-% FIXME:
 \begin{thm}[{\cite[Thm.\ 4.4]{AW09}}]\label{thm:or-algebraic}
   $\tilde{D}_{\mathbb{F},2}(\OR) = 2^{n}$ for every field $\mathbb{F}$.
 \end{thm}
@@ -2184,7 +2202,6 @@ get a speedup.
 \end{thm}
 
 \begin{proof}
-  % TODO
   Let $A\colon \{0, 1\}^{n} \rightarrow \{0, 1\}$ and $\tilde{A}$ be our extension
   polynomial. Consider the value of $p(1/2, \ldots, 1/2)$. We aim to show that this
   value is equal to $0$ if and only if $A$ is the zero oracle.
@@ -2206,22 +2223,22 @@ get a speedup.
     \sum_{b \in \{0, 1\}^{n}}p(b) = p(1/2, \ldots, 1/2).
   \end{equation}
   Since $p(b) \ge 0$ for all $b \in \{0, 1\}^{n}$, it follows that $p(1/2, \ldots, 1/2)$
-  is 0 if and only if $p(b) = 0$ for all $b \in \{0, 1\}^{n}$, i.e. exactly when
+  is 0 if and only if $p(b) = 0$ for all $b \in \{0, 1\}^{n}$, i.e.\ exactly when
   $A$ is the zero function.
 \end{proof}
-
-% TODO: Deterministic & nondeterministic AQC
 
 \section{Algebrization of $\P$ vs.\ $\NP$}\label{sec:alg-p-np}
 
 As with relativization, an important application of algebrization is in regards
 to the $\P$ vs.\ $\NP$ problem.
 
+In order to work with algebrization, first we need a stronger definition than
+completeness. \TODO{}
+
 \begin{defn}[{\cite[Def.\ 6.1]{BFL90}}]\label{def:pspace-robust}\index{PSPACE-robust@$\PSPACE$-robust}
   A language $L$ is \emph{$\PSPACE$-robust} if $\P^{L} = \PSPACE^{L}$.
 \end{defn}
 
-% TODO: Move up above thm:p-np-rel so I can reference it there?
 \begin{lemma}\label{lem:complete-is-robust}
   Any $\PSPACE$-complete language is also $\PSPACE$-robust.
 \end{lemma}
@@ -2390,7 +2407,6 @@ Now it is time for the other case.
           such that $\tilde{A}_{n_{i},\mathbb{F}}(w) = 1$ and
           $\tilde{A}_{n_{i},\mathbb{F}}(y) = 0$ for all
           $y \in \mathcal{Y}_{\mathbb{F}} \cup (\{0, 1\}^{n_{i}} \setminus \{w\})$\;\nllabel{line:set-a}
-          % FIXME: Be more clear about what this means
         }
       }{
         Set $\tilde{A}_{n_{i},\mathbb{F}} = 0$ for all $\mathbb{F}$\;
@@ -2478,8 +2494,6 @@ that logic here as well, and show that arithmetization is non-algebrizing.
 Unfortunately, this is not the case.\footnote{This is no
   coincidence---algebrization was created pretty much entirely to break this
   technique.}
-
-% TODO
 
 \chapter{Interactive proof systems}\label{chap:ips}
 
@@ -2865,14 +2879,9 @@ Once we have a complexity class, the question arises of how it relates to other
 complexity classes. For $\IP$, Adi Shamir proved in 1992~\cite{Sha92} that a
 language has a standard interactive protocol if and only if it is in $\PSPACE$.
 
-\TODO{How much do I want to talk about this? (Scope creep)}
 \begin{thm}[{\cite{Sha92}}]\label{thm:ip-is-pspace}
   $\IP = \PSPACE$.
 \end{thm}
-
-\begin{proof}
-  \TODO{}
-\end{proof}
 
 \section{Multi-prover systems}\label{sec:multi-prover}
 
@@ -2925,15 +2934,16 @@ information from times where they lie in \emph{different} ways: where each
 prover individually could say something plausible, but in combination, the
 provers' responses contradict.
 
-Later on, we will see what can happen if the computers are allowed a limited
-form of communication: the class $\MIP*$, which uses quantum provers that can
-share entangled bits, will be defined in \cref{sec:quant-interactive} and then
-explored in more detail in \cref{chap:ipcp-to-mip}.
-
 \TODO{}
 
 \begin{defn}\label{def:view-mip}\index{view!MIP}
-  The \emph{view} of a multi-prover interactive system is \TODO{}
+  The \emph{view} of the verifier in a multi-prover interactive system is the
+  tuple
+  \[
+    (x, (b_{1}, m_{1}), \ldots, (b_{n}, m_{n})),
+  \]
+  where $x$ is the input, $m_{i}$ is the $i$th message recieved, and $b_{i}$ is
+  either $0$ or $1$, depending on which machine the message came from.
 \end{defn}
 
 \TODO{}
@@ -2971,16 +2981,11 @@ is exactly equal to $\NEXP$. Since it is known that $\NP \ne \NEXP$~\cite{Cook73
 this tells us that adding multiple provers gives an actual boost in
 computational power over just having one.
 
-% https://www.math.toronto.edu/swastik/courses/rutgers/topics-S17/lec9.pdf
 \begin{thm}[{\cite{BFL90}}]\label{thm:mip-is-nexp}
   $\MIP = \NEXP$.
 \end{thm}
 
-\begin{proof}
-  \TODO{How much effort do I want to put into this? (Scope creep)}
-  We showed in \cref{thm:o3sat-nexp-complete} that $\OSAT$ is $\NEXP$-complete,
-  so all we need is to demonstrate that $\OSAT$ has a multi-prover system.
-\end{proof}
+\TODO{Transition paragraph}
 
 Having seen how much more powerful systems become with two provers, one might
 wonder what would happen if we were to add a third. Unfortunately, it turns out
@@ -3340,16 +3345,11 @@ publicly-released information is ambiguous.
 
 \TODO{More explanation}
 
-\FIXME{The existence of bit-commitment schemes implies the existence of one-way
-  functions (Go01 Exercise 13), but CFGS22 talks about \emph{algebraic}
-  commitment schemes without reference to one-way functions (nor do they mention
-  $\P \ne \NP$)}
-
-The simplest examples of bit-commitment schemes involve one-way functions. A
-one-way function is a function that is computable in polynomial time, but whose
-inverse is \emph{not} computable in polynomial time. These functions are not
-known to exist: in particular their existence implies $\P \ne \NP$, but they are
-still widely believed to exist.
+The simplest examples of bit-commitment schemes involve one-way
+functions\index{one-way function}. A \emph{one-way function} is a function that
+is computable in polynomial time, but whose inverse is \emph{not} computable in
+polynomial time. These functions are not known to exist: in particular their
+existence implies $\P \ne \NP$, but they are still widely believed to exist.
 
 \begin{algorithm}[htbp]
   \tcc{Commit}
@@ -3360,13 +3360,13 @@ still widely believed to exist.
     $f$}\label{alg:bit-commit}
 \end{algorithm}
 
-\TODO{Define decommitment}
-
-\subsection{Hybrid simulators}\label{sec:hybrid-sim}
-
-\begin{defn}\label{def:hybrid-sim}\index{hybrid simulator}
-  A \emph{hybrid simulator} is \TODO{}
-\end{defn}
+Not only do the simplest examples of bit-commitment schemes involve one-way
+functions, but Goldreich and Levin showed that bit-commitment schemes can only
+exist if one-way functions do~\cite{GL89}. Referring back to our discussion of
+Impagliazzo's five worlds in \cref{sec:five-worlds}, this means that
+bit-commitment schemes exist only if we live in cryptomania. The importance of
+bit-commitment schemes to zero-knowledge proofs in general is one of the major
+reasons why this paper assumes the existence of one-way functions.
 
 \section{Probabilistically-checkable proofs}\label{sec:pcp}
 
@@ -3509,7 +3509,7 @@ as it is a relatively simple language that is still not known to be in $\BPP$.
   \caption{A PCP for $\GNI$}\label{alg:gni-pcp}
 \end{algorithm}
 
-\begin{proof} % FIXME: Should I describe any background about isomorphic graphs?
+\begin{proof}
   We describe such a PCP in \cref{alg:gni-pcp}. Next, we show that this
   algorithm has the properties we seek.
 
@@ -3552,15 +3552,11 @@ perform on \emph{values} that are close to strings in our language. This is the
 notion behind PCPs of proximity: what if we weaken a PCP to only require it to
 reject strings that are not sufficiently close to strings in the given language?
 
-\FIXME{Rephrase now that Hamming distance has been moved up}
+We discussed Hamming distance, a measure for proximity, in
+\cref{def:hamming-dist} earlier. This is the definition we will be using when we
+refer to the distance of strings. in a PCPP.
 
-To define PCPs of proximity, we first need a working definition of proximity.
-Computer scientists have many definitions of string closeness, but for this
-particular problem we will be working with a mathematically simple one
-originally used for error-correcting codes.
-
-Now that we know what proximity means, we can define a PCP of proximity. Unlike
-a PCP, which is defined for any language $L$, a PCPP is only defined for
+Unlike a PCP, which is defined for any language $L$, a PCPP is only defined for
 \emph{pair languages}\index{pair language}, languages that consist entirely of
 ordered pairs of two objects. This is because we need our language to consist of
 pairs so that we can have a notion of distance between the elements. The good
@@ -3595,9 +3591,6 @@ will accept any $(f, y)$ pair where $f(x)$ is $\delta$-close to $y$.
 
 \TODO{Introduce example}
 
-% TODO: Is this the best example? These are *extremely* weak bounds and don't
-% actually have any probability involved (will always accept when valid and will
-% always reject when invalid)
 \begin{thm}
   $\GI \in \PCP[\poly(n), \poly(n)]$.
 \end{thm}
@@ -3706,13 +3699,9 @@ We will denote robust PCP classes with
   robust-soundness error $1 - \varepsilon$ with robustness parameter $\rho - \varepsilon$.
 \end{lemma}
 
-\begin{proof}
-  \TODO{Do they not even prove this? Probably means I ought to}
-\end{proof}
-
 This lemma will allow us to prove statements in terms of expected robustness
 instead of normal robustness. In general, we will find expected robustness much
-easier to prove; hence
+easier to prove; hence why we will be using it more often.
 
 \section{Zero-knowledge probabilistically-checkable proofs}\label{sec:pzkpcp}
 
@@ -3753,21 +3742,6 @@ is.
   zero-knowledge probabilistically-checkable proof.
 \end{defn}
 
-\TODO{Example (preferably $\GNI$)}
-
-\begin{thm}\label{thm:gni-pzkpcp}
-  There is a perfect zero-knowledge PCP for $\GNI$.
-\end{thm}
-
-\begin{algorithm}[htbp]
-  \TODO{}
-  \caption{A PZK-PCP for $\GNI$}\label{alg:gni-pzkpcp}
-\end{algorithm}
-
-\begin{proof}
-  \TODO{}
-\end{proof}
-
 \section{Interactive probabilistically-checkable proofs}\label{sec:ipcp}
 
 Interactive probabilistically-checkable proofs are a combination of the concepts
@@ -3793,8 +3767,8 @@ during which the verifier can access the proof as an oracle.
 
 Next, we need to define a few properties of IPCPs. In general we will care about
 IPCPs with specific bounds on these properties; later on we will spend some time
-(in particular \cref{sec:reduce-queries}) working on optimizing bounds on some
-of these properties at the expense of others.
+working on optimizing bounds on some of these properties at the expense of
+others.
 
 The first two complexities we will look at come from the interactive-proof
 portion of the IPCP\@. As a reminder, two important parameters we care about
@@ -3848,8 +3822,6 @@ bounds on $\IPCP$ algorithms:
 \end{equation*}
 to mean the language $L$ is a member of $\IPCP$ with the listed restrictions.
 
-\TODO{Does it make sense to talk about BFL90's IPCP for all of NEXP?}
-
 \begin{defn}\label{def:low-deg-ipcp}\index{low-degree IPCP@low-degree $\IPCP$}
   Let $\mathbb{F}$ be a field, and $d, m \in \mathbb{N}$. A \emph{low-degree IPCP} is an
   IPCP instance with the following two properties:
@@ -3872,8 +3844,6 @@ because we have an efficient notation for multidegree-bounded polynomials, and
 so that we do not wind up with an exorbitant number of lines in our
 notation.\footnote{Having said that, there are still a lot of lines in this
   notation, but this is the best we can do.}
-
-\TODO{Examples}
 
 \begin{defn}\label{def:ipcp-view}\index{view!IPCP}
   The \emph{view} of an IPCP $(P, V)$ on input $x$ is the random variable
@@ -3906,8 +3876,6 @@ can be made zero-knowledge.
   zero-knowledge IPCP\@.
 \end{defn}
 
-\TODO{Example probably}
-
 As with our other notations, we will write
 \[
   L \in \PZKIPCP\pzkipcp{r}{\ell}{c}{q}{b}{\varepsilon}
@@ -3923,7 +3891,6 @@ to show $L$ has a perfect zero-knowledge IPCP with the listed restrictions.
 \end{thm}
 
 \TODO{}
-% NOTE: Somewhere I need a section on low-degree tests
 
 \section{Algebraic circuits}\label{sec:alg-circuit}
 
@@ -4099,12 +4066,15 @@ will make for relatively easy transformations.
   simply compute $C(w)$ directly and check if the answer is $1$.
 \end{proof}
 
-\begin{thm}[{\cite[Prop.\ 2.4]{BGHSV06}}]\label{thm:cktval-cktsat}
+\begin{lemma}[{\cite[Prop.\ 2.4]{BGHSV06}}]\label{thm:cktval-cktsat}
   If $\CktVal$ has a PCPP, then $\CktSAT$ has a PCP with identical parameters.
-\end{thm}
+\end{lemma}
 
 \begin{proof}
-  % TODO
+  Let $C \in \CktSAT$. Then, let $w$ be a satisfying assignment to $C$, and let
+  $\pi'$ be a PCPP that $(C, w) \in \CktVal$. Consider the oracle $\pi = (\pi', w)$:
+  this proof can be verified using the PCPP verifier, forwarding all its queries
+  to the new proof.
 \end{proof}
 
 \begin{thm}[{\cite[Theorem 3.3]{BGHSV06}}]\label{thm:ckt-val-pcpp}
@@ -4115,9 +4085,9 @@ will make for relatively easy transformations.
   \]
 \end{thm}
 
-\begin{proof}
-  % TODO: Do I even \emph{want} a proof or is this too much?
-\end{proof}
+While important, the proof of this is somewhat involved and unfortunately
+outside the scope of this project. Hence, we will defer the proof of this
+particular theorem to the original paper~\cite{BGHSV06}.
 
 \section{The composition theorem}\label{sec:comp-theorem}
 
@@ -4158,7 +4128,11 @@ PCPPs to make a new (non-robust) PCP with improved bounds.
 \end{thm}
 
 \begin{algorithm}[htbp]
-  % TODO
+  Pick a random $R \in \{0, 1\}^{r_{\out}}$\;
+  Simulate $V_{\out}$ on $x$ and random coins $R$\;
+  Let $I_{\out} = (i_{1}, \ldots, i_{q_{\out}})$ be the query responses of
+  $V_{\out}$\;
+  Let $D_{\out}$ be the decision of $V_{\out}$\;
   \caption{A composed PCP~\cite[Theorem 2.7]{BGHSV06}}\label{alg:composed-pcp}
 \end{algorithm}
 
@@ -4221,11 +4195,57 @@ languages whose base is not $\{0, 1\}$ but some finite field $\mathbb{F}$, and
 this way we can scale them to some $\{0, 1\}^{a}$ where $2^{a} \ge \abs{F}$
 without worry.
 
+\section{Robust total-degree test}\label{sec:robust-degree}
+
+\TODO{Connect to algebraic query complexity}
+
+An important algorithm to have in our back pocket for the rest of this chapter
+will be a robust way for a PCP verifier to check if a given polynomial is in
+fact a low-total-degree polynomial or not. This will allow us to test for
+membership in $\RM[\mathbb{F}, m, d]$ relatively easily.
+
+\begin{thm}[{\cite[Prop.\ 5.7]{Par21}}]\label{thm:robust-low-deg}
+  Let $\delta > 0$, and $k, m, d \in \mathbb{N}^{+}$. Let $\mathbb{F}$ be a finite field with
+  $\abs{\mathbb{F}} > 25k$. Then there exists a test that,
+  \begin{enumerate}
+    \item has oracle access to a function $F\colon \mathbb{F}^{m} \rightarrow \mathbb{F}^{k}$,
+    \item makes $\abs{F}$ queries to $F$,
+    \item runs in time $\poly(\abs{\mathbb{F}}, m, d, k)$,
+    \item accepts with probability $1$ if $F \in \RM^{k}[\mathbb{F}, m, d]$, and
+    \item if $\Delta(F, \RM^{k}[\mathbb{F}, m, d]) > \varepsilon$, then the expected distance
+          between the tester's view of $F$ and any accepting view is in $\Omega(\varepsilon)$.
+  \end{enumerate}
+\end{thm}
+
+\begin{algorithm}[htbp]
+  \KwIn{A function $F\colon \mathbb{F}^{m} \rightarrow \mathbb{F}^{k}$}
+  \KwOut{Whether $F \in \RM[\mathbb{F}, m, d]$}
+  Sample a uniformly random line $L \in \mathbb{F}^{m}$\;
+  \For{$\ell \in L$}{
+    $x_{i} \leftarrow$ query $F$ at $\ell$\;
+  }
+  \eIf{$F|_{\{x_{i} \mid i \in \abs{L}\}}$ agrees with a polynomial
+    $p \in \mathbb{F}^{\le d}[X_{1, \ldots, m}]$}{
+    \Accept\;
+  }{
+    \Reject\;
+  }
+  \caption{A robust low-degree test~\cite[Prop.\ 5.7]{Par21}}\label{alg:robust-low-deg}
+\end{algorithm}
+
+\begin{proof}
+  We describe such an algorithm in \cref{alg:robust-low-deg}.
+
+  If $F \in \RM[\mathbb{F}, m, d]$, then the restriction of $F$ to a subset $L$
+  will agree with some polynomial $p$ (in particular, the case $p = F$), so in
+  this case \cref{alg:robust-low-deg} will always accept.
+
+  If $F \notin \RM[\mathbb{F}, m, d]$, then $\Delta(F, \RM[\mathbb{F}, m, d]) = \varepsilon$ for
+  some $\varepsilon > 0$. \TODO{}
+\end{proof}
+
 \section{PCPPs for polynomial summation}\label{sec:pcpp-poly-sum}
 
-\FIXME{Determine difference between the various sumchecks we've seen so far}
-% TODO: This looks like the same language we've seen earlier in this paper: do
-% we want this as the formal definition somewhere or are there better ones?
 \begin{defn}[{\cite[Def.\ 4.1]{GOS25}}]\label{def:sum-lang}\index{Sum@$\Sum$}
   The language $\Sum$ is the set of all ordered pairs
   $((\mathbb{F}, 1^{m}, 1^{d}, H, \gamma), F)$, where
@@ -4357,12 +4377,11 @@ Finally, it is time to introduce a verifier for $\Sum$. \TODO{More}
   \]
 \end{thm}
 
-\begin{proof} % TODO: Show poly-time
+\begin{proof}
   We construct such an algorithm as \cref{alg:sum-pcpp}. To show this is a PCPP,
   we will first show that the verifier will always accept when given a valid
   input and proof; following that we will show it will correctly reject for all
-  inputs not near any polynomial in the language. \TODO{Is this a correct
-    summary?}
+  inputs not near any polynomial in the language.
 
   Let $F \in \Sum[\mathbb{F}, m, d, H, \gamma]$ and let $\pi$ be the honest proof. In
   this case, our definition of $g_{i}$ is as
@@ -4406,10 +4425,10 @@ Finally, it is time to introduce a verifier for $\Sum$. \TODO{More}
 
   If $F$ is $\delta_{\RM}$-far from $\RM[\mathbb{F}, m, d]$, then
   \cref{alg:robust-low-deg} will always have its view at least $\Omega(\delta)$ from any
-  accepting view \TODO{Cite theorem}. Since the low-degree test is a constant
-  fraction of the total number of queries, this means that the expected distance
-  between the low-degree verifier's view and any accepting view is also $\Omega(\delta)$.
-  Thus, $V$ has expected robustness $\Omega(\delta)$ in this case.
+  accepting view as per \cref{thm:robust-low-deg}. Since the low-degree test is
+  a constant fraction of the total number of queries, this means that the
+  expected distance between the low-degree verifier's view and any accepting
+  view is also $\Omega(\delta)$. Thus, $V$ has expected robustness $\Omega(\delta)$ in this case.
 
   If $F$ is $\delta_{\RM}$-close to $\RM[\mathbb{F}, m, d]$, then by
   \cref{lem:sum-ev}, we know that the view of the verifier is at least
@@ -4426,29 +4445,14 @@ Finally, it is time to introduce a verifier for $\Sum$. \TODO{More}
   the language $\Sum$.
 \end{proof}
 
-\section{Robust PCP verifiers for $\CktSAT$}\label{sec:robust-pcp-cktsat}
+\section{A PCP for $\NP$}
 
-% TODO: Theorem 2.1.12?
-
-\section{Parallelizable PCPPs}\label{sec:parallel-pcp}
-
-% TODO: Goal: Prove Theorem 2.1.9 from ALMSS98 and then Proposition 2.14 from
-% BGHSV06 (removing as much complexity from ALMSS98 as possible)
-
-\begin{thm}[{\cite[Theorem 2.1.9]{ALMSS98}}]\label{thm:always-robust-pcpp}
-  % TODO: Rephrase to use PCPP verifiers instead of inner verifiers
+\begin{thm}
+  $\NP \subseteq \PCP[\log(n), 1]$.
 \end{thm}
 
 \begin{proof}
-  % TODO
-\end{proof}
-
-\begin{thm}[{\cite[Prop.\ 2.14]{BGHSV06}}]\label{thm:parallel-vs-robust}
-  % TODO
-\end{thm}
-
-\begin{proof}
-  % TODO
+  \TODO{}
 \end{proof}
 
 \section{An upper bound on minimal PCP queries}\label{sec:pcp-query-complexity}
@@ -4458,455 +4462,468 @@ Finally, it is time to introduce a verifier for $\Sum$. \TODO{More}
   proof and uses $O(\log n)$ random bits.
 \end{thm}
 
-\chapter{Quantum computation}\label{chap:quantum}
+% \chapter{Quantum computation}\label{chap:quantum}
 
-\section{Quantum computers}\label{sec:quant-comp}
+% Quantum computation is a model of computation that uses non-classical physical
+% interactions. Quantum computers are interesting from a complexity-theoretic
+% perspective for two main reasons: first, it has a built-in way to generate
+% randomness, and second, it seems to be notably faster than classical computers.
+% The exact level of speedup that quantum computers give is still the subject of
+% much research, but we will be working with quantum computers for a slightly
+% different reason.
 
-\begin{defn}\label{def:qubit}\index{qubit}
-  A \emph{qubit} is a unit vector in $\mathbb{C}^{2}$.
-\end{defn}
+% For us, quantum computers will be interesting because of their ability to share
+% entangled bits. Briefly, entangled bits are a pair of states where measuring one
+% of the states affects the measurement of the other.
 
-\begin{defn}\label{def:operator}\index{operator}
-  A \emph{operator} is a linear function $A\colon V \rightarrow V$ such that
-  $v \cdot A \cdot v^{T} \ge 0$ for all $v \in V$.
-\end{defn}
+% \section{Quantum computers}\label{sec:quant-comp}
 
-\begin{defn}\label{def:quantum-tm}\index{Turing machine!quantum}
-  A \emph{quantum Turing machine} is
-\end{defn}
+% \begin{defn}\label{def:qubit}\index{qubit}
+%   A \emph{qubit} is a unit vector in $\mathbb{C}^{2}$.
+% \end{defn}
 
-\subsection{Measurement}
+% \begin{defn}\label{def:operator}\index{operator}
+%   A \emph{operator} is a linear function $A\colon V \rightarrow V$ such that
+%   $v \cdot A \cdot v^{T} \ge 0$ for all $v \in V$.
+% \end{defn}
 
-\begin{defn}\label{def:projective-measure}\index{projective measurement}
-  A \emph{projective measurement} is
-\end{defn}
+% \begin{defn}\label{def:quantum-tm}\index{Turing machine!quantum}
+%   A \emph{quantum Turing machine} is
+% \end{defn}
 
-\begin{defn}\label{def:povm}\index{positive operator-valued measure}
-  A \emph{positive operator-valued measure} is
-\end{defn}
+% \subsection{Measurement}
 
-\section{Quantum complexity classes}
+% \begin{defn}\label{def:projective-measure}\index{projective measurement}
+%   A \emph{projective measurement} is
+% \end{defn}
 
-\begin{defn}\label{def:bqp}\index{BQP@$\BQP$}
-  The class $\BQP$ is
-\end{defn}
+% \begin{defn}\label{def:povm}\index{positive operator-valued measure}
+%   A \emph{positive operator-valued measure} is
+% \end{defn}
 
-\begin{defn}\label{def:qma}\index{QMA@$\QMA$}
-  The class $\QMA$ is
-\end{defn}
+% \section{Quantum complexity classes}
 
-\section{Quantum interactive proofs}\label{sec:quant-interactive}
+% \begin{defn}\label{def:bqp}\index{BQP@$\BQP$}
+%   The class $\BQP$ is the class of all languages $L$ such that there exists a
+%   quantum Turing machine $Q$ such that
+%   \begin{enumerate}
+%     \item For all $x \in L$, $\mathbb{P}[Q(x) = 1] \ge 2/3$, and
+%     \item for all $x \notin L$, $\mathbb{P}[Q(x) = 1] \le 1/3$.
+%   \end{enumerate}
+% \end{defn}
 
-\begin{defn}\label{def:mip-star}\index{MIP*@$\MIP*$}
-  The class $\MIP*$ is
-\end{defn}
+% \section{Quantum interactive proofs}\label{sec:quant-interactive}
 
-% TODO: This is actually worth exploring a *lot* more (it's non-relativizing!)
-% See https://scottaaronson.blog/?p=4512
-\begin{thm}[{\cite{JNVWY21}}]\label{thm:mip-star-is-re}
-  $\MIP* = \RE$.
-\end{thm}
+% \begin{defn}\label{def:mip-star}\index{MIP*@$\MIP*$}
+%   The class $\MIP*$ is the class of all languages with a $\MIP$ instance where
+%   the two provers are quantum computers sharing a single entangled bit.
+% \end{defn}
 
-\section{Gentle measurement}\label{sec:gentle-measurement}
+% This statement
 
-\begin{lemma}\label{lem:gentle-measurement}
-  \TODO{Gentle measurement lemma~\cite[Lemma 7.1]{CFGS22}; get from original if
-    possible?}
-\end{lemma}
+% \begin{thm}[{\cite{JNVWY21}}]\label{thm:mip-star-is-re}
+%   $\MIP* = \RE$.
+% \end{thm}
 
-\section{Quantum low-multidegree test}\label{sec:quantum-multidegree-test}
+% \section{Gentle measurement}\label{sec:gentle-measurement}
 
-\begin{thm}[{\cite{JNVWY20}}]\label{thm:quantum-low-degree}
-  % TODO: What is a projective strategy and (F, d, m)-test?
-  There is a universal constant $C > 0$ such that the following holds. Let
-  $(\tilde{P}_{1}, \tilde{P}_{2}, \ket{\Psi})$ be a projective strategy that passes
-  the $(\mathbb{F}, d, m)$-low-multidegree test with probability at least
-  $1 - \varepsilon$. For $i \in \{1, 2\}$, $\alpha \in \mathbb{F}^{m}$, denote by
-  $\{A_{i,\alpha}^{z}\}_{z \in \mathbb{F}}$ the measurement applied by $\tilde{P}_{i}$
-  upon recieving question $\alpha$. Then there exist projective measurements
-  $\{L_{1}^{Q}\}_{Q \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]}$ and
-  $\{L_{2}^{Q}\}_{Q \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]}$ such that for
-  $v \in \poly(m, d)(d/\abs{\mathbb{F}} + c)^{C}$, the following holds:
-  \begin{enumerate}
-    \item Consistency with
-          $\{A_{1, \alpha}^{z}\}_{z \in \mathbb{F}, \alpha \in \mathbb{F}^{m}}$ and
-          $\{A_{1, \alpha}^{z}\}_{z \in \mathbb{F}, \alpha \in \mathbb{F}^{m}}$:
-          \begin{align}
-            \mathbb{E}_{\alpha \in \mathbb{F}^{m}}\sum_{Q \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]}\sum_{z \in \mathbb{F} \setminus \{Q(\alpha)\}}
-            \braopket{\Psi}{A_{1,\alpha}^{z} \otimes L_{2}^{Q}}{\Psi} &\le v, \\
-            \mathbb{E}_{\alpha \in \mathbb{F}^{m}}\sum_{Q \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]}\sum_{z \in \mathbb{F} \setminus \{Q(\alpha)\}}
-            \braopket{\Psi}{L_{1}^{Q} \otimes A_{2,\alpha}^{z}}{\Psi} &\le v.
-          \end{align}
-    \item Consistency of $\{L_{1}^{Q}\}_{Q}$ and $\{L_{2}^{Q}\}_{Q}$:
-          \begin{equation}
-            \sum_{Q \ne Q' \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]}\braopket{\Psi}{L_{1}^{Q} \otimes L_{2}^{Q}}{\Psi} \le v.
-          \end{equation}
-  \end{enumerate}
-\end{thm}
+% \begin{lemma}[{\cite{ON07}}]\label{lem:gentle-measurement}
+%   Let $\rho$ be a density operator on a Hilbert space $H$, and let $A, B \in L(H)$
+%   such that $A^{\dag}A, B^{\dag}B \le \Id$. Then,
+%   \begin{equation}
+%     \norm{A \rho A^{\dag} - B \rho B^{\dag}} \le 2\sqrt{\tr((A - B)\rho(A - B)^{\dag})}.
+%   \end{equation}
+% \end{lemma}
 
-\begin{proof}
-  % TODO
-\end{proof}
+% \section{Quantum low-multidegree test}\label{sec:quantum-multidegree-test}
 
-% TODO: Rename chapter
-\chapter{Lifting $\IPCP$ to $\MIP*$}\label{chap:ipcp-to-mip}
+% \begin{thm}[{\cite{JNVWY20}}]\label{thm:quantum-low-degree}
+%   There is a universal constant $C > 0$ such that the following holds. Let
+%   $(\tilde{P}_{1}, \tilde{P}_{2}, \ket{\Psi})$ be a projective strategy that passes
+%   the $(\mathbb{F}, d, m)$-low-multidegree test with probability at least
+%   $1 - \varepsilon$. For $i \in \{1, 2\}$, $\alpha \in \mathbb{F}^{m}$, denote by
+%   $\{A_{i,\alpha}^{z}\}_{z \in \mathbb{F}}$ the measurement applied by $\tilde{P}_{i}$
+%   upon recieving question $\alpha$. Then there exist projective measurements
+%   $\{L_{1}^{Q}\}_{Q \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]}$ and
+%   $\{L_{2}^{Q}\}_{Q \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]}$ such that for
+%   $v \in \poly(m, d)(d/\abs{\mathbb{F}} + c)^{C}$, the following holds:
+%   \begin{enumerate}
+%     \item Consistency with
+%           $\{A_{1, \alpha}^{z}\}_{z \in \mathbb{F}, \alpha \in \mathbb{F}^{m}}$ and
+%           $\{A_{1, \alpha}^{z}\}_{z \in \mathbb{F}, \alpha \in \mathbb{F}^{m}}$:
+%           \begin{align}
+%             \mathbb{E}_{\alpha \in \mathbb{F}^{m}}\sum_{Q \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]}\sum_{z \in \mathbb{F} \setminus \{Q(\alpha)\}}
+%             \braopket{\Psi}{A_{1,\alpha}^{z} \otimes L_{2}^{Q}}{\Psi} &\le v, \\
+%             \mathbb{E}_{\alpha \in \mathbb{F}^{m}}\sum_{Q \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]}\sum_{z \in \mathbb{F} \setminus \{Q(\alpha)\}}
+%             \braopket{\Psi}{L_{1}^{Q} \otimes A_{2,\alpha}^{z}}{\Psi} &\le v.
+%           \end{align}
+%     \item Consistency of $\{L_{1}^{Q}\}_{Q}$ and $\{L_{2}^{Q}\}_{Q}$:
+%           \begin{equation}
+%             \sum_{Q \ne Q' \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]}\braopket{\Psi}{L_{1}^{Q} \otimes L_{2}^{Q}}{\Psi} \le v.
+%           \end{equation}
+%   \end{enumerate}
+% \end{thm}
 
-The main goal of the next two chapters is to prove that any language in $\NEXP$
-has a multi-prover interactive proof where the two provers can share an
-entangled bit and further, that this can be done in a way that preserves zero
-knowledge. The first major step in this is described in this chapter: to show
-that any interactive probabilistically-checkable proof can be replaced by a
-multi-prover interactive proof, and that if the IPCP is zero-knowledge then so
-is the constructed MIP*.
+% \begin{proof}
+%   % TODO
+% \end{proof}
 
-\TODO{Another paragraph on consequences of this and potentially high-level
-  overview of the proof}
+% \chapter{Lifting $\IPCP$ to $\MIP*$}\label{chap:ipcp-to-mip}
 
-\section{Reducing query complexity}\label{sec:reduce-queries}
+% The main goal of the next two chapters is to prove that any language in $\NEXP$
+% has a multi-prover interactive proof where the two provers can share an
+% entangled bit and further, that this can be done in a way that preserves zero
+% knowledge. The first major step in this is described in this chapter: to show
+% that any interactive probabilistically-checkable proof can be replaced by a
+% multi-prover interactive proof, and that if the IPCP is zero-knowledge then so
+% is the constructed MIP*.
 
-The first step in transforming IPCPs into MIP* instances is to reduce the query
-complexity. As it turns out, any IPCP is equivalent to an IPCP that makes one
-query, subject to a minor relaxation of the other constraints. Not only does
-this work on normal IPCPs, when used on a zero-knowledge IPCP, the resulting
-MIP* is also zero-knowledge. We will be using this transformation in order to
-\TODO{}.
+% \TODO{Another paragraph on consequences of this and potentially high-level
+%   overview of the proof}
 
-\begin{thm}[{\cite[Prop.\ 9.2]{CFGS22}}]\label{thm:ipcp-one-query}
-  There exists a transformation $T$ such that, for every $m, d \in \mathbb{N}$ and finite
-  field $\mathbb{F}$, if
-  \begin{equation*}
-    (P, V) \in \IPCP\ldipcp{r}{\ell}{c}{q}{\mathbb{F}[X_{1, \ldots, m}^{\le d}]}{\varepsilon},
-  \end{equation*}
-  then $T(P, V)$ recognizes the same language as $(P, V)$ and
-  \begin{equation*}
-    T(P, V) \in \IPCP\ldipcp{r+1}{\ell}{c+\poly(m,d,q)}{1}{\mathbb{F}[X_{1, \ldots, m}^{\le d}]}{\varepsilon+\frac{mdq}{\abs{\mathbb{F}}-q}}.
-  \end{equation*}
-\end{thm}
+% \section{Reducing query complexity}\label{sec:reduce-queries}
 
-\begin{algorithm}[htbp]
-  % TODO: Any bounds on s?
-  \KwIn{An honest oracle $R \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]$ and string $s$}
-  \KwOut{Whether or not $s \in L_{(P, V)}$}
-  Let $S \subseteq \mathbb{F}$ with $\abs{S} < q$\;
-  $V'$: choose random $r \in \mathbb{F}^{m}$\;
-  $V'$: choose random $t \in \mathbb{F} \setminus S$\;
-  $V'$: Simulate $V$ on $s$ answering every query with
-  $0$\;\nllabel{line:zero-sim}
-  Let $A$ be the set of queries of $V$\;
-  $V'$: compute polynomial $\gamma\colon \mathbb{F} \rightarrow \mathbb{F}^{m}$ of degree $q$
-  such that $\{\gamma(s)\}_{s \in S} = A$ and $\gamma(t) = r$\;
-  $V'$: Send $\gamma$ to $P'$\;
-  $P'$: Reply with the coefficients of the polynomial $\rho = R \circ \gamma$\;
-  $V'$: query $R$ at $r$ and recieve answer $a$\;
-  \If{$a \ne \rho(t)$}{\nllabel{line:check-rho}
-    \Reject\;
-  }
-  $V'$: Simulate $V(x)$, answering all queries $a \in A$ with
-  $\rho(A)$\;\nllabel{line:proper-sim}
-  \KwRet{the result of $V(x)$}\;
-  \caption{A single-query, zero-knowledge transformation of an
-    IPCP~\cite[Construction 4]{CFGS22}}\label{alg:single-query}
-\end{algorithm}
+% The first step in transforming IPCPs into MIP* instances is to reduce the query
+% complexity. As it turns out, any IPCP is equivalent to an IPCP that makes one
+% query, subject to a minor relaxation of the other constraints. Not only does
+% this work on normal IPCPs, but when used on a zero-knowledge IPCP, the resulting
+% IPCP is also zero-knowledge. We will be using this transformation in order to
+% make it easier in the next step to lift from $\IPCP$ to $\MIP*$.
 
-\begin{proof}
-  We describe the result of $T$ in \cref{alg:single-query}. First, note that
-  this algorithm is not $T$ directly, but the result of $T(P, V)$. So, what we
-  require is to show that $L_{T(P, V)} = L_{(P, V)}$, and to briefly demonstrate
-  why $V'$ runs in polynomial time.
+% \begin{thm}[{\cite[Prop.\ 9.2]{CFGS22}}]\label{thm:ipcp-one-query}
+%   There exists a transformation $T$ such that, for every $m, d \in \mathbb{N}$ and finite
+%   field $\mathbb{F}$, if
+%   \begin{equation*}
+%     (P, V) \in \IPCP\ldipcp{r}{\ell}{c}{q}{\mathbb{F}[X_{1, \ldots, m}^{\le d}]}{\varepsilon},
+%   \end{equation*}
+%   then $T(P, V)$ recognizes the same language as $(P, V)$ and
+%   \begin{equation*}
+%     T(P, V) \in \IPCP\ldipcp{r+1}{\ell}{c+\poly(m,d,q)}{1}{\mathbb{F}[X_{1, \ldots, m}^{\le d}]}{\varepsilon+\frac{mdq}{\abs{\mathbb{F}}-q}}.
+%   \end{equation*}
+% \end{thm}
 
-  To show $V'$ runs in polynomial time, note that the random choices are in
-  polynomial time (as a reminder, random choice is polynomial relative to the
-  length), simulating $V$ is polynomial time through the definition of $V$, and
-  computing polynomials can be done in polynomial time as well.
+% \begin{algorithm}[htbp]
+%   \KwIn{An honest oracle $R \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]$ and string $s$}
+%   \KwOut{Whether or not $s \in L_{(P, V)}$}
+%   Let $S \subseteq \mathbb{F}$ with $\abs{S} < q$\;
+%   $V'$: choose random $r \in \mathbb{F}^{m}$\;
+%   $V'$: choose random $t \in \mathbb{F} \setminus S$\;
+%   $V'$: Simulate $V$ on $s$ answering every query with
+%   $0$\;\nllabel{line:zero-sim}
+%   Let $A$ be the set of queries of $V$\;
+%   $V'$: compute polynomial $\gamma\colon \mathbb{F} \rightarrow \mathbb{F}^{m}$ of degree $q$
+%   such that $\{\gamma(s)\}_{s \in S} = A$ and $\gamma(t) = r$\;
+%   $V'$: Send $\gamma$ to $P'$\;
+%   $P'$: Reply with the coefficients of the polynomial $\rho = R \circ \gamma$\;
+%   $V'$: query $R$ at $r$ and recieve answer $a$\;
+%   \If{$a \ne \rho(t)$}{\nllabel{line:check-rho}
+%     \Reject\;
+%   }
+%   $V'$: Simulate $V(x)$, answering all queries $a \in A$ with
+%   $\rho(A)$\;\nllabel{line:proper-sim}
+%   \KwRet{the result of $V(x)$}\;
+%   \caption{A single-query, zero-knowledge transformation of an
+%     IPCP~\cite[Construction 4]{CFGS22}}\label{alg:single-query}
+% \end{algorithm}
 
-  When $P'$ is honest, then this will simulate $V$ answering all its queries via
-  $\rho$ (which gives the correct answer to every value in $A$); hence $V$ will
-  gave the correct answer by definition.
+% \begin{proof}
+%   We describe the result of $T$ in \cref{alg:single-query}. First, note that
+%   this algorithm is not $T$ directly, but the result of $T(P, V)$. So, what we
+%   require is to show that $L_{T(P, V)} = L_{(P, V)}$, and to briefly demonstrate
+%   why $V'$ runs in polynomial time.
 
-  When $P'$ is dishonest, then we know $\rho$ is a univariate polynomial with
-  degree at most $dq$ (since $\rho = R\gamma$). Further note that our random choice of
-  both $t$ and $\gamma$ means that $\gamma(t)$ is uniformly distributed over
-  $\mathbb{F}^{m}$. Since $\rho$ is a univariate polynomial with degree at most
-  $mdq$, then it can agree with $R \circ \gamma$ at most $mdq$ distinct points without
-  being equal. Hence, since we query it at a random point in $\mathbb{F} \setminus S$,
-  if the check in line~\ref{line:check-rho} passes with at probability bigger
-  than $\frac{mdq}{\abs{\mathbb{F}} - q}$, it must mean that $\rho = R\gamma$ on more
-  than $mdq$ points. Thus, $\rho = R \circ \gamma$ and so we will get the correct answer for
-  all of our queries on $A$. If it passes with a lower probability, then we are
-  within our soundness error overall and so the result does not matter.
-\end{proof}
+%   To show $V'$ runs in polynomial time, note that the random choices are in
+%   polynomial time (as a reminder, random choice is polynomial relative to the
+%   length), simulating $V$ is polynomial time through the definition of $V$, and
+%   computing polynomials can be done in polynomial time as well.
 
-Next, we show that \cref{alg:single-query} also preserves zero knowledge. This
-is important for us because zero knowledge is \emph{actually} what we care
-about. Like with most other bounds, the zero-knowledge query bound of the
-one-query algorithm is lower than the query bound of the original algorithm.
-This is because with the one-query transformation, more information is
-necessarily released by the prover; thus a malicious verifier needs fewer
-queries to extract nontrivial information out of the proof.
+%   When $P'$ is honest, then this will simulate $V$ answering all its queries via
+%   $\rho$ (which gives the correct answer to every value in $A$); hence $V$ will
+%   gave the correct answer by definition.
 
-\begin{thm}[{\cite[Prop.\ 9.2]{CFGS22}}]\label{thm:one-query-pzk}
-  If $(P, V)$ is perfect zero-knowledge with query bound $b$, then $T(P, V)$
-  (where $T$ is the transformation from \cref{thm:ipcp-one-query}) is perfect
-  zero-knowledge with query bound $b - (mdq + 1)$.
-\end{thm}
+%   When $P'$ is dishonest, then we know $\rho$ is a univariate polynomial with
+%   degree at most $dq$ (since $\rho = R\gamma$). Further note that our random choice of
+%   both $t$ and $\gamma$ means that $\gamma(t)$ is uniformly distributed over
+%   $\mathbb{F}^{m}$. Since $\rho$ is a univariate polynomial with degree at most
+%   $mdq$, then it can agree with $R \circ \gamma$ at most $mdq$ distinct points without
+%   being equal. Hence, since we query it at a random point in $\mathbb{F} \setminus S$,
+%   if the check in line~\ref{line:check-rho} passes with at probability bigger
+%   than $\frac{mdq}{\abs{\mathbb{F}} - q}$, it must mean that $\rho = R\gamma$ on more
+%   than $mdq$ points. Thus, $\rho = R \circ \gamma$ and so we will get the correct answer for
+%   all of our queries on $A$. If it passes with a lower probability, then we are
+%   within our soundness error overall and so the result does not matter.
+% \end{proof}
 
-\begin{proof}
-  We again look at \cref{alg:single-query}. First, notice that if we make a
-  query $r \in \gamma(\mathbb{F})$, since $\rho = R\gamma$ we could replace our call to $R$
-  with a call to $\rho(\gamma^{-1}(r))$, and this would no longer count towards our
-  query bound. Further, from what we know of the degree of $\rho$, we know that in
-  the worst case, we would only need $mdq + 1$ queries to $R$ to effectively
-  replicate $\rho$. Hence, if we reduce our query bound by $mdq + 1$, it follows
-  that we can still effectively simulate the interaction of $P'$ and $V'$, since
-  we know $P$ and $V$ have a perfect simulator.
-\end{proof}
+% Next, we show that \cref{alg:single-query} also preserves zero knowledge. This
+% is important for us because zero knowledge is \emph{actually} what we care
+% about. Like with most other bounds, the zero-knowledge query bound of the
+% one-query algorithm is lower than the query bound of the original algorithm.
+% This is because with the one-query transformation, more information is
+% necessarily released by the prover; thus a malicious verifier needs fewer
+% queries to extract nontrivial information out of the proof.
 
-\section{A lifting algorithm}\label{sec:lift-ipcp-mip}
+% \begin{thm}[{\cite[Prop.\ 9.2]{CFGS22}}]\label{thm:one-query-pzk}
+%   If $(P, V)$ is perfect zero-knowledge with query bound $b$, then $T(P, V)$
+%   (where $T$ is the transformation from \cref{thm:ipcp-one-query}) is perfect
+%   zero-knowledge with query bound $b - (mdq + 1)$.
+% \end{thm}
 
-Next, we construct an algorithm that can transform a single-query IPCP oracle
-into a MIP* program. Like before, we only give the result of the algorithm on a
-given input $(P', V')$, as opposed to the transformation algorithm itself.
-Interestingly, the transformed MIP* requires only one more round than the
-non-transformed IPCP\@. This is thanks to the algorithm we showed earlier in
-\cref{sec:reduce-queries}; that way we need only deal with a single oracle query
-besides the interactive-proof portion of the simulation.
+% \begin{proof}
+%   We again look at \cref{alg:single-query}. First, notice that if we make a
+%   query $r \in \gamma(\mathbb{F})$, since $\rho = R\gamma$ we could replace our call to $R$
+%   with a call to $\rho(\gamma^{-1}(r))$, and this would no longer count towards our
+%   query bound. Further, from what we know of the degree of $\rho$, we know that in
+%   the worst case, we would only need $mdq + 1$ queries to $R$ to effectively
+%   replicate $\rho$. Hence, if we reduce our query bound by $mdq + 1$, it follows
+%   that we can still effectively simulate the interaction of $P'$ and $V'$, since
+%   we know $P$ and $V$ have a perfect simulator.
+% \end{proof}
 
-\begin{thm}[{\cite[Lemma 9.1]{CFGS22}}]\label{thm:lift-ipcp-mip}
-  Let $L$ be a language, let $m, d, q \in \mathbb{N}$, and let $\mathbb{F}$ be a finite
-  field of size $\poly(m, d, q)$ sufficiently large. Then, there exists a
-  transformation
-  \begin{equation*}
-    T: \IPCP\ldipcp{r}{\ell}{c}{q}{\mathbb{F}[X_{1, \ldots, m}^{\le d}]}{\varepsilon}
-    \rightarrow \MIP*\mipstar{2}{r+1}{c}{1 - \frac{1}{\poly(m, d)}}.
-  \end{equation*}
-  such that $(P', V')$ and $T(P', V')$ recognize the same language.
+% \section{A lifting algorithm}\label{sec:lift-ipcp-mip}
 
-  Further, if the IPCP $(P', V')$ is zero-knowledge with query bound
-  $b \ge 2(q+1)md + 3$, then the $\MIP*$ $(P_{1}, P_{2}, V)$ is zero-knowledge.
-\end{thm}
+% Next, we construct an algorithm that can transform a single-query IPCP oracle
+% into a MIP* program. Like before, we only give the result of the algorithm on a
+% given input $(P', V')$, as opposed to the transformation algorithm itself.
+% Interestingly, the transformed MIP* requires only one more round than the
+% non-transformed IPCP\@. This is thanks to the algorithm we showed earlier in
+% \cref{sec:reduce-queries}; that way we need only deal with a single oracle query
+% besides the interactive-proof portion of the simulation.
 
-\begin{algorithm}[htbp]
-  $V$: Choose a random $r \in \{0, 1\}$\;
-  \eIf{$r = 0$}{
-    \FIXME{What are we testing?}\; % This is a low-degree IPCP so that's probably it
-    $V$: Perform the low multidegree test from \cref{thm:quantum-low-degree}\;
-  }{
-    \tcp{IPCP emulation}
-    $P_{1}$ and $V$ emulate the interaction of the IPCP $(P'', V'') = T(P', V')$
-    (see \cref{thm:ipcp-one-query})\;
-    The above emulation generates a uniform $\beta \in \mathbb{F}^{m}$, and a
-    $c \in \mathbb{F}$ such that with probability $1 - \varepsilon$, $x \in L$ if and only if
-    $\mathcal{O}(\beta) = c$\;
-    $V$: send $\beta$ to $P_{2}$\;
-    $P_{2}$: reply with $z = \mathcal{O}(\beta)$\;
-    \eIf{$c = z$}{
-      \Accept\;
-    }{
-      \Reject\;
-    }
-  }
-  \caption{Construction of a $\MIP*$ from an IPCP~\cite[Construction 2]{CFGS22}}\label{alg:mip-from-ipcp}
-\end{algorithm}
+% \begin{thm}[{\cite[Lemma 9.1]{CFGS22}}]\label{thm:lift-ipcp-mip}
+%   Let $L$ be a language, let $m, d, q \in \mathbb{N}$, and let $\mathbb{F}$ be a finite
+%   field of size $\poly(m, d, q)$ sufficiently large. Then, there exists a
+%   transformation
+%   \begin{equation*}
+%     T: \IPCP\ldipcp{r}{\ell}{c}{q}{\mathbb{F}[X_{1, \ldots, m}^{\le d}]}{\varepsilon}
+%     \rightarrow \MIP*\mipstar{2}{r+1}{c}{1 - \frac{1}{\poly(m, d)}}.
+%   \end{equation*}
+%   such that $(P', V')$ and $T(P', V')$ recognize the same language.
 
-In order to prove this theorem, we break it down in to two sections: the first
-deals with the correctness of the algorithm, and the second demonstrates that it
-is zero-knowledge.
+%   Further, if the IPCP $(P', V')$ is zero-knowledge with query bound
+%   $b \ge 2(q+1)md + 3$, then the $\MIP*$ $(P_{1}, P_{2}, V)$ is zero-knowledge.
+% \end{thm}
 
-\subsection{Correctness of \cref{alg:mip-from-ipcp}}\label{sec:mip-ipcp-correct}
+% \begin{algorithm}[htbp]
+%   $V$: Choose a random $r \in \{0, 1\}$\;
+%   \eIf{$r = 0$}{
+%     $V$: Perform the low multidegree test from \cref{thm:quantum-low-degree}\;
+%   }{
+%     \tcp{IPCP emulation}
+%     $P_{1}$ and $V$ emulate the interaction of the IPCP $(P'', V'') = T(P', V')$
+%     (see \cref{thm:ipcp-one-query})\;
+%     The above emulation generates a uniform $\beta \in \mathbb{F}^{m}$, and a
+%     $c \in \mathbb{F}$ such that with probability $1 - \varepsilon$, $x \in L$ if and only if
+%     $\mathcal{O}(\beta) = c$\;
+%     $V$: send $\beta$ to $P_{2}$\;
+%     $P_{2}$: reply with $z = \mathcal{O}(\beta)$\;
+%     \eIf{$c = z$}{
+%       \Accept\;
+%     }{
+%       \Reject\;
+%     }
+%   }
+%   \caption{Construction of a $\MIP*$ from an IPCP~\cite[Construction 2]{CFGS22}}\label{alg:mip-from-ipcp}
+% \end{algorithm}
 
-\begin{lemma}\label{lem:mip-ipcp-correct}
-  For any IPCP $(P', V')$, \cref{alg:mip-from-ipcp} is a multi-prover
-  interactive proof for the same language as $(P', V')$.
-\end{lemma}
+% In order to prove this theorem, we break it down in to two sections: the first
+% deals with the correctness of the algorithm, and the second demonstrates that it
+% is zero-knowledge.
 
-\begin{proof}
-  First, we show \cref{alg:mip-from-ipcp} runs in polynomial time. If $r = 0$,
-  then \cref{thm:quantum-low-degree} tells us that the low-multidegree test runs
-  in polynomial time. If $r = 1$, then we know $V''$ runs in polynomial time by
-  \cref{thm:ipcp-one-query}; as does sending $\beta$ and checking if $c = z$. Hence,
-  the entire algorithm runs in polynomial time.
+% \subsection{Correctness of \cref{alg:mip-from-ipcp}}\label{sec:mip-ipcp-correct}
 
-  Next, we show if $x \in L$, then $(P_{1}, P_{2}, V)$ will accept with
-  probability at lest $2/3$. If $r = 0$ then \TODO{}. If $r = 1$, then we know
-  that the IPCP emulation will always succeed (from the definition of an IPCP).
-  Further, since $P_{2}$ is honest it will respond with $z = R(\beta) = c$ and thus
-  the algorithm will accept.
+% \begin{lemma}\label{lem:mip-ipcp-correct}
+%   For any IPCP $(P', V')$, \cref{alg:mip-from-ipcp} is a multi-prover
+%   interactive proof for the same language as $(P', V')$.
+% \end{lemma}
 
-  We now show that for any $x \notin L$ and any provers $\hat{P}_{1}$ and
-  $\hat{P}_{2}$, \cref{alg:mip-from-ipcp} will reject with probability at least
-  $2/3$. We will show this by contradiction: assume
-  $(\tilde{P}_{1}, \tilde{P}_{2})$ are provers that succeed with probability at
-  least $1 - \delta/2$, for some small $\delta = 1/\poly(md)$.
+% \begin{proof}
+%   First, we show \cref{alg:mip-from-ipcp} runs in polynomial time. If $r = 0$,
+%   then \cref{thm:quantum-low-degree} tells us that the low-multidegree test runs
+%   in polynomial time. If $r = 1$, then we know $V''$ runs in polynomial time by
+%   \cref{thm:ipcp-one-query}; as does sending $\beta$ and checking if $c = z$. Hence,
+%   the entire algorithm runs in polynomial time.
 
-  In the case where $r = 0$, since $V$ (by assumption) accepts with probability
-  $1 - \delta/2$ overall, and since $r = 0$ exactly half of the time, it follows that
-  the low-degree test must accept with probability at least $1 - \delta$. When
-  performing this strategy, $P_{1}$ and $P_{2}$ make a measurement of their
-  entangled state $\ket{\psi}$; define
-  $\{A_{1,\alpha}^{z}\}_{z \in \mathbb{F},\alpha \in \mathbb{F}^{m}}$ and
-  $\{A_{2,\alpha}^{Z}\}_{z \in \mathbb{F},\alpha \in \mathbb{F}^{m}}$ to be the measurements
-  made by $\tilde{P}_{1}$ and $\tilde{P}_{2}$, respectively, when performing
-  this test.
+%   Next, we show if $x \in L$, then $(P_{1}, P_{2}, V)$ will accept with
+%   probability at lest $2/3$. If $r = 0$ then \TODO{}. If $r = 1$, then we know
+%   that the IPCP emulation will always succeed (from the definition of an IPCP).
+%   Further, since $P_{2}$ is honest it will respond with $z = R(\beta) = c$ and thus
+%   the algorithm will accept.
 
-  \TODO{From \cref{thm:quantum-low-degree}, we construct low-degree measurement
-    from earlier measurements; this will fool the low-degree test with high
-    probability and since it is within $v$ of the right answer this will result
-    in contradiction of the IPCP's soundness}
+%   We now show that for any $x \notin L$ and any provers $\hat{P}_{1}$ and
+%   $\hat{P}_{2}$, \cref{alg:mip-from-ipcp} will reject with probability at least
+%   $2/3$. We will show this by contradiction: assume
+%   $(\tilde{P}_{1}, \tilde{P}_{2})$ are provers that succeed with probability at
+%   least $1 - \delta/2$, for some small $\delta = 1/\poly(md)$.
 
-  With these low-multidegree measurements, our plan is to construct a
-  $\tilde{P}_{2'}$ such that $\tilde{P}_{2'}$ uses only low-multidegree
-  measurements and further that $\ang{\tilde{P}_{1}, \tilde{P}_{2'}, V}(x)$ will
-  still accept with probability reasonably close to
-  $\ang{\tilde{P}_{1}, \tilde{P}_{2}, V}(x)$; this will allow us to construct a
-  malicious verifier for the IPCP that contradicts its soundness guarantees.
+%   In the case where $r = 0$, since $V$ (by assumption) accepts with probability
+%   $1 - \delta/2$ overall, and since $r = 0$ exactly half of the time, it follows that
+%   the low-degree test must accept with probability at least $1 - \delta$. When
+%   performing this strategy, $P_{1}$ and $P_{2}$ make a measurement of their
+%   entangled state $\ket{\psi}$; define
+%   $\{A_{1,\alpha}^{z}\}_{z \in \mathbb{F},\alpha \in \mathbb{F}^{m}}$ and
+%   $\{A_{2,\alpha}^{Z}\}_{z \in \mathbb{F},\alpha \in \mathbb{F}^{m}}$ to be the measurements
+%   made by $\tilde{P}_{1}$ and $\tilde{P}_{2}$, respectively, when performing
+%   this test.
 
-  \TODO{Setup, define low-degree measurements}
+%   \TODO{From \cref{thm:quantum-low-degree}, we construct low-degree measurement
+%     from earlier measurements; this will fool the low-degree test with high
+%     probability and since it is within $v$ of the right answer this will result
+%     in contradiction of the IPCP's soundness}
 
-  \begin{align}
-    \sigma_{B} &= \tr_{\mathcal{B}}\mleft[
-              \underset{\alpha \in \mathbb{F}^{m}}{\mathbb{E}}\sum_{z \in \mathbb{F}}
-              \ket{\alpha}\bra{\alpha}^{\mathcal{A}} \otimes (A_{2,\alpha}^{z} \otimes \Id_{\mathcal{C}})\sigma(A_{2,\alpha}^{z} \otimes \Id_{\mathcal{C}}) \otimes \ket{z}\bra{z}^{\mathcal{D}}
-            \mright]\label{eqn:sigma-b} \\
-    \sigma_{T} &= \tr_{\mathcal{B}}\mleft[
-              \underset{\alpha \in \mathbb{F}^{m}}{\mathbb{E}}\sum_{z \in \mathbb{F}}
-              \ket{\alpha}\bra{\alpha}^{\mathcal{A}} \otimes (L_{\alpha}^{z} \otimes \Id_{\mathcal{C}})\sigma(L_{\alpha}^{z} \otimes \Id_{\mathcal{C}}) \otimes \ket{z}\bra{z}^{\mathcal{D}}
-            \mright]\label{eqn:sigma-t}
-  \end{align}
+%   With these low-multidegree measurements, our plan is to construct a
+%   $\tilde{P}_{2'}$ such that $\tilde{P}_{2'}$ uses only low-multidegree
+%   measurements and further that $\ang{\tilde{P}_{1}, \tilde{P}_{2'}, V}(x)$ will
+%   still accept with probability reasonably close to
+%   $\ang{\tilde{P}_{1}, \tilde{P}_{2}, V}(x)$; this will allow us to construct a
+%   malicious verifier for the IPCP that contradicts its soundness guarantees.
 
-  \TODO{}
+%   \TODO{Setup, define low-degree measurements}
 
-  \TODO{Does all this algebraic shenaniganry belong in an appendix?}
-  By the definition of $\sigma_{B}$ and $\sigma_{T}$, we have
-  \begin{equation}\label{eqn:prob-to-sigma}
-    \abs*{\mathbb{P}[\ang{\tilde{P}_{1}, \tilde{P}_{2}, V} = 1] - \mathbb{P}[\ang{\tilde{P}_{1}, \tilde{P}_{2'}, V} = 1]}
-    \le \frac{1}{2}\norm{\sigma_{B} - \sigma_{T}}_{1}.
-  \end{equation}
-  Substituting in the values from \cref{eqn:sigma-b,eqn:sigma-t}, we get
-  \FIXME{This equation is way too long}
-  \begin{multline}\label{eqn:sigma-add-eqns}
-    \frac{1}{2}\norm{\sigma_{B} - \sigma_{T}} = \\
-    \frac{1}{2}\norm*{
-      \tr_{\mathcal{B}}\underset{\alpha \in \mathbb{F}^{m}}{\mathbb{E}}\sum_{z \in \mathbb{F}}
-      \ket{\alpha}\bra{\alpha}^{\mathcal{A}} \otimes \mleft(
-        (A_{2,\alpha}^{z} \otimes \Id_{\mathcal{C}})\sigma(A_{2,\alpha}^{z} \otimes \Id_{\mathcal{C}}) -
-        (L_{\alpha}^{z} \otimes \Id_{\mathcal{C}})\sigma(L_{\alpha}^{z} \otimes \Id_{\mathcal{C}})
-      \mright) \otimes \ket{z}\bra{z}^{\mathcal{D}}
-    }_{1}.
-  \end{multline}
-  Because \TODO{Why?}, \cref{eqn:sigma-add-eqns} simplifies to
-  \begin{equation}
-    \frac{1}{2}\norm{\sigma_{B} - \sigma_{T}} \le
-    \frac{1}{2}\underset{\alpha \in \mathbb{F}^{m}}{\mathbb{E}}\norm*{\sum_{z \in \mathbb{F}}
-        (A_{2,\alpha}^{z} \otimes \Id_{\mathcal{C}})\sigma(A_{2,\alpha}^{z} \otimes \Id_{\mathcal{C}}) -
-        (L_{\alpha}^{z} \otimes \Id_{\mathcal{C}})\sigma(L_{\alpha}^{z} \otimes \Id_{\mathcal{C}})
-        \otimes \ket{z}\bra{z}
-    }_{1}.
-  \end{equation}
-  We can apply \cref{lem:gentle-measurement} to \cref{eqn:sigma-add-eqns} to get
-  us
-  \begin{equation}
-    \frac{1}{2}\norm{\sigma_{B} - \sigma_{T}} \le
-    \underset{\alpha \in \mathbb{F}^{m}}{\mathbb{E}}\sqrt{
-      \sum_{z \in \mathbb{F}}\tr\mleft((A_{2,\alpha}^{z} - L_{\alpha}^{z})\rho(A_{2,\alpha}^{z} - L_{\alpha}^{z})^{\dagger}\mright)
-    }.
-  \end{equation}
-  The square root function is concave down; hence we can apply Jensen's
-  inequality (\cref{thm:jensen-inequality}), giving us
-  \begin{equation}
-    \underset{\alpha \in \mathbb{F}^{m}}{\mathbb{E}}\sqrt{
-      \sum_{z \in \mathbb{F}}\tr\mleft((A_{2,\alpha}^{z} - L_{\alpha}^{z})\rho(A_{2,\alpha}^{z} - L_{\alpha}^{z})^{\dagger}\mright)
-    } \le
-    \underset{\alpha \in \mathbb{F}^{m}}{\mathbb{E}}\sqrt{
-      \sum_{z \in \mathbb{F}}\tr\mleft((A_{2,\alpha}^{z} - L_{\alpha}^{z})^{2}\mright)
-    }.
-  \end{equation}
-  Finally, \TODO{Reference CFGS22's equation (3) and claim 1} informs us
-  \begin{equation}\label{eqn:less-than-v}
-    \underset{\alpha \in \mathbb{F}^{m}}{\mathbb{E}}\sqrt{
-      \sum_{z \in \mathbb{F}}\tr\mleft((A_{2,\alpha}^{z} - L_{\alpha}^{z})^{2}\mright)
-    } \le v.
-  \end{equation}
-  Combining \crefrange{eqn:prob-to-sigma}{eqn:less-than-v} tells us that
-  \begin{equation}
-    \abs*{\mathbb{P}[\ang{\tilde{P}_{1}, \tilde{P}_{2}, V} = 1] - \mathbb{P}[\ang{\tilde{P}_{1}, \tilde{P}_{2'}, V} = 1]} \le v.
-  \end{equation}
-  In other words, the difference in the probability of acceptance when we use
-  our low-degree $\tilde{P}_{2'}$ instead of $\tilde{P}_{2}$ is no more than
-  $v$. Since we already said we are choosing $\delta$ small enough such that
-  $v < \frac{1}{2}$, this means that \TODO{Construct $\tilde{P}''$}
-\end{proof}
+%   \begin{align}
+%     \sigma_{B} &= \tr_{\mathcal{B}}\mleft[
+%               \underset{\alpha \in \mathbb{F}^{m}}{\mathbb{E}}\sum_{z \in \mathbb{F}}
+%               \ket{\alpha}\bra{\alpha}^{\mathcal{A}} \otimes (A_{2,\alpha}^{z} \otimes \Id_{\mathcal{C}})\sigma(A_{2,\alpha}^{z} \otimes \Id_{\mathcal{C}}) \otimes \ket{z}\bra{z}^{\mathcal{D}}
+%             \mright]\label{eqn:sigma-b} \\
+%     \sigma_{T} &= \tr_{\mathcal{B}}\mleft[
+%               \underset{\alpha \in \mathbb{F}^{m}}{\mathbb{E}}\sum_{z \in \mathbb{F}}
+%               \ket{\alpha}\bra{\alpha}^{\mathcal{A}} \otimes (L_{\alpha}^{z} \otimes \Id_{\mathcal{C}})\sigma(L_{\alpha}^{z} \otimes \Id_{\mathcal{C}}) \otimes \ket{z}\bra{z}^{\mathcal{D}}
+%             \mright]\label{eqn:sigma-t}
+%   \end{align}
 
-\subsection{\Cref{alg:mip-from-ipcp} preserves
-  zero-knowledge}\label{sec:mip-ipcp-pzk}
+%   \TODO{}
 
-\begin{algorithm}[htbp]
-  Simulate $\tilde{V}$ and respond to its queries as follows\;
-  \uIf{$\tilde{V}$ simulates an IPCP interaction with $P_{1}$}{
-    Run the IPCP simulator for $(P'', \tilde{V})$\;
-  }
-  \uElseIf{$\tilde{V}$ sends a point $\alpha \in \mathbb{F}^{m}$ to either $P_{i}$}{
-    Query $\mathcal{O}$ at $\alpha$\;
-    Respond to $\tilde{V}$ with $\mathcal{O}(\alpha)$\;
-  }
-  \uElseIf{$\tilde{V}$ sends a line $\ell$ to either $P_{i}$}{
-    \For{$i \in [md + 1]$}{
-      Pick a random $p_{i} \in \ell$\;
-      Query $\mathcal{O}$ at $p_{i}$\;
-    }
-    Use the $p_{i}$ to interpolate $R \circ \ell$\;
-    Respond to $\tilde{V}$ with $R \circ \ell$\;
-  }
-  \Else{
-    \Reject\;
-  }
-  \KwRet{The view of $\tilde{V}$}\;
-  \caption{An IPCP verifier $\tilde{V}'$ corresponding to any malicious MIP*
-    verifier $\tilde{V}$~\cite[\defaultS
-    9.4]{CFGS22}}\label{alg:ipcp-corresp-ver}
-\end{algorithm}
+%   \TODO{Does all this algebraic shenaniganry belong in an appendix?}
+%   By the definition of $\sigma_{B}$ and $\sigma_{T}$, we have
+%   \begin{equation}\label{eqn:prob-to-sigma}
+%     \abs*{\mathbb{P}[\ang{\tilde{P}_{1}, \tilde{P}_{2}, V} = 1] - \mathbb{P}[\ang{\tilde{P}_{1}, \tilde{P}_{2'}, V} = 1]}
+%     \le \frac{1}{2}\norm{\sigma_{B} - \sigma_{T}}_{1}.
+%   \end{equation}
+%   Substituting in the values from \cref{eqn:sigma-b,eqn:sigma-t}, we get
+%   \FIXME{This equation is way too long}
+%   \begin{multline}\label{eqn:sigma-add-eqns}
+%     \frac{1}{2}\norm{\sigma_{B} - \sigma_{T}} = \\
+%     \frac{1}{2}\norm*{
+%       \tr_{\mathcal{B}}\underset{\alpha \in \mathbb{F}^{m}}{\mathbb{E}}\sum_{z \in \mathbb{F}}
+%       \ket{\alpha}\bra{\alpha}^{\mathcal{A}} \otimes \mleft(
+%         (A_{2,\alpha}^{z} \otimes \Id_{\mathcal{C}})\sigma(A_{2,\alpha}^{z} \otimes \Id_{\mathcal{C}}) -
+%         (L_{\alpha}^{z} \otimes \Id_{\mathcal{C}})\sigma(L_{\alpha}^{z} \otimes \Id_{\mathcal{C}})
+%       \mright) \otimes \ket{z}\bra{z}^{\mathcal{D}}
+%     }_{1}.
+%   \end{multline}
+%   Because \TODO{Why?}, \cref{eqn:sigma-add-eqns} simplifies to
+%   \begin{equation}
+%     \frac{1}{2}\norm{\sigma_{B} - \sigma_{T}} \le
+%     \frac{1}{2}\underset{\alpha \in \mathbb{F}^{m}}{\mathbb{E}}\norm*{\sum_{z \in \mathbb{F}}
+%         (A_{2,\alpha}^{z} \otimes \Id_{\mathcal{C}})\sigma(A_{2,\alpha}^{z} \otimes \Id_{\mathcal{C}}) -
+%         (L_{\alpha}^{z} \otimes \Id_{\mathcal{C}})\sigma(L_{\alpha}^{z} \otimes \Id_{\mathcal{C}})
+%         \otimes \ket{z}\bra{z}
+%     }_{1}.
+%   \end{equation}
+%   We can apply \cref{lem:gentle-measurement} to \cref{eqn:sigma-add-eqns} to get
+%   us
+%   \begin{equation}
+%     \frac{1}{2}\norm{\sigma_{B} - \sigma_{T}} \le
+%     \underset{\alpha \in \mathbb{F}^{m}}{\mathbb{E}}\sqrt{
+%       \sum_{z \in \mathbb{F}}\tr\mleft((A_{2,\alpha}^{z} - L_{\alpha}^{z})\rho(A_{2,\alpha}^{z} - L_{\alpha}^{z})^{\dagger}\mright)
+%     }.
+%   \end{equation}
+%   The square root function is concave down; hence we can apply Jensen's
+%   inequality (\cref{thm:jensen-inequality}), giving us
+%   \begin{equation}
+%     \underset{\alpha \in \mathbb{F}^{m}}{\mathbb{E}}\sqrt{
+%       \sum_{z \in \mathbb{F}}\tr\mleft((A_{2,\alpha}^{z} - L_{\alpha}^{z})\rho(A_{2,\alpha}^{z} - L_{\alpha}^{z})^{\dagger}\mright)
+%     } \le
+%     \underset{\alpha \in \mathbb{F}^{m}}{\mathbb{E}}\sqrt{
+%       \sum_{z \in \mathbb{F}}\tr\mleft((A_{2,\alpha}^{z} - L_{\alpha}^{z})^{2}\mright)
+%     }.
+%   \end{equation}
+%   Finally, \TODO{Reference CFGS22's equation (3) and claim 1} informs us
+%   \begin{equation}\label{eqn:less-than-v}
+%     \underset{\alpha \in \mathbb{F}^{m}}{\mathbb{E}}\sqrt{
+%       \sum_{z \in \mathbb{F}}\tr\mleft((A_{2,\alpha}^{z} - L_{\alpha}^{z})^{2}\mright)
+%     } \le v.
+%   \end{equation}
+%   Combining \crefrange{eqn:prob-to-sigma}{eqn:less-than-v} tells us that
+%   \begin{equation}
+%     \abs*{\mathbb{P}[\ang{\tilde{P}_{1}, \tilde{P}_{2}, V} = 1] - \mathbb{P}[\ang{\tilde{P}_{1}, \tilde{P}_{2'}, V} = 1]} \le v.
+%   \end{equation}
+%   In other words, the difference in the probability of acceptance when we use
+%   our low-degree $\tilde{P}_{2'}$ instead of $\tilde{P}_{2}$ is no more than
+%   $v$. Since we already said we are choosing $\delta$ small enough such that
+%   $v < \frac{1}{2}$, this means that \TODO{Construct $\tilde{P}''$}
+% \end{proof}
 
-\begin{lemma}\label{lem:sim-mip-works}
-  There exists a simulator for \cref{alg:mip-from-ipcp}.
-\end{lemma}
+% \subsection{\Cref{alg:mip-from-ipcp} preserves
+%   zero-knowledge}\label{sec:mip-ipcp-pzk}
 
-\begin{proof}
-  Instead of constructing a simulator directly, we instead construct an IPCP
-  verifier $\tilde{V}'$ that corresponds to any given malicious MIP* verifier
-  $\tilde{V}$ in \cref{alg:ipcp-corresp-ver}. Because we assume the underlying
-  IPCP can be simulated, it follows that if $\tilde{V}'$ outputs the same view
-  as $\tilde{V}$, then we can run the IPCP simulator on $\tilde{V}'$ and the
-  output of this will be a proper simulation for $\tilde{V}$.
+% \begin{algorithm}[htbp]
+%   Simulate $\tilde{V}$ and respond to its queries as follows\;
+%   \uIf{$\tilde{V}$ simulates an IPCP interaction with $P_{1}$}{
+%     Run the IPCP simulator for $(P'', \tilde{V})$\;
+%   }
+%   \uElseIf{$\tilde{V}$ sends a point $\alpha \in \mathbb{F}^{m}$ to either $P_{i}$}{
+%     Query $\mathcal{O}$ at $\alpha$\;
+%     Respond to $\tilde{V}$ with $\mathcal{O}(\alpha)$\;
+%   }
+%   \uElseIf{$\tilde{V}$ sends a line $\ell$ to either $P_{i}$}{
+%     \For{$i \in [md + 1]$}{
+%       Pick a random $p_{i} \in \ell$\;
+%       Query $\mathcal{O}$ at $p_{i}$\;
+%     }
+%     Use the $p_{i}$ to interpolate $R \circ \ell$\;
+%     Respond to $\tilde{V}$ with $R \circ \ell$\;
+%   }
+%   \Else{
+%     \Reject\;
+%   }
+%   \KwRet{The view of $\tilde{V}$}\;
+%   \caption{An IPCP verifier $\tilde{V}'$ corresponding to any malicious MIP*
+%     verifier $\tilde{V}$~\cite[\defaultS
+%     9.4]{CFGS22}}\label{alg:ipcp-corresp-ver}
+% \end{algorithm}
 
-  We prove that $\tilde{V}'$ returns an identical view to $\tilde{V}$ for each
-  of the cases in \cref{alg:ipcp-corresp-ver}. In the case where $\tilde{V}$
-  simulates an IPCP interaction with $P_{1}$, we simply run the IPCP simulator
-  for $(P'', \tilde{V})$, which exists because $(P'', V'')$ is a perfect
-  zero-knowledge IPCP\@. By the definition of a simulator, this runs in
-  polynomial time and outputs an identically-distributed view to
-  $(P'', \tilde{V})$.
+% \begin{lemma}\label{lem:sim-mip-works}
+%   There exists a simulator for \cref{alg:mip-from-ipcp}.
+% \end{lemma}
 
-  In the case where $\tilde{V}$ sends a point $\alpha \in \mathbb{F}^{m}$, then in
-  \cref{alg:mip-from-ipcp}, we know that $P_{2}$ will respond with $z = \mathcal{O}(\beta)$.
-  Hence, since we still have access to the oracle $\mathcal{O}$ in the IPCP model, we can
-  query the oracle directly, giving us the response from $P_{2}$.
+% \begin{proof}
+%   Instead of constructing a simulator directly, we instead construct an IPCP
+%   verifier $\tilde{V}'$ that corresponds to any given malicious MIP* verifier
+%   $\tilde{V}$ in \cref{alg:ipcp-corresp-ver}. Because we assume the underlying
+%   IPCP can be simulated, it follows that if $\tilde{V}'$ outputs the same view
+%   as $\tilde{V}$, then we can run the IPCP simulator on $\tilde{V}'$ and the
+%   output of this will be a proper simulation for $\tilde{V}$.
 
-  In the case where $\tilde{V}$ sends a line $\ell$, \TODO{}.
+%   We prove that $\tilde{V}'$ returns an identical view to $\tilde{V}$ for each
+%   of the cases in \cref{alg:ipcp-corresp-ver}. In the case where $\tilde{V}$
+%   simulates an IPCP interaction with $P_{1}$, we simply run the IPCP simulator
+%   for $(P'', \tilde{V})$, which exists because $(P'', V'')$ is a perfect
+%   zero-knowledge IPCP\@. By the definition of a simulator, this runs in
+%   polynomial time and outputs an identically-distributed view to
+%   $(P'', \tilde{V})$.
 
-  If $\tilde{V}$ sends anything outside the above cases, it is immediately
-  obvious to the honest provers that this verifier is malicious and thus the
-  provers will abort and refuse to answer further.
+%   In the case where $\tilde{V}$ sends a point $\alpha \in \mathbb{F}^{m}$, then in
+%   \cref{alg:mip-from-ipcp}, we know that $P_{2}$ will respond with $z = \mathcal{O}(\beta)$.
+%   Hence, since we still have access to the oracle $\mathcal{O}$ in the IPCP model, we can
+%   query the oracle directly, giving us the response from $P_{2}$.
 
-  Since \cref{alg:ipcp-corresp-ver} can reconstruct the view of the verifier in
-  \cref{alg:mip-from-ipcp}, its simulator can therefore reconstruct the view of
-  \cref{alg:mip-from-ipcp} as well. Hence, \cref{alg:mip-from-ipcp} is perfect
-  zero-knowledge.
-\end{proof}
+%   In the case where $\tilde{V}$ sends a line $\ell$, \TODO{}.
+
+%   If $\tilde{V}$ sends anything outside the above cases, it is immediately
+%   obvious to the honest provers that this verifier is malicious and thus the
+%   provers will abort and refuse to answer further.
+
+%   Since \cref{alg:ipcp-corresp-ver} can reconstruct the view of the verifier in
+%   \cref{alg:mip-from-ipcp}, its simulator can therefore reconstruct the view of
+%   \cref{alg:mip-from-ipcp} as well. Hence, \cref{alg:mip-from-ipcp} is perfect
+%   zero-knowledge.
+% \end{proof}
 
 \chapter{Low-degree zero-knowledge IPCPs}\label{chap:ipcp-zero-knowledge}
 
 Now that we can construct a zero-knowledge $\MIP*$ instance from a
 zero-knowledge IPCP, all that remains is to show that $\NEXP \subseteq \PZKIPCP$. From
-there, we will be able to leverage \cref{thm:lift-ipcp-mip} to demonstrate
+there, we will be able to leverage~\cite[Lemma 9.1]{CFGS22} to demonstrate
 $\NEXP \subseteq \PZKMIP*$.
 
 % TODO: Should this be moved to the AQC section?
@@ -4942,7 +4959,7 @@ our total queries, we will not recieve \emph{any} information about $R(X)$.
 
 % TODO: Define the polynomial summation problem
 
-\begin{lemma}[{\cite[Lemma 12.1]{CFGS22}}]
+\begin{lemma}[{\cite[Lemma 12.1]{CFGS22}}]\label{lem:sum-c-z}
   % TODO: Better notation for matrices (more standard M_{r,c}(\mathbb{F}))
   Let $\mathbb{F}$ be a field, $m, k, d, d' \in \mathbb{N}$, and $G, K, L$ be finite
   subsets of $\mathbb{F}$ such that $K \subseteq L$, $d' \ge \abs{G} - 2$, and
@@ -5062,20 +5079,20 @@ our total queries, we will not recieve \emph{any} information about $R(X)$.
   as desired.
 \end{proof}
 
-\begin{cor}[{\cite[Corollary 12.2]{CFGS22}}]
+\begin{cor}[{\cite[Corollary 12.2]{CFGS22}}]\label{cor:sum-c-z}
   Let $\mathbb{F}$ be a finite field, $G \subseteq \mathbb{F}$, and $d, d' \in \mathbb{N}$ with
   $d' \ge 2(\abs{G} - 1)$. If $S \subseteq \mathbb{F}^{m+k}$ is such that there exist
   $(c_{\alpha})_{\alpha \in \mathbb{F}^{m}}$ and $(d_{\beta})_{\beta \in \mathbb{F}^{m+k}}$ such that
   \begin{enumerate}
     \item for all $Z \in \mathbb{F}[X_{1, \ldots, m}^{\le d}, Y_{1, \ldots, k}^{\le d}]$ it
           holds that
-          \begin{equation}
+          \begin{equation}\label{eqn:sum-c-z-d-z}
             \sum_{\alpha \in \mathbb{F}^{m}}c_{\alpha}\sum_{y \in G^{k}}Z(\alpha, y) = \sum_{q \in S}d_{q}Z(q),
           \end{equation}
           and
     \item there exists $Z' \in \mathbb{F}[X_{1, \ldots, m}^{\le d}, Y_{1, \ldots, k}^{\le d}]$
           such that
-          \begin{equation}
+          \begin{equation}\label{eqn:sum-c-z-zero}
             \sum_{\alpha \in \mathbb{F}^{m}}c_{\alpha}\sum_{y \in G^{k}}Z'(\alpha, y) = 0,
           \end{equation}
   \end{enumerate}
@@ -5096,7 +5113,6 @@ $R(X) = \sum_{\beta \in G^{k}}Z(X, \beta)$.
   $d' \ge 2(\abs{G} - 1)$. Let $Q$ be a subset of $\mathbb{F}^{m+k}$ with
   $\abs{Q} \le \abs{G}^{k}$, and let $Z$ be uniformly random in
   $\mathbb{F}[X_{1, \ldots, m}^{\le d}, Y_{1, \ldots, k}^{\le d'}]$. Then, the random
-  % FIXME: Better notation for these
   variables $(\sum_{y \in G^{k}}Z(\alpha, y))_{\alpha \in \mathbb{F}^{m}}$ and $(Z(q))_{q \in Q}$
   are independent.
 \end{cor}
@@ -5104,8 +5120,8 @@ $R(X) = \sum_{\beta \in G^{k}}Z(X, \beta)$.
 \begin{proof}
   We will leverage \cref{thm:lin-indep-stat-indep} that we proved earlier. Now,
   consider the vector space
-  \begin{equation} % FIXME: Holy cow this is *ugly* (and exceptionally unclear)
-    \mleft\{
+  \begin{equation}
+    V = \mleft\{
       \mleft(
         (Z(\gamma))_{\gamma \in \mathbb{F}^{m+k}}, \mleft(\sum_{y \in G^{k}}Z(\alpha, y)\mright)_{\alpha \in \mathbb{F}^{m}}
       \mright)
@@ -5113,9 +5129,19 @@ $R(X) = \sum_{\beta \in G^{k}}Z(X, \beta)$.
       Z \in \mathbb{F}[X_{1, \ldots, m}^{\le d}, Y_{1, \ldots, k}^{\le d'}]
     \mright\}
   \end{equation}
-  This is a vector space over $\mathbb{F}$ with domain
-  $\mathbb{F}^{m+k} \cup \mathbb{F}^{m}$. % FIXME: What on earth do they mean "domain"?
-  % TODO
+  This is a vector space over $\mathbb{F}$ with basis
+  $\{e_{i} \mid i \in \mathbb{F}^{m+k} \sqcup \mathbb{F}^{m}\}$.
+
+  Consider the subsets indexed by $\mathbb{F}^{m}$ and $Q \subseteq \mathbb{F}^{m+k}$.
+  As per \cref{thm:lin-indep-stat-indep}, we want to show there does not exist a
+  $c \in V|_{\mathbb{F}^{m}}$ and $d \in V|_{Q}$ such that for all $w \in V$,
+  $c \cdot w|_{\mathbb{F}^{m}} = d \cdot w|_{Q}$ and for some $w \in V$,
+  $c \cdot w|_{\mathbb{F}^{m}} = 0$. Expanding these equations out given our
+  definition of $V$, we get exactly \cref{eqn:sum-c-z-d-z,eqn:sum-c-z-zero}.
+  However, \cref{cor:sum-c-z} tells us that this can only be true if
+  $\abs{Q} > \abs{G}^{k}$. But we assumed $\abs{Q} \le \abs{G}^{k}$, so there
+  cannot exist any such $c$ or $d$. Hence, these two random variables are
+  statistically independent.
 \end{proof}
 
 % TODO: Additional theorem that links this to algebraic query complexity somehow
@@ -5138,16 +5164,13 @@ commit to an entire polynomial. This is the setting in which \emph{algebraic
   (\cref{sec:alg-query-complexity}) in commitment schemes}
 
 \begin{algorithm}[htbp]
-  \TODO{Should bring in single-element commitment scheme} \\
   \KwIn{A polynomial $Q \in \mathbb{F}[X_{1, \ldots, m}^{\le d_{Q}}]$}
   Let $K \subseteq \mathbb{F}$ with $\abs{K} = d + 1$\;
   \For{$\alpha \in K^{m}$}{
     sample a random $B^{\alpha} \in \mathbb{F}^{n}$ such that
     $\sum_{i=1}^{m}B^{\alpha}_{i} = Q(\alpha)$\;
   }
-  \FIXME{What on earth is $G$?}
   Define $B\colon K^{m} \times G^{k} \rightarrow \mathbb{F}$ by $B(\alpha, x) = B^{\alpha}(x)$\;
-  \TODO{$d_{Q}$ vs $d$}
   Define $\hat{B}\colon \mathbb{F}^{m} \times \mathbb{F}^{k} \rightarrow \mathbb{F}$ to be a
   low-degree extension of
   $B$\tcc*{Note: $P \in \mathbb{F}[X_{1, \ldots, m}^{\le d_{Q}}, Y_{1, \ldots, m}^{\le d}]$}
@@ -5287,10 +5310,6 @@ iteration of the protocol when the answer is affirmative and $P$ is honest.
 
 \subsection{Making the sumcheck protocol zero-knowledge}
 
-% TODO: Mention that in 7.1, both P and V get F, but here only P does (for
-% zero-knowledge)
-% TODO: Note that this isn't /perfect/ zero-knowledge: a single evaluation of F
-% is leaked as part of the protocol
 \begin{thm}[{\cite[Theorem 13.3]{CFGS22}}]\index{zero-knowledge proof!for sumcheck}\label{thm:zk-sumcheck}
   % TODO
   There exists a zero-knowledge variant of \cref{alg:sumcheck-std}.
@@ -5302,7 +5321,7 @@ iteration of the protocol when the answer is affirmative and $P$ is honest.
   \KwIn{A polynomial $F \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]$ as an oracle to $P$}
   \KwOut{Whether $\sum_{x \in H^{m}}F(x) = a$}
   $P$: draw random
-  $Z \in \mathbb{F}[X_{1, \ldots, m}^{\le d}, Y_{1, \ldots, m}^{\le 2\lambda}]$\;
+  $Z \in \mathbb{F}[X_{1, \ldots, m}^{\le d}, Y_{1, \ldots, m}^{\le 2\lambda}]$\;\nllabel{line:p-pick-z}
   $P$: draw random $A \in \mathbb{F}[Y_{1, \ldots, k}^{\le 2\lambda}]$\;
   $P$: send the polynomial
   \[
@@ -5386,9 +5405,50 @@ second will show that it is in fact zero-knowledge.
   $P$ will always cause the sumcheck in line~\ref{line:sumcheck-2} to succeed if
   and only if $(F, H, a)$ is valid.
 
-  If $P$ is dishonest, things get trickier. Fix some
-  $F \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]$ such that $\sum_{\alpha \in H^{m}}F(\alpha) \ne a$, and fix
-  some $Z \in \mathbb{F}[X_{1, \ldots, m+k}^{\le d}]$. Define
+  \begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[>=Stealth]
+      \node (A) at (0, 0) {$(Z, a) \notin \text{sumcheck}$};
+      \node[draw,rectangle,align=center] (B) at (0, -2) {RNG \\ $\rho_{1}$};
+      \node[draw,rectangle,align=center] (C) at (0, -4) {Sumcheck IP \\ \cref{alg:sumcheck-std}};
+      \node[draw,rectangle,align=center] (D) at (0, -6) {$w$ from $\tilde{P}$};
+      \node[draw,rectangle,align=center] (E) at (1, -8) {Sumcheck IP \\ \cref{alg:sumcheck-std}};
+      \node[draw,circle] (T1) at (3, -2) {T};
+      \node[draw,circle] (T2) at (-4, -4) {T};
+      \node[draw,circle] (T3) at (0, -10) {T};
+      \node[draw,circle] (F1) at (4, -4) {F};
+      \node[draw,circle] (F2) at (-2, -8) {F};
+      \node[draw,circle] (F3) at (2, -10) {F};
+      \draw[->] (A) to (B);
+      \draw[->] (B) to (C);
+      \draw[->] (B) to
+        node[above,align=center] {\small{sumcheck} \\ \small{correct}}
+        node[below] {$\frac{1}{\abs{\mathbb{F}} - 1}$}
+      (T1);
+      \draw[->] (C) to (D);
+      \draw[->] (C) to (F1);
+      \draw[->] (C) to
+        node[above,align=center] {\small{true claim}}
+        node[below] {$\frac{md}{\abs{I}}$}
+      (T2);
+      \draw[->] (D) to (E);
+      \draw[->] (D) to (F2);
+      \draw[->] (E) to
+        node[left] {$\frac{kd+1}{\abs{\mathbb{F}}}$}
+      (T3);
+      \draw[->] (E) to (F3);
+    \end{tikzpicture}
+    \caption{The decision tree for \cref{alg:zk-sumcheck} given a false
+      input}\label{fig:sumcheck-tree}
+  \end{figure}
+
+  If $P$ is dishonest, things get trickier. First, note that we have described
+  the relevant portions of the path through \cref{alg:zk-sumcheck} as a decision
+  tree in \cref{fig:sumcheck-tree}.
+
+  Fix some $F \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]$ such that
+  $\sum_{\alpha \in H^{m}}F(\alpha) \ne a$, and fix some $Z \in \mathbb{F}[X_{1, \ldots, m+k}^{\le d}]$.
+  Define
   \begin{align*}
     \hat{a} &= \sum_{\alpha \in H^{m}}F(\alpha) \\
     \hat{z} &= \sum_{\alpha \in H^{m}}\sum_{\beta \in G^{k}}Z(\alpha, \beta).
@@ -5409,9 +5469,9 @@ second will show that it is in fact zero-knowledge.
   \end{align}
   and if $z = \hat{z}$ the above probabilities are 0.
 
-  Hence, by the soundness guarantee of \cref{alg:sumcheck-std}, \TODO{}
-
-  \FIXME{Make clear this is conditional on the earlier bits}
+  Hence, by the soundness guarantee of \cref{alg:sumcheck-std}, if the presented
+  sumcheck equation is incorrect then the subroutine will output a correct
+  equation with probability at most $\frac{md}{\abs{I}}$.
 
   Next, we split into two cases: whether or not $P$ sends
   $w = \sum_{\beta \in G^{k}}Z(c, \beta)$. In the case where $P$ sends
@@ -5434,34 +5494,46 @@ second will show that it is in fact zero-knowledge.
   \end{align*}
   regardless of $\rho_{1}$.
 
-  In total, the probability that we accept given incorrect input is the
-  probability that the verifier does not reject in line~\ref{line:sumcheck-1}
-  and $\rho_{1}F(c) + \sum_{\beta \in G^{k}}Z(c, \beta) = g_{m}(c_{m})$, or the verifier in
-  line~\ref{line:sumcheck-2} accepts and
-  $F(c) = \frac{g_{m}(c_{m}) - w}{\rho_{1}}$. \TODO{Wrap up all the individual
-    probabilities into one total probability (Boole's inequality)}
+  Since $P$ is assumed to be malicious, we have to assume (in order to acquire
+  an upper bound on when the input is incorrectly accepted) that it will
+  therefore always send $w \ne \sum_{\beta \in G^{k}}Z(c, \beta)$, since that has a lower
+  probability of being rejected.
+
+  In total, the probability that we accept given incorrect input is, based on
+  the decision tree from \cref{fig:sumcheck-tree}, bounded above by
+  \begin{equation}
+    \frac{1}{\abs{\mathbb{F}} - 1} + \mleft(1 - \frac{1}{\abs{\mathbb{F}} - 1}\mright)\mleft(
+      \frac{md}{\abs{I}} + \mleft(1 - \frac{md}{\abs{I}}\mright)\mleft(
+        \frac{kd + 1}{\abs{\mathbb{F}}}
+      \mright)
+    \mright).
+  \end{equation}
+  Since we are looking for an upper bound, we can simplify both
+  $(1 - \frac{1}{\abs{\mathbb{F}} - 1})$ and $(1 - \frac{md}{\abs{I}})$ to 1,
+  giving us that the probability is bounded above by
+  \begin{equation}
+    \frac{1}{\abs{\mathbb{F}} - 1} + \frac{md}{\abs{I}} + \frac{kd + 1}{\abs{\mathbb{F}}}.
+  \end{equation}
+  We can further increase the upper bound by decreasing the denominator of the
+  third term by 1, allowing us to simplify to
+  \begin{equation}
+    \frac{md}{\abs{I}} + \frac{kd + 2}{\abs{\mathbb{F}}},
+  \end{equation}
+  which is the claimed soundness bound.
 \end{proof}
 
 \begin{lemma}\label{lem:sumcheck-is-pzk}
-  \cref{alg:zk-sumcheck} is perfect zero-knowledge.
+  \Cref{alg:zk-sumcheck} is zero-knowledge save for a single query to $F$.
 \end{lemma}
 
-\begin{proof}
-  We construct a simulator for \cref{alg:zk-sumcheck} in two phases: first we
-  construct a simulator that is slow but correct as \cref{alg:zk-sumcheck-sim},
-  and then work it up into a fast (and still correct) simulator in
-  \cref{alg:zk-sumcheck-fast}.
-
-  \TODO{}
-\end{proof}
-
 \begin{algorithm}[htbp]
-  Pick random $Z_{s} \in \mathbb{F}[X_{1, \ldots, m}^{\le d}, Y_{1, \ldots, k}^{\le 2\lambda}]$\;
+  Pick random
+  $Z_{s} \in \mathbb{F}[X_{1, \ldots, m}^{\le d}, Y_{1, \ldots, k}^{\le 2\lambda}]$\;\nllabel{line:sim-pick-z}
   Run the weak-ZK sumcheck simulator\; % FIXME: Which algorithm is this?
   Begin simulating $\tilde{V}$, answering its oracle queries with $Z_{s}$ and
   the simulated $A$\;
   Send $z_{s} = \sum_{\alpha \in H^{m}}\sum_{\beta \in G^{k}}Z_{s}(\alpha, \beta)$\;
-  Recieve $\tilde{\rho}$\; % FIXME: What is this?
+  Recieve $\tilde{\rho}$ from the simulated $\tilde{V}$\;
   Draw $Q_{s} \in \mathbb{F}[X_{1, \ldots, m}^{\le d}]$ such that
   $\sum_{\alpha \in H^{m}}Q_{s}(\alpha) = \tilde{\rho}\alpha + z_{s}$\;
   Engage in the sumcheck protocol (\cref{alg:sumcheck-std}) on the claim
@@ -5484,20 +5556,68 @@ second will show that it is in fact zero-knowledge.
     \cref{alg:zk-sumcheck}~\cite[p.\ 15:33]{CFGS22}}\label{alg:zk-sumcheck-sim}
 \end{algorithm}
 
-\begin{algorithm}[htbp]
-  % TODO
-  \caption{An efficient variant of
-    \cref{alg:zk-sumcheck-sim}~\cite[p.\ 15:34]{CFGS22}}\label{alg:zk-sumcheck-fast}
-\end{algorithm}
+\begin{proof}
+  We construct a simulator for \cref{alg:zk-sumcheck} in two phases: first we
+  construct a simulator that is slow but correct as \cref{alg:zk-sumcheck-sim}.
+  Following that, we explain how to convert that simulator into an efficient
+  version.
 
-% TODO: Zero-knowledge sumcheck
+  We will be showing that at each step, every random variable recieved by the
+  (slow) simulator is identical to that of the prover in \cref{alg:zk-sumcheck}.
+  If every random variable is identical, then since \cref{alg:zk-sumcheck-sim}
+  is constructed similarly to the prover it will output the same result.
+
+  In the simulator, the random choice of $Z_{s}$ in line~\ref{line:sim-pick-z},
+  which is identical to the choice of $Z$ in line~\ref{line:p-pick-z} in the
+  original algorithm. Similarly, our result $z_{s}$ is identical to the $z$ in
+  the original protocol.
+
+  Next, note that $Q_{s}$ is distributed identically to $Q$ from the original
+  statement, since the components defining $Q$ are uniformly random. In
+  particular, note that $\tilde{\rho}$ is a function constructed with fewer than
+  $\lambda^{k}$ queries to $Z$. Hence, due to \cref{cor:indep-ensemble}, this means
+  $\tilde{\rho}$ is independent of $R$ so long as $\sum_{\alpha \in H^{m}}R(\alpha) = z$. Hence,
+  so long as that formula holds, $\tilde{\rho}F$ is independent of $R$ and thus
+  $R + \tilde{\rho}F$ is a uniformly random polynomial subject to the condition
+  that $\sum_{\alpha \in H^{m}}Q(\alpha) = \tilde{\rho}a + z$.
+
+  Next, we send $Q_{s}(c) - \tilde{\rho}F(c)$ to the verifier in our simulator. The
+  original prover sends $Q(c) - \tilde{\rho}F(c)$. Since $Q_{s}$ and $Q$ are
+  identically distributed, so too are these values.
+
+  After that, our simulator draws a new $Z'_{s}$ that is random, but agrees
+  with the already-seen $Z_{s}$ everywhere we have already checked.
+  \TODO{Statement about $R_{s}$.} If we define $U$ to be the set of
+  question-response pairs already seen, then \cref{cor:indep-ensemble} gives us
+  the following:
+  \begin{multline}\label{eqn:z-query-dist}
+    \underset{Z'_{s}}{\mathbb{P}}\mleft[
+      Z'_{s}(q) = a \middlemid
+      \begin{matrix}
+        Z'_{s}(\gamma) = b \quad \forall (\gamma, b) \in U \\
+        \sum_{\beta \in G^{k}}Z'_{s}(c, \beta) = w_{s}
+      \end{matrix}
+    \mright] \\
+    = \underset{Z}{\mathbb{P}}\mleft[
+      Z(q) = a \middlemid
+      \begin{matrix}
+        Z(\gamma) = b \quad \forall (\gamma, b) \in U \\
+        \sum_{\beta \in G^{k}}Z'_{s}(X, \beta) = Q(X) - \tilde{\rho}F(X)
+      \end{matrix}
+    \mright]
+  \end{multline}
+  for any $q \in \mathbb{F}^{m+k}$ and $a \in \mathbb{F}$.
+
+  The left-hand side of this equation is the exactly the distribution of the
+  answer to a query $q$ made by $S'$ to $Z'_{s}$. Similarly, the right-hand side
+  describes the answer to a query to $Z$ under the same constraints. Since these
+  probabilities are identical, it follows that the results of the queries must
+  too be identically distributed.
+
+  \TODO{}
+\end{proof}
 
 \section{Extending the sumcheck algorithm to $\NEXP$}
-
-% FIXME: CFGS22 claims BFL90 has a IPCP for NEXP, but IPCPs weren't invented
-% until 18 years after BFL90 was published?
-
-% TODO: Define PZK-IPCP
 
 Armed with our sumcheck algorithm, we are ready to take on the fight of the rest
 of $\NEXP$. Like so many other theorems, we will do this with a $\NEXP$-complete
@@ -5519,9 +5639,23 @@ problem, and as before our problem of choice is $\OSAT$.
     $P$: Draw a random
     $Z \in \mathbb{F}[X_{1, \ldots, m}^{\le \abs{H} + 2}, Y_{1, \ldots, m}^{\le 2\abs{H}}]$\;
   }
-  \TODO{}\;
+  $P$: Generate oracle $\pi_{0}$ for \cref{alg:zk-sumcheck} on input
+  $(\mathbb{F}, m_{1}+3m_{2}, d, H, 0)$\;
+  $P$: Generate oracles $\pi_{1}, \pi_{2}, \pi_{3}$ for \cref{alg:zk-sumcheck} on
+  input $(\mathbb{F}, k, 2\abs{H}, \abs{H}, \cdot)$\;
+  $P$: Send $(\pi_{0}, \pi_{1}, \pi_{2}, \pi_{3})$\;
+  $V$: Choose $x, y \in \mathbb{F}^{r+3s}$ at random\;
+  $V$: Send $x$ and $y$ to $P$\;
+  Both: Simulate \cref{alg:zk-sumcheck} over the claim $F(x, y) = 0$ with
+  $I = \mathbb{F} \setminus H$ and oracle $\pi_{1}$\;
   \For{$i \in \{1, 2, 3\}$}{
-    % FIXME: Should be wzk; inline
+    $P$: Send $h_{i} = A(\gamma_{2}(c_{i}'))$ to $V$
+  }
+  $V$: Substitute the $h_{i}$ into the evaluation of $f$\;
+  \If{the claims do not hold}{
+    \Reject\;
+  }
+  \For{$i \in \{1, 2, 3\}$}{
     $P$ and $V$ implement \cref{alg:sumcheck-std} on the claim
     $\sum_{\beta \in H^{k}}Z(c_{i}', \beta) = h_{i}$\;
   }
@@ -5531,27 +5665,30 @@ problem, and as before our problem of choice is $\OSAT$.
 \begin{algorithm}[htbp]
   Draw a random polynomial
   $Z_{s} \in \mathbb{F}[X_{1, \ldots, m_{2}}^{\le \abs{H}+2}, Y_{1, \ldots, k}^{\le 2\abs{H}}]$\;
-  Let $S_{0}$ be a simulated copy of \cref{alg:zk-sumcheck-fast} on input
+  Let $S_{0}$ be a simulated copy of \cref{alg:zk-sumcheck} on input
   $(\mathbb{F}, m_{1} + 3m_{2}, \deg(f), H, 0)$\;
   \For{$i \in \{1, 2, 3\}$}{
-    \FIXME{Should be weak-ZK simulator (inline how?)}\;
-    Let $S_{i}$ be a simulated copy of \cref{alg:zk-sumcheck-fast} on input
+    Let $S_{i}$ be a simulated copy of \cref{alg:zk-sumcheck} on input
     $(\mathbb{F}, k, 2\abs{H}, \abs{H}, \cdot)$\;
   }
   Simulate $\tilde{V}$ to recieve $x, y \in \mathbb{F}^{r + 3s}$\;
-  \TODO{Simulate \cref{alg:zk-sumcheck}}\;
+  Simulate \cref{alg:zk-sumcheck} on the claim $F(x, y) = 0$. To answer the
+  single query it makes at $c \in (\mathbb{F} \setminus H)^{r+3s}$, reply with
+  $f(x, y, c)$ where $c = (c_{0}, c_{1}, c_{2}, c_{3})$. To compute the values
+  $A(\gamma(c_{i}))$, substitute with an $h_{s}^{i} \in \mathbb{F}$ drawn at random\;
   \For{$i \in \{1, 2, 3\}$}{
-    % TODO: Simulation is a little strange and I want to check what the shared
-    % secret polynomial is
+    Simulate \cref{alg:zk-sumcheck} with the claim
+    $\sum_{\beta \in H^{k}}Z(\alpha, \beta) = h_{s}^{i}$, answering queries with $Z_{s}$\;
   }
   \caption{A simulator for \cref{alg:ipcp-o3sat}~\cite[p.\ 15.37]{CFGS22}}\label{alg:o3sat-simulator}
 \end{algorithm}
 
 \begin{proof}
-  We demonstrate this through an algorithm for $\OSAT$, which we have laid out
-  in \cref{alg:ipcp-o3sat}. We will show this is zero-knowledge by implementing
-  a simulator in \cref{alg:o3sat-simulator}.
-  % TODO
+  We present an algorithm for $\OSAT$, which we have laid out in
+  \cref{alg:ipcp-o3sat}. We will show this is zero-knowledge by implementing a
+  simulator in \cref{alg:o3sat-simulator}. For time reasons, the proof of
+  correctness for this cannot be reproduced here, but it is in~\cite[Theorem
+  14.2]{CFGS22}.
 \end{proof}
 
 \begin{cor}\label{nexp-pzkipcp}
@@ -5574,6 +5711,22 @@ $\NEXP$.
 
 \chapter{A zero-knowledge PCP theorem}\label{chap:zk-pcp-theorem}
 
+In \cref{chap:pcp-theorem}, we discussed and proved the PCP theorem. Given we
+have seen how widespread zero-knowledge PCPs can be, the question arises of
+whether or not the PCP theorem can be recreated entirely with zero-knowledge
+PCPs. Not only can it be recreated, but we can also show a PCP-theorem
+equivalent for $\NEXP$.
+
+Our proof will proceed in broadly the same manner as our original proof of the
+PCP theorem, and it will reuse broad portions of the same machinery. In order to
+reuse this, though, we will need a new notion of closeness for our proofs. This
+notion of closeness is important because we can show that it preserves
+zero-knowledge: that is, a machine that is close to a zero-knowledge machine
+must itself be zero-knowledge. This will allow us to more easily prove that we
+are constructing zero-knowledge proofs, without going through the hassle of
+constructing a simulator every time (and proving that it is in fact a
+simulator).
+
 \section{Locally-computable proofs}\label{sec:loc-comp-proof}
 
 Locally-computable proofs are a notion of closeness for Turing machines.
@@ -5590,13 +5743,41 @@ of the source machine.
   identical to the distribution of $f$ with oracle $\pi_{0} = A_{0}(x)$.
 \end{defn}
 
+While this is not strictly a metric in the formal, metric-space definition (in
+particular, there exist distinct machines that are $0$-locally computable from
+each other\footnote{Since our simulators are allowed to be polynomial-time, any
+  machine in $\P$ is $0$-locally computable from any other machine, as an
+  example.}), it still obeys the triangle inequality and any machine is
+$0$-locally computable from itself; hence we can think of it as being
+metric-\emph{like}.
+
+\begin{lemma}
+  Let $A_{0}$, $A_{1}$, and $A_{2}$ be randomized Turing machines, with $A_{1}$
+  being $\ell$-locally computable from $A_{0}$ and $A_{2}$ being $k$-locally
+  computable from $A_{1}$. Then $A_{2}$ is $(\ell+k)$-locally computable from
+  $A_{0}$.
+\end{lemma}
+
+\begin{proof}
+  \FIXME{100\% need a proof here since this is something I'm conjecturing}
+  \FIXME{Wait, isn't $A_{2}$ just $\ell$-locally computable from $A_{0}$? Am I
+    missing something here?}
+\end{proof}
+
+For local-computation to be useful to us, we will need to rethink how we have
+been perceiving PCPs up to this point. So far, we have just thought of a PCP
+proof as being a static oracle that gets queried by our verifier. However, in
+the real world roacles do not spring in the world fully formed, they must be
+generated. Hence, here we will think of the proof as being generated by another
+Turing machine.
+
 For us, the most important piece of locally-computable proofs is that they
 preserve zero knowledge. \TODO{A little more}
 
 \begin{thm}[{\cite[Lemma 3.2]{GOS25}}]\label{thm:local-comp-pzk}
   Let $(P_{0}, V_{0})$ be a PZK-PCP for some language $L$ with query bound
   $q^{*}$, and let $(P, V)$ be a PCP for a langauge $M$ such that $P$ is
-  $\ell$-locally computable from $V$ on $M$. Then $(P, V)$ is perfect
+  $\ell$-locally computable from $P_{0}$ on $M$. Then $(P, V)$ is perfect
   zero-knowledge with query bound $q^{*}/\ell$.
 \end{thm}
 
@@ -5662,7 +5843,9 @@ preserve zero knowledge. \TODO{A little more}
 \end{cor}
 
 \begin{proof}
-  % TODO
+  By replacing every instance of PZK-PCP in that proof with PZK-PCPP, every
+  piece of the proof still holds, since zero-knowledge is identical for PCPs as
+  it is for PCPPs. \TODO{Is this enough?}
 \end{proof}
 
 \section{Zero-knowledge proof composition}\label{sec:zk-proof-comp}
@@ -5670,7 +5853,10 @@ preserve zero knowledge. \TODO{A little more}
 Essential to our theorems will be the ability to combine proofs in a way that
 preserves zero knowledge. In \cref{thm:composition}, we showed that composing
 robust PCPs and PCPPs can result in further PCPs; here we show that that
-combination also preserves zero knowledge.
+combination also preserves zero knowledge. To do this, we will leverage the
+notion of local computation we defined in the last section. More specifically,
+\cref{alg:composed-pcp} is locally-computable from our robust pcp $V_{\out}$,
+\emph{regardless} of whether or not the PCPP $V_{\oin}$ is zero-knowledge.
 
 \begin{thm}[{\cite[Theorem 3.7]{GOS25}}]\label{thm:comp-pzk}
   The construction in \cref{thm:composition} is perfect zero-knowledge with
@@ -5730,11 +5916,16 @@ combination also preserves zero knowledge.
   with query bound $q^{*}/q_{\out}$.
 \end{proof}
 
+This ability to compose PCPs gives us some useful properties of the class
+$\PZKPCP$. In particular, it shows us the ability to reduce a $\PZKPCP$ to a
+\emph{single} query in a zero-knowledge manner, simply with a corresponding
+worsening of our randomness complexity and zero-knowledge query bounds.
+
 \begin{cor}[{\cite[Corollary 3.11]{GOS25}}]\label{cor:constant-query}
   % FIXME: Get this equation number to be in a reasonable place
   \begin{equation}\label{eqn:constant-query}
     \PZKPCP\pzkpcpr{r}{q}{q^{*}}{\varepsilon}{s}{\Omega(1)} \subseteq
-    \PZKPCP\pzkpcpr{r + \log(n)}{q}{q^{*}/q}{\varepsilon}{s}{\Omega(1)}.
+    \PZKPCP\pzkpcpr{r + \log(n)}{1}{q^{*}/q}{\varepsilon}{s}{\Omega(1)}.
   \end{equation}
 \end{cor}
 
@@ -5815,55 +6006,6 @@ against incorrect proofs here.
   query bound as $P_{a}$.
 \end{proof}
 
-\section{Robust total-degree test}\label{sec:robust-degree}
-
-\TODO{Connect to algebraic query complexity}
-
-An important algorithm to have in our back pocket for the rest of this chapter
-will be a robust way for a PCP verifier to check if a given polynomial is in
-fact a low-total-degree polynomial or not. This will allow us to test for
-membership in $\RM[\mathbb{F}, m, d]$ relatively easily.
-
-\begin{thm}[{\cite[Prop.\ 5.7]{Par21}}]\label{thm:robust-low-deg}
-  Let $\delta > 0$, and $k, m, d \in \mathbb{N}^{+}$. Let $\mathbb{F}$ be a finite field with
-  $\abs{\mathbb{F}} > 25k$. Then there exists a test that,
-  \begin{enumerate}
-    \item has oracle access to a function $F\colon \mathbb{F}^{m} \rightarrow \mathbb{F}^{k}$,
-    \item makes $\abs{F}$ queries to $F$,
-    \item runs in time $\poly(\abs{\mathbb{F}}, m, d, k)$,
-    \item accepts with probability $1$ if $F \in \RM^{k}[\mathbb{F}, m, d]$, and
-    \item if $\Delta(F, \RM^{k}[\mathbb{F}, m, d]) > \varepsilon$, then the expected distance
-          between the tester's view of $F$ and any accepting view is in $\Omega(\varepsilon)$.
-  \end{enumerate}
-\end{thm}
-
-\begin{algorithm}[htbp]
-  \KwIn{A function $F\colon \mathbb{F}^{m} \rightarrow \mathbb{F}^{k}$}
-  \KwOut{Whether $F \in \RM[\mathbb{F}, m, d]$}
-  Sample a uniformly random line $L \in \mathbb{F}^{m}$\;
-  \For{$\ell \in L$}{
-    $x_{i} \leftarrow$ query $F$ at $\ell$\;
-  }
-  \eIf{$F|_{\{x_{i} \mid i \in \abs{L}\}}$ agrees with a polynomial
-    $p \in \mathbb{F}^{\le d}[X_{1, \ldots, m}]$}{
-    \Accept\;
-  }{
-    \Reject\;
-  }
-  \caption{A robust low-degree test~\cite[Prop.\ 5.7]{Par21}}\label{alg:robust-low-deg}
-\end{algorithm}
-
-\begin{proof}
-  We describe such an algorithm in \cref{alg:robust-low-deg}.
-
-  If $F \in \RM[\mathbb{F}, m, d]$, then the restriction of $F$ to a subset $L$
-  will agree with some polynomial $p$ (in particular, the case $p = F$), so in
-  this case \cref{alg:robust-low-deg} will always accept.
-
-  If $F \notin \RM[\mathbb{F}, m, d]$, then $\Delta(F, \RM[\mathbb{F}, m, d]) = \varepsilon$ for
-  some $\varepsilon > 0$. \TODO{}
-\end{proof}
-
 \section{Zero-knowledge PCPPs for $\Sum$}\label{sec:zk-pcpp-sum}
 
 In \cref{sec:pcpp-poly-sum}, we described a PCPP for the language $\Sum$. Since
@@ -5889,13 +6031,17 @@ with a little more complexity than the non-zero knowledge \cref{alg:sum-pcpp}.
     \KwRet{$(\pi_{\Sigma}, \pi_{P})$}\;
   }
   \Verifier{
+    \DontPrintSemicolon
     Emulate \cref{alg:sum-pcpp} on input $F + R$ and proof $\pi_{\Sigma}$. To query
     $F + R$ at some $\alpha \in \mathbb{F}^{m}$, query $F(\alpha)$, $\pi_{P}(\alpha)$, and
     $\pi_{P}(\alpha_{\text{rev}})$, then compute
     \begin{algomathdisplay}\nllabel{line:emulate-sum-pcpp}
-      (F+R)(\alpha) = F(\alpha) + (\pi_{P}(\alpha))_{1} - (\pi_{P}(\alpha_{\text{rev}}))_{1}
-      + \sum_{i=1}^{m}Z_{H}(\alpha_{i})(\pi_{P}(\alpha))_{i+1}
+      \begin{split}
+        (F+R)(\alpha) = F(\alpha) + (\pi_{P}(\alpha))_{1} - (\pi_{P}(\alpha_{\text{rev}}))_{1} \\
+        + \sum_{i=1}^{m}Z_{H}(\alpha_{i})(\pi_{P}(\alpha))_{i+1};
+      \end{split}
     \end{algomathdisplay}
+    \PrintSemicolon
     Perform \cref{alg:robust-low-deg} on $F$ with proximity parameter
     $\delta_{RM} = \min(d, 1/5)$\;\nllabel{line:deg-test-f}
     \If{\cref{alg:robust-low-deg} fails}{
@@ -5929,7 +6075,7 @@ with a little more complexity than the non-zero knowledge \cref{alg:sum-pcpp}.
   that the verifier runs in polynomial time. Then, we will show that this is a
   PCP of proximity by showing correctness in both acceptance and rejection (with
   high probability), and then we will demonstrate zero
-  knowledge. % TODO: How will we demonstrate zero knowledge? (Simulator?)
+  knowledge.
 
   We know from \cref{thm:pcpp-sum} that \cref{alg:sum-pcpp} runs in polynomial
   time. Since we also do nontrivial work for each query, we need to show that
@@ -5974,7 +6120,16 @@ with a little more complexity than the non-zero knowledge \cref{alg:sum-pcpp}.
   expected distance is $\Omega(\delta)$.
 
   To show \cref{alg:sum-pzk-pcpp} is zero-knowledge, we show it is
-  $(m+1)$-locally computable from \cite[Construction 8.4]{GOS24}.
+  $(m+1)$-locally computable from~\cite[Construction 8.4]{GOS24}. The
+  local-computation function is
+  \begin{multline}
+    f^{(\pi_{\Sigma}',\pi_{Q}',\pi_{T_{1}}',\ldots,\pi_{T_{m}}')}(\mathcal{O}, \alpha) \\ =
+    \begin{cases}
+      (\pi_{Q}'(\alpha), \pi_{T_{1}}'(\alpha), \ldots, \pi_{T_{m}}'(\alpha)) & \mathcal{O} = \pi_{P} \\
+      (\pi_{\Sigma}'(\alpha_{m-1}), \pi_{\Sigma}'(\alpha_{1},\alpha_{m-1}), \ldots, \pi_{\Sigma}'(\alpha_{1,\ldots,i-1},\alpha_{m-1}), \pi_{\Sigma}'(\alpha)) & \mathcal{O} = \pi_{\Sigma}.
+    \end{cases}
+  \end{multline}
+
   \TODO{Originally planned to include this construction in previous chapter but
     looks like that's getting cut---how do I introduce this?}
 \end{proof}
@@ -6011,12 +6166,12 @@ define a few convenience polynomials.
   \begin{multline}
     h_{\hat{c}}(z, b_{1}, b_{2}, b_{3}, a_{1}, a_{2}, a_{3}, c_{1}, c_{2}, c_{3}) \\ =
     \hat{B}(\gamma_{1}(z), \gamma_{2}(b_{1}), \gamma_{2}(b_{2}), \gamma_{2}(b_{3}), a_{1}, a_{2}, a_{3})
-    \prod_{i=1}^{3}(\hat{C}(b_{i}, c_{i}) + (a_{i} - 1)\delta(0^{k}, c_{i})).
+    \prod_{i=1}^{3}(\hat{C}(b_{i}, c_{i}) + (a_{i} - 1)\delta_{0^{k}}(c_{i})).
   \end{multline}
 \end{defn}
 
-As a reminder, $\delta$ is the polynomial defined in \cref{eqn:delta-poly} that for
-all $x, y \in \{0, 1\}^{n}$, $\delta(x, y) = [x = y]$.
+As a reminder, $\delta$ is the low-multidegree polynomial defined in
+\cref{eqn:delta-poly} that for all $x, y \in H^{n}$, $\delta_{x}(y) = [x = y]$.
 
 From here, we will prove a nice relationship between these two polynomials.
 This correspondence will come in handy when proving the next lemma, which will
@@ -6034,18 +6189,18 @@ eventually give us some nice equivalent statements to $\OSAT$.
   From the definitions of $g$ and $h$, we have
   \begin{multline}\label{eqn:expand-gh-defs}
     \sum_{c_{1}, c_{2}, c_{3} \in H^{k}}\hat{B}(\gamma_{1}(z), \gamma_{2}(b_{1}), \gamma_{2}(b_{2}), \gamma_{2}(b_{3}), a_{1}, a_{2}, a_{3})
-    \prod_{i=1}^{3}(\hat{C}(b_{i}, c_{i}) + (a_{i} - 1)\delta(0^{k}, c_{i})) \\
+    \prod_{i=1}^{3}(\hat{C}(b_{i}, c_{i}) + (a_{i} - 1)\delta_{0^{k}}(c_{i})) \\
     = \hat{B}(\gamma_{1}(z), \gamma_{2}(b_{1}), \gamma_{2}(b_{2}), \gamma_{2}(b_{3}), a_{1}, a_{2}, a_{3})
     \prod_{i=1}^{3}(\hat{A}(b_{i}) + a_{i} - 1).
   \end{multline}
   We can pull the $\hat{B}(\cdots)$ call out of both sides and cancel them; giving us
   \begin{equation}\label{eqn:cancel-b-call}
-    \sum_{c_{1}, c_{2}, c_{3} \in H^{k}}\prod_{i=1}^{3}(\hat{C}(b_{i}, c_{i}) + (a_{i} - 1)\delta(0^{k}, c_{i})).
+    \sum_{c_{1}, c_{2}, c_{3} \in H^{k}}\prod_{i=1}^{3}(\hat{C}(b_{i}, c_{i}) + (a_{i} - 1)\delta_{0^{k}}(c_{i})).
     = \prod_{i=1}^{3}(\hat{A}(b_{i}) + a_{i} - 1)
   \end{equation}
   Substituting in the definition of $\hat{A}$, we get
   \begin{equation}\label{eqn:subst-a-def}
-    \sum_{c_{1}, c_{2}, c_{3} \in H^{k}}\prod_{i=1}^{3}(\hat{C}(b_{i}, c_{i}) + (a_{i} - 1)\delta(0^{k}, c_{i})).
+    \sum_{c_{1}, c_{2}, c_{3} \in H^{k}}\prod_{i=1}^{3}(\hat{C}(b_{i}, c_{i}) + (a_{i} - 1)\delta_{0^{k}}(c_{i})).
     = \prod_{i=1}^{3}\mleft(\sum_{c \in H^{k}}\hat{C}(b_{i}, c) + a_{i} - 1\mright).
   \end{equation}
   \TODO{}
@@ -6090,20 +6245,6 @@ These equivalent statements will play an important role in our proof of
   \TODO{}
 \end{proof}
 
-\begin{thm}[{\cite[Theorem 6.3]{GOS25}}]\label{thm:np-zk-pcp}
-  For any query bound $q^{*}(n) \le 2^{\poly(n)}$,
-  \[
-    \NP \subseteq
-    \PZKPCP_{\Sigma(n)}\pzkpcpr{\log(n)+\log(q^{*}(n))}{\poly(\log(n) + \log(q^{*}(n)))}{q^{*}(n)}{\varepsilon}{s}{\Omega(1)}.
-  \]
-  where $\abs{\Sigma(n)} = \poly(n, q)$.
-\end{thm}
-
-\begin{proof}
-  \TODO{\cite{GOS25} does this by a reduction from $\SAT$ to $\OSAT(\log n)$---do
-    that here too?}
-\end{proof}
-
 \begin{lemma}[{\cite[Corollary 4.10]{BCFGRS17}}]\label{lem:polysim}\index{PolySim@$\PolySim$}
   There exists a probabilistic algorithm $\PolySim$ such that, for every
   \begin{enumerate}
@@ -6129,6 +6270,20 @@ These equivalent statements will play an important role in our proof of
 \TODO{Probably won't have time to write up proof here, so defer to
   \cite{BCFGRS17}}
 
+Finally, it is time to show an inclusion that involves $\NEXP$! First, note that
+this is not remotely our desired inclusion: the language is wrong, and the
+$\poly(n)$ query complexity is not very close to the $O(1)$ we actually want.
+However, we are still in the home stretch---after this, we have proven every
+component we need to reduce this bound down into the one we desire, and we will
+do so in the next section.
+
+Additionally, one might notice that we are starting with $\NEXP$, instead of the
+much smaller class $\NP$. This is because we are going to be working with the
+class $\OSAT$ for \emph{both} inclusions, and since $\OSAT$ is $\NEXP$-complete,
+the inclusions are much more straightforward for $\NEXP$. Once we have done
+that, however, the reductions necessary to make this work for $\NP$ will not
+be too challenging.
+
 \begin{thm}[{\cite[Theorem 6.3]{GOS25}}]\label{thm:nexp-zk-pcp}
   For any query bound $q^{*}(n) \le 2^{\poly(n)}$,
   \[
@@ -6145,35 +6300,42 @@ These equivalent statements will play an important role in our proof of
     Let $A\colon \{0, 1\}^{n} \rightarrow \{0, 1\}$ be a satisfying assignment for $B$\;
     Choose $\hat{C} \in \mathbb{F}[X_{m_{2} + k}^{\le 2(\abs{H} - 1)}]$ randomly such
     that $\sum_{c \in H^{k}}\hat{C}(b, c) = A(\gamma_{2}, b)$ for all
-    $b \in H^{m_{2}}$\;\label{line:sample-c}
+    $b \in H^{m_{2}}$\;\nllabel{line:sample-c}
     \For{$\tau \in \mathbb{F}^{m_{1}+3m_{2}+3}$}{
       Let $\pi_{\tau}$ be a PZK-PCPP for the claim
       % FIXME: There *has* to be a better way to do this
-      \begin{algomathdisplay}
-        \sum_{\substack{z \in H^{m_{1}} \\ b_{1}, b_{2}, b_{3} \in H^{m_{2}} \\
-          a \in \{0, 1\}^{3} \\ c_{1}, c_{2}, c_{3} \in H^{k}}}
-        [(z, b, a) = \tau]h_{\hat{C}}(\tau, c_{1}, c_{2}, c_{3}) = 0
+      \begin{algomathdisplay}\nllabel{line:pzkpcpp-claim}
+        \sum_{\substack{z \in H^{m_{1}} \\ b_{1}, b_{2}, b_{3} \in H^{m_{2}}}}
+        \sum_{\substack{a \in \{0, 1\}^{3} \\ c_{1}, c_{2}, c_{3} \in H^{k}}}
+        \delta_{(z,b,a)}(\tau)h_{\hat{C}}(\tau, c_{1}, c_{2}, c_{3}) = 0
       \end{algomathdisplay}
     }
     \KwRet{$(\pi_{C}, (\pi_{\tau})_{\tau \in \mathbb{F}^{m_{1}+3m_{2}+3}})$}\;
   }
   \Verifier{
-    \For{\TODO{``sufficiently many times so that each test accounts for at least
-        1/3 of the verifier’s view.''}}{
-      Run \cref{alg:robust-low-deg} on the proof, with $\varepsilon = 1/100$ and
-      $\delta = 1/2$\;
-      \If{the above rejects}{
-        \Reject\;
+    $q_{a}, q_{b} \leftarrow 0$\;
+    \Repeat{$2q_{a} > q_{b}$ and $2q_{b} > q_{a}$}{
+      \Repeat{$2q_{a} > q_{b}$}{
+        Run \cref{alg:robust-low-deg} on the proof, with $\varepsilon = 1/100$ and
+        $\delta = 1/2$\;\nllabel{line:low-deg-test}
+        Add the total number of queries in the last line to $q_{a}$\;
+        \If{the above rejects}{
+          \Reject\;
+        }
       }
-      Choose
-      $\tau \in \mathbb{F}^{m_{1}} \times (\mathbb{F}^{m_{2}})^{3} \times \mathbb{F}^{3}$ at random\;
-      Simulate \cref{alg:sum-pzk-pcpp} with proof $\pi_{\tau}$\;\nllabel{line:sumcheck-pi-tau} % FIXME: State yielded claim
-      \For{$i \in \{1, 2, 3\}$}{
-        Query $\hat{C}$ at $(\nu_{i}, \eta_{i})$\;
-      }
-      Compute $h_{\hat{C}}(\tau, \eta_{1}, \eta_{2}, \eta_{3})$\;
-      \If{the claim in line~\ref{line:sumcheck-pi-tau} is false}{
-        \Reject\;
+      \Repeat{$2q_{b} > q_{a}$}{
+        Choose
+        $\tau \in \mathbb{F}^{m_{1}} \times (\mathbb{F}^{m_{2}})^{3} \times \mathbb{F}^{3}$ at random\;
+        Simulate \cref{alg:sum-pzk-pcpp} with proof $\pi_{\tau}$\;\nllabel{line:sumcheck-pi-tau} % FIXME: State yielded claim
+        Add the total number of queries in the last line to $q_{b}$\;
+        \For{$i \in \{1, 2, 3\}$}{
+          Query $\hat{C}$ at $(\nu_{i}, \eta_{i})$\;
+          Add $1$ to $q_{b}$\;
+        }
+        Compute $h_{\hat{C}}(\tau, \eta_{1}, \eta_{2}, \eta_{3})$\;
+        \If{the claim in line~\ref{line:sumcheck-pi-tau} is false}{\nllabel{line:sumcheck-claim}
+          \Reject\;
+        }
       }
     }
     \Accept\;
@@ -6203,8 +6365,10 @@ These equivalent statements will play an important role in our proof of
 
 \begin{proof}
   We construct a PZK-PCP for $\OSAT$, a $\NEXP$-complete language, in
-  \cref{alg:pcp-osat}. We begin by showing the verifier runs in polynomial
-  time.
+  \cref{alg:pcp-osat}. First, note that the combined effect of the three
+  ``repeat'' loops is to ensure that the number of queries taken up by each of
+  the two inner portions is no more than $1/3$ of the total number of queries.
+  This will be useful to us later on when we try to prove soundness.
 
   We know \cref{alg:robust-low-deg} runs in polynomial time, as does the
   simulator for \cref{alg:sum-pzk-pcpp}. Computing the value of a known
@@ -6212,13 +6376,26 @@ These equivalent statements will play an important role in our proof of
   algorithm runs in polynomial time.
 
   Next, we show \cref{alg:pcp-osat} will accept with probability at least $2/3$
-  when given a $B \in \OSAT$ and the honest proof. \TODO{}
+  when given a $B \in \OSAT$ and the honest proof. As per \cref{lem:three-equiv},
+  the claim in line~\ref{line:pzkpcpp-claim} is true. Hence,
+  line~\ref{line:low-deg-test} will always accept. From there,
+  \cref{alg:sum-pzk-pcpp} will always succeed, as per its own soundness
+  guarantee. Further, the claim it outputs will always be true, so
+  line~\ref{line:sumcheck-claim}'s test will always succeed. Hence,
+  \cref{alg:pcp-osat} will always accept given an honest prover and a
+  $B \in \OSAT$.
 
   Next, we show \cref{alg:pcp-osat} will reject with probability at least $2/3$
-  when given a $B \notin \OSAT$. Define $\varepsilon = 1/100$. If $\pi_{C}$ is $\varepsilon$-close to
-  $\RM[\mathbb{F}, m_{2}+k, m_{2}+d]$, then let
-  $\hat{C} \in \RM[\mathbb{F}, m_{2}+k, m_{2}+d]$ be the closest element to
-  $\pi_{C}$. By the definition of distance and since $\pi_{C}$ is $\varepsilon$-cloes, this
+  when given a $B \notin \OSAT$. We aim to show this in two cases. The first is where
+  $\pi_{C}$ is $\varepsilon$-close to $\RM[\mathbb{F}, m_{2}+k, m_{2}+d]$, in which case we
+  will show line~\ref{line:low-deg-test} will reliably fail. The second is where
+  $\pi_{C}$ is $\varepsilon$-far, in which case we will show line~\ref{line:sumcheck-pi-tau}
+  will reliably fail.
+
+  Define $\varepsilon = 1/100$. If $\pi_{C}$ is $\varepsilon$-close to
+  $\RM[\mathbb{F}, m_{2}+k, (m_{2}+k)d]$, then let
+  $\hat{C} \in \RM[\mathbb{F}, m_{2}+k, (m_{2}+k)d]$ be the closest element to
+  $\pi_{C}$. By the definition of distance and since $\pi_{C}$ is $\varepsilon$-close, this
   means $\Delta(\hat{C}, \pi_{C}) \le \varepsilon$. Next, note that a random evaluation of $h_{f}$
   depends on three random evaluations of $f$; as such it must be that
   $\Delta(h_{\hat{C}}, h_{\pi_{C}}) \le 3\varepsilon$.
@@ -6228,7 +6405,7 @@ These equivalent statements will play an important role in our proof of
   that
   \begin{equation}
     \sum_{\substack{z \in H^{m_{1}} \\ b_{1}, b_{2}, b_{3} \in H^{m_{2}}}}\sum_{a_{1}, a_{2}, a_{3} \in \{0, 1\}}
-    \delta((z, b, a), X)\sum_{c_{1}, c_{2}, c_{3} \in H^{k}}h_{\hat{C}}(X, c_{1}, c_{2}, c_{3})
+    \delta_{(z,b,a)}(X)\sum_{c_{1}, c_{2}, c_{3} \in H^{k}}h_{\hat{C}}(X, c_{1}, c_{2}, c_{3})
   \end{equation}
   is a nonzero polynomial in
   $\mathbb{F}[X_{1, \ldots, m_{1}+m_{2}+m_{3}}^{O(d_{B}\abs{H})}]$. Hence, the claim
@@ -6236,8 +6413,18 @@ These equivalent statements will play an important role in our proof of
   probability $1 - O((m_{1}+m_{2}+m_{3})d_{b}\abs{H}/\abs{\mathbb{F}})$.
 
   If $\pi_{C}$ is $\varepsilon$-far from $\RM[\mathbb{F}, m_{2}+k, (m_{2}+k)d]$, then the
-  verifier's view is $\Omega(\varepsilon)$-far from accepting, as per
+  verifier in line~\ref{line:sumcheck-pi-tau}'s view is $\Omega(\varepsilon)$-far from accepting, as per
   \cref{thm:robust-low-deg}.
+
+  What we have now shown is that regardless of the distance of $\pi_{C}$ from
+  $\RM[\mathbb{F}, m_{2}+k, m_{2}+d]$, at least one of the two portions of our
+  view is $\Omega(\varepsilon)$-far from an accepting portion of the view. Since we know that
+  these portions take up at least $1/3$ of the view,\footnote{We note that the
+    fraction $1/3$ is actually arbitrary here, so long is it is a constant
+    nonzero fraction; $1/3$ is just a relatively easy number to deal with and it
+    will make convergence faster.} it means that the total distance of the
+  verifier's view from an accepting view is at least $\Omega(\varepsilon/3) = \Omega(\varepsilon)$. Hence,
+  \cref{alg:pcp-osat} has expected robustness $\Omega(\varepsilon)$.
 
   Finally, we show \cref{alg:pcp-osat-sim} is a simulator for
   \cref{alg:pcp-osat} and thus it is zero-knowledge. For this, we will use a
@@ -6294,6 +6481,24 @@ These equivalent statements will play an important role in our proof of
   \cref{alg:pcp-osat-sim}.
 \end{proof}
 
+\begin{cor}[{\cite[Theorem 6.3]{GOS25}}]\label{cor:np-zk-pcp}
+  For any query bound $q^{*}(n) \le 2^{\poly(n)}$,
+  \[
+    \NP \subseteq
+    \PZKPCP_{\Sigma(n)}\pzkpcpr{\log(n)+\log(q^{*}(n))}{\poly(\log(n) + \log(q^{*}(n)))}{q^{*}(n)}{\varepsilon}{s}{\Omega(1)}.
+  \]
+  where $\abs{\Sigma(n)} = \poly(n, q)$.
+\end{cor}
+
+\begin{proof}
+  For this, we leverage our work from \cref{thm:nexp-zk-pcp}. In that, we used
+  the fact that $\OSAT$ is a $\NEXP$-complete problem. However, the Cook-Levin
+  variant we proved in \cref{thm:cook-levin-general} is even more general than
+  that: in particular it showed that log-length $\OSAT$ is in fact
+  $\NP$-complete. Hence, if we adjust the length of our input, the inclusion
+  here follows.
+\end{proof}
+
 \subsection{Reducing query complexity to constant}\label{sec:constant-pcp-np}
 
 We are now finally able to present our analogues to the classical $\PCP$
@@ -6307,7 +6512,7 @@ involving $\PCP$'s relationship with $\NEXP$.
 
 \begin{proof}
   To show this, we will take the PCP for $\NP$ that we showed in
-  \cref{thm:np-zk-pcp}, which has relatively weak bounds and an arbitrary
+  \cref{cor:np-zk-pcp}, which has relatively weak bounds and an arbitrary
   alphabet, and transform it into one with the exact parameters we seek. We do
   this first through an alphabet reduction (as per \cref{thm:alph-reduction})
   and then through proof-composing it with the algorithm for $\CktVal$ with
@@ -6318,13 +6523,13 @@ involving $\PCP$'s relationship with $\NEXP$.
 
   Let $q^{*}(n) \le 2^{\poly(n)}$ be arbitrary. This will be the query complexity
   of our final PCP after we do all the class inclusions. As per
-  \cref{thm:np-zk-pcp}, we know that
+  \cref{cor:np-zk-pcp}, we know that
   \begin{equation}\label{eqn:np-subseteq-pzkpcp}
     \NP \subseteq
     \PZKPCP_{\Sigma(n)}\pzkpcpr{\log(n)+\log(\tilde{q}(n))}{\poly(\log(n) + \log(\tilde{q}(n)))}{\tilde{q}(n)}{\varepsilon}{s}{\Omega(1)}.
   \end{equation}
   for any $\tilde{q} \le 2^{\poly(n)}$ and where
-  $\abs{\Sigma(n)} \in \poly(n, \tilde{q})$. \Cref{thm:np-zk-pcp} only guarantees this
+  $\abs{\Sigma(n)} \in \poly(n, \tilde{q})$. \Cref{cor:np-zk-pcp} only guarantees this
   inclusion for alphabets of $\{0, 1\}^{a}$, however a PCP over $\Sigma(n)$ is
   equivalent to a PCP over $\{0, 1\}^{\log_{2}(\abs{\Sigma(n)})}$ by a simple
   relabeling of alphabet items, so this inclusion still holds.
@@ -6380,7 +6585,7 @@ involving $\PCP$'s relationship with $\NEXP$.
     \NEXP \subseteq \PZKPCP_{\Sigma(n)}\pzkpcpr{\poly(n)+\log(\tilde{q}(n))}{\poly(n)}{\tilde{q}(n)}{\varepsilon}{s}{\Omega(1)}.
   \end{equation}
   for any $\tilde{q} \le 2^{\poly(n)}$ and where
-  $\abs{\Sigma(n)} \in \poly(n, \tilde{q})$. As before, \cref{thm:np-zk-pcp} only
+  $\abs{\Sigma(n)} \in \poly(n, \tilde{q})$. As before, \cref{cor:np-zk-pcp} only
   guarantees this inclusion for alphabets of $\{0, 1\}^{a}$, however a PCP over
   $\Sigma(n)$ is equivalent to a PCP over $\{0, 1\}^{\log_{2}(\abs{\Sigma(n)})}$ by a
   simple relabeling of alphabet items, so this inclusion still holds.
