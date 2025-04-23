@@ -306,6 +306,21 @@
  {\@endalgocfline\vspace{-\baselineskip}\]{\DontPrintSemicolon\;}}
 \makeatother
 
+\makeatletter
+\renewenvironment{abstract}{%
+  \if@twocolumn
+    \@restonecoltrue\onecolumn
+  \else
+    \@restonecolfalse
+  \fi
+  \chapter*{}
+  \begin{center}
+  {\fontsize{14}{16}\selectfont \bfseries Abstract}
+  \end{center}
+  \fontsize{12}{14}\selectfont
+}{\clearpage \if@restonecol\twocolumn\fi}%
+\makeatother
+
 \newcommand{\TODO}[1]{\textcolor{red}{TODO: #1}}
 \newcommand{\FIXME}[1]{\textcolor{red}{\ul{FIXME: #1}}}
 
@@ -331,13 +346,262 @@
 
 \listofalgorithms
 
-% TODO: Abstract
+\begin{abstract}
+  \TODO{}
+\end{abstract}
 
 \chapter*{Introduction}
 \addcontentsline{toc}{chapter}{Introduction}
 
-The $\P$ vs $\NP$ problem is perhaps the most important open problem in
-complexity theory.
+Complexity theory, to wit, is the study of what problems are easy and what
+problems are hard. More specifically, it is the study of computational problems
+and how they can be classified according to the amount of effort needed to solve
+them. While there are many facets of complexity theory, the one we will be
+focusing on is that of computational proof systems: different mechanisms by
+which one computer can prove a statement to another computer in a way that
+removes reasonable doubt. Along with that, we look at proof systems that reveal
+no potentially-sensitive information, besides the exact statement we care about
+proving. We show that in several useful cases, this can be done without making
+the problem substantially harder.
+
+\section*{What is a computational problem?}
+
+There are many types of problem in the real world, but many are not interesting
+to mathematicians. To us, the only important problems are \emph{decision
+  problems}: problems where we are given some input text, and then we have to
+decide either yes or no. We care about these because mathematically, they are
+the simplest type of problem. Importantly for us, the yes/no answer for a given
+input never changes, and every input value has some correct answer.
+
+In mathematics, we care about a few important properties of our computational
+problems. First is the \emph{alphabet} of the problem. Every input text needs to
+be written down in some particular form, and it is important to know how it is
+written ahead of time. The only true restriction on our alphabet is that it must
+be finite (an infinite amount of symbols would make it really hard to do any
+useful analysis), but in practice, because we are dealing with computers our
+alphabet almost always consists of just the symbols 0 and 1.
+
+The second important property of computational problems is that of input length.
+Of course, when we ask for the answer to a question, our query could be as long
+as we like. However, in general we expect longer questions to take longer to
+process, so our computation time is almost always written in terms of the input
+length. Knowing that, determining the input length is simple---it is just the
+number of alphabet letters in the query.
+
+\section*{Turing machines}
+
+A \emph{Turing machine} is the principal model we use to underpin our
+computations. A Turing machine is a theoretical box that has access to some
+arbitrarily-long \emph{tape}, a list of blank spaces\footnote{The naming of a
+  tape comes by analogy to a ticker tape or audio tape, not masking tape.} to
+which it can read and write data, one space at a time. The computation of the
+machine proceeds in individual steps---in each step the machine can know what is
+currently on the tape, and what state the machine is currently in; after it
+recieves this information it may choose to ``halt'' (i.e., stop running and make
+a decision), or otherwise it may write a single bit to the tape and then move
+its view one square left or right.
+
+It may at first seem like this is a rather silly definition of a computer---after
+all our computers have things like screens and keyboards, and there is
+definitely not an infinite tape sticking out the side. However, it turns out
+this is still useful to us! As we discussed in the last section, computational
+problems do not always line up with what we consider computational tasks in the
+real world, and just answering yes/no requires neither a screen nor keyboard.
+
+Further objection might be taken to the fact that to access different parts of
+the tape, we need to slowly move the machine over, step by step. This concern is
+less easy to intuitively dissuage, but it turns out that at the level of
+granularity we will care about, this is not actually a concern. Essentially, we
+only care about classifying problems at a very coarse level, and at some point
+the differences in our computational model pale in comparison to the differences
+in the complexity of the problem itself.\footnote{This is no accident---these
+  classes were picked to some extent \emph{because} of their independence of
+  model, not in spite of it.} Since it is indistinguishable for our purposes
+from a normal computer, we use it because it is mathematically nicer than many
+other models of computation.
+
+This classical notion of a Turing machine has of course spawned many variants to
+reflect different ways of interacting in the real world. Perhaps the most famous
+is the \emph{quantum} Turing machine, which attempts to emulate the
+computational abilities of a computer that can leverage specific quantum
+effects. A variant we will be focusing on somewhat in this work is the
+\emph{interactive} Turing machine, a machine with the ability to pass messages
+back and forth with another interactive machine. Another variant we will be
+focusing on is the \emph{oracle} Turing machine, a machine with access to some
+``oracle'' (a function that can answer some hard problem in a single step).
+
+\section*{Relativization and algebrization}
+
+Oracle machines have a particular use in how they interact with the most famous
+open hypothesis in complexity theory: $\P$ vs.\ $\NP$. In brief, this asks
+whether any problem that can be solved quickly can also be verified quickly.
+Unfortunately, what these oracle machines tell us is that we are not very close
+to solving $\P$ vs.\ $\NP$. What these have shown us is that entire classes of
+techniques---in particular \emph{every single} proof technique that had been tried
+for problems similar to $\P$ vs.\ $\NP$---would not work here.
+
+Even worse for us, this has now happened twice! After the first paper showing
+this came out (calling its technique \emph{relativization}), mathematicians got
+to work looking for relativization-proof techniques. Over time they found many,
+until another paper came out, building on the previous with a new technique
+called \emph{algebrization}. Similarly to before, this showed that every
+relativization-proof technique was not algebrization-proof, sending researchers
+back on a new series of quests for better proof techniques.
+
+The general idea behind relativization is based on observing what problems
+become easy when we add different oracles to a Turing machine. It is worth
+noting that no problem ever becomes harder when we add an oracle: a machine can
+always choose to never talk to an oracle and then it could solve any problem
+just the same as a non-oracle machine. However, if we give a machine a powerful
+enough oracle, it turns out that any problem that it could verify quickly would
+also be verifiable quickly. But we can also pick a particularly tricky oracle to
+show the converse---a machine with that oracle can verify some problems quickly
+that we are able to prove that it cannot solve quickly. What this all means is
+that any proof of the $\P$ vs.\ $\NP$ problem needs to have its logic break
+somewhere if we introduce an oracle: if we can replace every instance of
+``$\P$'' with ``$\P$ with some oracle'' (and similarly for $\NP$) and the logic
+holds up, we have created a contradiction no matter what we do.
+
+Algebrization works similarly to relativization, but with a slightly different
+model of an oracle. In this case, instead of a normal oracle (which we can think
+of as a function that returns either a 0 or a 1), we think of our oracle as a
+large collection of polynomials. Because we can now get back arbitrary numbers
+from our oracle, instead of just 0 or 1, our oracle gains more power. Again,
+this leads us to be able to construct oracles similar to before, where under
+some oracle every problem that is easy to verify is easy to solve, and under
+some other oracle this is false. This gives us the same issue as with
+relativization. It turns out that every proof technique devised \emph{after} the
+discovery of relativization is still vulnerable to algebrization, so once again
+this reset the proof technique search.
+
+\section*{Computational proof systems}
+
+Alongside using computational models to help us determine how to prove
+statements, we can also look at computers as a model of proof themselves. In
+this model, we have to shift our thinking a little bit. So far, we have been
+thinking of our inputs as an arbitrary piece of text, where every piece of text
+has either ``yes'' or ``no'' associated with it. Now, we would like to think of
+the input as being some \emph{statement}, where the idea is that the response is
+``yes'' if the statement is true, and ``no'' if the statement is false. More
+specifically, we will be working to classify all the statements of a given type:
+for example, all statements of the form ``$x$ is even'', where $x$ is replaced
+with some integer. In this example, we would want our machine to output ``yes''
+when we are given an even number, and ``no'' when we are not.
+
+Interactive proofs operate with a pair of the interactive Turing machines
+mentioned earlier, passing messages between them. We call the two machines the
+``prover'' and the ``verifier''. The two machines are not symmetric---we say the
+prover can take as much time as it needs, and only the verifier is required to
+be fast. A reasonable response to this would be to wonder: if the prover can be
+arbitrarily powerful, why could it not just compute the correct answer itself
+and then just send ``yes'' or ``no'' to the verifier? Well, the compromise we
+get for giving the prover unlimited power is we lose the prover's
+\emph{trustworthiness}. While our proofs still define a correct prover, and our
+verifier needs to reliably work correctly when talking with the correct prover,
+we also require that our verifier can reliably \emph{reject} any other prover
+that may be trying to trick it into giving a ``yes'' answer when it should be
+outputting a ``no''.
+
+Something to notice in the last paragraph is that we said ``reliably'', not
+``always'' when talking about the verifier's outputs. This is the other
+compromise we make with interactive proofs: randomness. Randomness in itself is
+not a compromise---we could always ignore the randomness capabilities if it gets
+in the way. However, the compromise that comes with randomness is
+non-deterministic results. After all, in the real world we only ever get a
+``yes'' or ``no'' response, and not any sort of information about how improbable
+that result might be. Further, we said before that any input has exactly one
+correct response, and so if our results are non-deterministic then at least
+\emph{sometimes} our computer must necessarily be wrong in its conclusion. One
+might be tempted to work around this by allowing our laptop to use randomness
+internally, but say that its \emph{result} must be deterministic. While this
+would be nice, it turns out that doing this means our computer is no more
+powerful than if we did not use randomness at all. In brief, if the result is
+the same no matter what random bits we roll, then if we just replaced every
+random roll with a non-random result of, e.g., 4,\footnote{As chosen by fair
+  dice roll: \url{https://xkcd.com/221/}.} then we would have a machine that
+uses no randomness and yet outputs the same answer as our random machines.
+
+Interactive proofs are one model of a proof system, but it is not the only one.
+Probabilistically-checkable proofs are another model, and one that we will be
+looking at quite a lot. Here, instead of a verifier that responds to our
+requests, we have a static \emph{proof} (often modeled as a particular oracle)
+that we can request some limited number of bits from. Similarly to with
+interactive proofs, we not only care about what happens when our verifier is
+given the proper, ``honest'' proof, but we also want it to reliably be able to
+sniff out false proofs of false statements and reject them as well.
+
+\section*{Zero-knowledge}
+
+The traditional method of proving a statement to someone else is to reveal
+enough information about each step along the way that the provee can recreate
+each logical step. This necessarily means revealing lots of additional
+information that is not the statement being proven. One thing that
+mathematicians have wondered is whether it is possible to prove a statement
+\emph{without} revealing any of the information besides the specific statement
+to be proven.
+
+Intuitively, it would be reasonable to expect this is impossible. After all, one
+definitely cannot just state something and expect people to believe it is a
+mathematical truth. However, when we say zero-knowledge, we do not necessarily
+mean that \emph{no} knowledge is leaked, just that no \emph{simple} information
+is leaked. In this model, what we allow for is the verifier to challenge the
+prover: they can make requests, with the idea that if the prover is reliably
+answer them correctly, then it must be the case that the prover has proven the
+statement.
+
+Perhaps the most important property of these interactions is that they are
+\emph{not} generally acceptible as strict mathematical proofs---for any set of
+queries and responses, it is always possible that a sneaky prover could answer
+them all correctly by accident. However, for a zero-knowledge proof it must
+always be statistically unlikely for a prover to answer correctly, and thus with
+enough tests, it will eventually become a near impossibility for any
+correctly-answering prover to be lying.
+
+Alongside their mathematical properties, zero-knowledge proofs have many
+real-world applications. One common example is that of authentication: in
+general, I would like to be able to prove that I have the password for my
+account without sending the password publicly. After all, if I sent my password
+publicly anyone listening in to my conversations could just write it down, and
+then it is no longer much of a password. However, if we have a zero-knowledge
+proof that I have my password, it would leak no information about what my
+password is, and thus I can log in with peace of mind.
+
+A zero-knowledge requirement can be applied to just about any model of
+computation that involves multiple machines communicating in some fashion. To
+this end, we will be looking at zero-knowledge versions of nearly every
+computational model we discuss in this thesis. While the specifics of how we
+define zero-knowledge differ slightly from model to model, the broad strokes are
+the same: no information may ever be leaked through the messages between the
+machines.
+
+\section*{The PCP theorem}
+
+The main way we measure the difficulty of PCPs is through \emph{query
+  complexity}: in brief, how much (or how little) of the proof we need to look at
+in order to get a reliable response. In general, we would like to minimize
+this---we want to find the most efficient way to answer the question posed. It
+turns out, luckily for us, that if a problem is easy to verify (i.e., it is in
+the class $\NP$ we mentioned earlier), then the query complexity required is
+astonishingly low. More specifically, there exists a proof for which we only
+need to read \emph{3 bits} that will allow us to answer the question reliably.
+This statement is what we call the \emph{PCP theorem}.
+
+This result is astonishing, even to some seasoned computer scientists. There are
+various proofs of this, including one we will work through in this thesis. While
+the proof itself is somewhat complicated, we still replicate it because it will
+closely parallel our technique for proving another result later on.
+
+Of course, this is a thesis about \emph{zero-knowledge} PCPs, and so we would be
+remiss were we not to look for a zero-knowledge version of the PCP theorem. As
+we see later on, there is such a statement for zero-knowledge PCPs. While it
+does not give us the exact constant of 3 (at least, not yet), it does tell us
+that there is some constant number of queries that will always work. While it
+might be a little disappointing that we do not get an exact number, the fact
+that it is constant at all is still a huge result. Remember, we in computer
+science like to measure things by asymptotic complexity, so a constant
+complexity is as low as we can go.\footnote{Technically, there are sub-constant
+  complexities out there, but they would require the number of queries to go
+  \emph{down} as the input gets longer, which doesn't really make sense here.}
 
 \chapter{Preliminaries}
 
@@ -5703,11 +5967,24 @@ problem, and as before our problem of choice is $\OSAT$.
 
 \section{Zero-knowledge $\MIP*$ for $\NEXP$}\label{sec:zk-mipstar-nexp}
 
-In \cref{chap:ipcp-to-mip}, we demonstrated that \cref{alg:mip-from-ipcp} can
-take any IPCP and lift it into a MIP* while preserving zero-knowledge. Since
-\cref{alg:ipcp-o3sat} is a MIP* algorithm for $\OSAT$ and $\OSAT$ is
-$\NEXP$-complete, it follows that there exists a MIP* for every problem in
-$\NEXP$.
+\begin{thm}[{\cite[Lemma 9.1]{CFGS22}}]\label{thm:lift-ipcp-mip}
+  Let $L$ be a language, let $m, d, q \in \mathbb{N}$, and let $\mathbb{F}$ be a finite
+  field of size $\poly(m, d, q)$ sufficiently large. Then, there exists a
+  transformation
+  \begin{equation*}
+    T: \IPCP\ldipcp{r}{\ell}{c}{q}{\mathbb{F}[X_{1, \ldots, m}^{\le d}]}{\varepsilon}
+    \rightarrow \MIP*\mipstar{2}{r+1}{c}{1 - \frac{1}{\poly(m, d)}}.
+  \end{equation*}
+  such that $(P', V')$ and $T(P', V')$ recognize the same language.
+
+  Further, if the IPCP $(P', V')$ is zero-knowledge with query bound
+  $b \ge 2(q+1)md + 3$, then the $\MIP*$ $(P_{1}, P_{2}, V)$ is zero-knowledge.
+\end{thm}
+
+The above theorem demonstrates that we can take any IPCP and lift it into a MIP*
+while preserving zero-knowledge. Since \cref{alg:ipcp-o3sat} is a zero-knowledge
+MIP* algorithm for $\OSAT$ and $\OSAT$ is $\NEXP$-complete, it follows that
+$\NEXP \subseteq \PZKMIP$.
 
 \chapter{A zero-knowledge PCP theorem}\label{chap:zk-pcp-theorem}
 
